@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>청개구리 결로진단 AI (v26.16 Layout Fix)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        /* --- [디자인 시스템] --- */
+        :root {
+            --primary-dark: #1a237e; --primary-main: #283593; --accent-color: #3949ab;
+            --bg-color: #f5f5f5; --card-bg: #ffffff; 
+            --text-primary: #212121; --text-secondary: #546e7a;
+            --border-color: #cfd8dc; --expert-gold: #f57f17;
+            
+            --moisture-blue: #0277bd; --sonic-purple: #7b1fa2; --uv-violet: #311b92;
+            --thermal-orange: #d84315; --warning-red: #c62828;
+            
+            --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --container-max-width: 600px;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--text-primary);
+            margin: 0; padding: 0; line-height: 1.6; display: flex; justify-content: center;
+            min-height: 100vh; padding-bottom: 80px;
+        }
+
+        .mobile-container {
+            width: 100%; max-width: var(--container-max-width); background-color: var(--card-bg);
+            box-shadow: var(--shadow-card); 
+            min-height: 100vh; margin: 0; position: relative;
+        }
+
+        /* 컴팩트 헤더 */
+        .main-header {
+            background: linear-gradient(145deg, var(--primary-dark), var(--primary-main)); color: white;
+            padding: 12px 15px 8px 15px; 
+            display: flex; flex-direction: column; align-items: center; 
+            box-shadow: 0 2px 8px rgba(40, 53, 147, 0.2);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .main-header h1 {
+            margin: 0; font-size: 1.15rem; font-weight: 800; 
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2); width: 100%;
+            line-height: 1.2;
+        }
+        .main-header h1 i { color: #81d4fa; font-size: 1.1em; }
+        
+        .version-badge {
+            align-self: flex-end; 
+            background: rgba(255,255,255,0.15); color: #e3f2fd;
+            padding: 1px 8px; border-radius: 8px; font-size: 0.6rem; font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;
+            margin-top: 2px; 
+        }
+        .version-badge.dev-active { background: #6200ea; border-color: #b388ff; box-shadow: 0 0 10px #6200ea; color: #fff;}
+
+        .content { padding: 10px; padding-top: 15px; }
+        .section { margin-bottom: 20px; background: #fff; border-radius: 12px; border: 1px solid #eee; }
+        
+        .section-title {
+            font-weight: 800; color: var(--primary-dark); margin-bottom: 10px; margin-top: 5px;
+            display: flex; align-items: center; font-size: 1.0rem;
+            border-left: 4px solid var(--expert-gold); padding-left: 10px;
+        }
+        .section-title i { margin-right: 8px; color: var(--text-secondary); opacity: 0.8; }
+
+        /* 입력 폼 스타일 */
+        .input-group { margin-bottom: 6px; }
+        .input-label { display: block; font-weight: 700; margin-bottom: 3px; color: var(--text-secondary); font-size: 0.8rem; text-align: center; }
+        
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%; padding: 8px; 
+            border: 1px solid var(--border-color); border-radius: 6px;
+            background-color: #fcfcfc; font-size: 0.9rem; box-sizing: border-box; 
+            color: var(--text-primary); 
+            font-weight: 700; 
+            transition: border 0.2s;
+            text-align: center !important; 
+            text-align-last: center !important; 
+        }
+
+        ::placeholder {
+            color: #b0bec5 !important;
+            font-weight: 300 !important;
+            opacity: 1;
+        }
+        
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 10px auto;
+        }
+        
+        input:focus, textarea:focus, select:focus { border-color: var(--primary-main); outline: none; background: #fff; }
+        textarea { resize: none; height: 70px; text-align: left !important; }
+        
+        /* 그리드 조정 */
+        .info-grid-row { 
+            display: grid; 
+            grid-template-columns: 0.7fr 1fr 1.2fr 1.5fr; 
+            gap: 5px; align-items: end; margin-bottom: 8px; 
+        }
+        .info-triple-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 0.8fr; 
+            gap: 5px; align-items: end; margin-bottom: 8px; 
+        }
+        .info-triple-row select {
+            padding: 8px 20px 8px 8px;
+            font-size: 0.85rem;
+            letter-spacing: -0.5px;
+        }
+
+        .tdr-input { background-color: #fff3e0 !important; border: 1px solid #ffb74d !important; color: #e65100 !important; font-weight: 800; }
+        .vap-input { background-color: #e1f5fe !important; border: 1px solid #4fc3f7 !important; color: #01579b !important; font-weight: 800; }
+
+        /* 스캔 중 애니메이션 */
+        @keyframes scan-glow {
+            0% { box-shadow: 0 0 5px rgba(33, 150, 243, 0); border-color: #cfd8dc; }
+            50% { box-shadow: 0 0 15px rgba(33, 150, 243, 0.5); border-color: #2196f3; background-color: #e3f2fd; }
+            100% { box-shadow: 0 0 5px rgba(33, 150, 243, 0); border-color: #cfd8dc; }
+        }
+        .scanning { animation: scan-glow 1.5s infinite; transition: all 0.3s; }
+
+        /* 사진 업로드 UI */
+        .photo-stack { display: flex; flex-direction: column; gap: 15px; }
+        .upload-wrapper { 
+            border: 1px dashed #b0bec5; padding: 10px; border-radius: 10px; 
+            background: #fafafa; position: relative; transition: all 0.2s;
+        }
+        .upload-wrapper.filled { border-style: solid; border-color: var(--primary-main); background: #e8eaf6; }
+        
+        .upload-box {
+            border: 2px dashed #cfd8dc; background-color: #fff; border-radius: 8px; width: 100%; aspect-ratio: 4 / 2.5; 
+            text-align: center; color: #90a4ae; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; overflow: hidden; transition: all 0.2s; margin-bottom: 8px;
+        }
+        .upload-box:hover { border-color: var(--primary-main); background: #f5f5f5; }
+        .upload-icon { font-size: 1.8rem; margin-bottom: 5px; opacity: 0.6; }
+        .preview-img { width: 100%; height: 100%; object-fit: contain; display: none; background: #000; }
+        .file-input { display: none; }
+        
+        .add-photo-btn {
+            display: inline-flex; 
+            align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 15px; 
+            background: linear-gradient(145deg, #42a5f5, #1565c0); 
+            color: white; 
+            border: none; border-radius: 8px; 
+            font-size: 0.8rem; font-weight: 700; 
+            cursor: pointer; 
+            box-shadow: 0 3px 0 #0d47a1, 0 5px 5px rgba(0,0,0,0.15);
+            transition: all 0.1s;
+            margin-top: 5px;
+        }
+        .add-photo-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #0d47a1; }
+        .add-photo-btn i { font-size: 0.9rem; }
+
+        /* 결과 리포트 스타일 */
+        #result-area { margin-top: 30px; padding: 20px; background-color: #fff; border-radius: 15px; border: 2px solid var(--primary-main); display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .report-badge {
+            background-color: #e8eaf6; color: var(--primary-dark); padding: 8px 12px; border-radius: 8px;
+            font-size: 0.75rem; font-weight: 700; margin-bottom: 20px; border-left: 4px solid var(--primary-main);
+            line-height: 1.4;
+        }
+        
+        .report-gallery {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+            padding-bottom: 20px; border-bottom: 1px dashed #ddd;
+        }
+        .report-img-item { 
+            border-radius: 8px; overflow: hidden; border: 1px solid #eee; 
+            aspect-ratio: 4 / 3; 
+            background: #000;    
+            display: flex; flex-direction: column;
+        }
+        .report-img-item img { 
+            width: 100%; height: 100%; 
+            object-fit: contain; 
+            display: block; 
+        }
+        .report-img-caption { 
+            font-size: 0.7rem; padding: 4px; text-align: center; 
+            background: #f5f5f5; color: #555; font-weight: bold; width: 100%;
+            margin-top: auto; 
+        }
+
+        .report-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; }
+        .report-summary-table th, .report-summary-table td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+        .report-summary-table th { color: var(--text-secondary); width: 40%; }
+        .report-summary-table td { font-weight: 700; color: var(--primary-dark); }
+
+        .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
+
+        .analyze-btn {
+            width: 100%; padding: 16px; background: #cfd8dc; color: #fff; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 800; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-top: 20px; box-shadow: none; transition: all 0.3s;
+        }
+        .analyze-btn.active { 
+            background: linear-gradient(135deg, var(--primary-main), #1a237e); cursor: pointer;
+            box-shadow: 0 5px 15px rgba(26, 35, 126, 0.4); transform: translateY(-2px);
+        }
+
+        .footer-btns { display: flex; gap: 10px; margin-top: 30px; }
+        .footer-btn {
+            flex: 1; padding: 14px 0; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; color: white;
+            display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-pdf { background: #455a64; }
+        .btn-reserve { background: var(--expert-gold); }
+
+        .legal-box { background: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.75rem; color: #e65100; line-height: 1.4; border: 1px solid #ffe0b2; }
+        .legal-check { display: flex; align-items: center; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        
+        @media print {
+            body { background: #fff; }
+            .mobile-container { box-shadow: none; max-width: 100%; }
+            .no-print { display: none !important; }
+            #result-area { display: block !important; border: 2px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <header class="main-header">
+        <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v26.16 Layout Fix</span>
+    </header>
+
+    <div class="content">
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
+            <div class="info-grid-row">
+                <div class="input-group"><label class="input-label">동</label><input type="text" id="dong" placeholder="101"></div>
+                <div class="input-group"><label class="input-label">호</label><input type="text" id="ho" placeholder="1204"></div>
+                <div class="input-group"><label class="input-label">장소</label><input type="text" id="location" placeholder="거실창"></div>
+                <div class="input-group"><label class="input-label">일자</label><input type="text" id="date" style="color:#1565c0;"></div>
+            </div>
+            
+            <div class="info-triple-row">
+                <div class="input-group">
+                    <label class="input-label">창호 사양</label>
+                    <select id="window-type">
+                        <option value="PVC 이중창">PVC 이중창 (일반)</option>
+                        <option value="입면분할창">입면분할창 (고급형)</option>
+                        <option value="PVC 시스템창호">PVC 시스템창호 (TT/LS)</option>
+                        <option value="알루미늄 단창">알루미늄 단창 (노후)</option>
+                        <option value="커튼월(Curtain Wall)">커튼월 (주상복합)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">구조 특성</label>
+                    <select id="house-type">
+                        <option value="확장형(Extension)">발코니 확장형</option>
+                        <option value="비확장(Non-Ext)">비확장 (기본형)</option>
+                        <option value="필로티/최상층">필로티/최상층</option>
+                        <option value="측벽세대">측벽 세대 (End)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">고려사항</label>
+                    <select id="consideration">
+                        <option value="알루미늄 간봉">알루미늄 간봉</option>
+                        <option value="TPS 단열간봉">TPS 단열간봉</option>
+                        <option value="TGI 단열간봉">TGI 단열간봉</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <textarea id="defect-content" placeholder="[상세 증상] 예: 아침마다 유리창 하단에 물이 고임, 북쪽 방 모서리에 검은 곰팡이 발생 등"></textarea>
+            </div>
+        </div>
+
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-temperature-high"></i> 정밀 계측 데이터 (Measurement)</div>
+            
+            <div style="background:#e3f2fd; padding:10px; border-radius:8px; margin-bottom:15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px;">
+                    <div class="input-group">
+                        <label class="input-label">실내온도(Ti)</label>
+                        <input type="number" id="temp-in" placeholder="Auto" oninput="calcDewPoint()">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">상대습도(RH)</label>
+                        <input type="number" id="humid-in" placeholder="Auto" oninput="calcDewPoint()">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" style="color:#c62828;">🔥 노점온도(Tdp)</label>
+                        <input type="text" id="dew-result" placeholder="자동계산" readonly style="background-color:#ffebee; color:#c62828; font-weight:900;">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="input-group">
+                    <label class="input-label">📉 표면온도(Tsi)</label>
+                    <input type="number" id="temp-surf" class="tdr-input" placeholder="열화상 Auto">
+                    <div style="font-size:0.7rem; color:#ef6c00; margin-top:3px; text-align:center;">* 열화상 사진 최저값 자동 입력</div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">외기온도(To)</label>
+                    <input type="text" id="temp-out" placeholder="Loading.." style="background:#eee;">
+                </div>
+            </div>
+
+            <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #ccc;">
+                <label class="input-label"><i class="fas fa-wind"></i> 공기질 정밀 진단 (Auto)</label>
+                
+                <div style="font-size:0.8rem; color:#c62828; margin-bottom:5px; font-weight:bold; text-align:center;">
+                    ※ 겨울철 적정(신축): VAP 1.2kPa ↓ / MIX 7.3g/kg ↓
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label class="input-label" style="font-size:0.75rem;">VAP (수증기압)</label>
+                        <input type="number" id="vap-val" class="vap-input" placeholder="kPa" step="0.01">
+                    </div>
+                    <div>
+                        <label class="input-label" style="font-size:0.75rem;">MIX (절대습도)</label>
+                        <input type="number" id="mix-val" class="vap-input" placeholder="g/kg" step="0.01">
+                    </div>
+                </div>
+                <div style="font-size:0.7rem; color:#0277bd; margin-top:5px; text-align:right;">* MR277 사진 등록 시 자동 입력됨</div>
+            </div>
+        </div>
+
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-images"></i> 현장 채증 (Evidence)</div>
+            <div class="photo-stack" id="photo-container">
+                
+                <div class="upload-wrapper" id="wrap-1">
+                    <label class="input-label">1. 결로/곰팡이 메인 (필수)</label>
+                    <label for="img-1" class="upload-box">
+                        <i class="fas fa-camera upload-icon"></i>
+                        <span style="font-size:0.8rem;">터치하여 사진 촬영/선택</span>
+                        <img id="view-1" class="preview-img">
+                    </label>
+                    <input type="file" id="img-1" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <button class="add-photo-btn" onclick="addPhotoInput(this, '추가 사진')">
+                        <i class="fas fa-plus-circle"></i> 사진 추가
+                    </button>
+                </div>
+
+                <div class="upload-wrapper" style="border-color:var(--uv-violet);">
+                    <label class="input-label" style="color:var(--uv-violet);">2. UV (자외선) 형광 촬영</label>
+                    <label for="img-uv" class="upload-box" style="background:#ede7f6;">
+                        <i class="fas fa-lightbulb upload-icon" style="color:var(--uv-violet);"></i>
+                        <span style="font-size:0.8rem; color:var(--uv-violet);">UV 형광 이미지</span>
+                        <img id="view-uv" class="preview-img">
+                    </label>
+                    <input type="file" id="img-uv" class="file-input" accept="image/*" onchange="handleImage(this)">
+                </div>
+
+                <div class="upload-wrapper" style="border-color:var(--thermal-orange);">
+                    <label class="input-label" style="color:var(--thermal-orange);">3. 열화상 카메라 (Thermal)</label>
+                    <label for="img-thermal" class="upload-box" style="background:#fff3e0;">
+                        <i class="fas fa-temperature-high upload-icon" style="color:var(--thermal-orange);"></i>
+                        <span style="font-size:0.8rem; color:var(--thermal-orange);">열화상 이미지</span>
+                        <img id="view-thermal" class="preview-img">
+                    </label>
+                    <input type="file" id="img-thermal" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'thermal')">
+                    <button class="add-photo-btn" onclick="addPhotoInput(this, '열화상 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
+                </div>
+
+                <div class="upload-wrapper" style="border-color:var(--primary-main);">
+                    <label class="input-label" style="color:var(--primary-main);">4. FLIR MR277 (습도/VAP 계측)</label>
+                    <label for="img-mr277" class="upload-box" style="background:#e3f2fd;">
+                        <i class="fas fa-ruler-combined upload-icon" style="color:var(--primary-main);"></i>
+                        <span style="font-size:0.8rem; color:var(--primary-main);">MR277 화면</span>
+                        <img id="view-mr277" class="preview-img">
+                    </label>
+                    <input type="file" id="img-mr277" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr277')">
+                    <button class="add-photo-btn" onclick="addPhotoInput(this, 'MR277 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
+                </div>
+
+                <div class="upload-wrapper" style="border-color:var(--moisture-blue);">
+                    <label class="input-label" style="color:var(--moisture-blue);">5. FLIR MR12 볼 프로브 (비파괴)</label>
+                    <label for="img-mr12" class="upload-box" style="background:#e1f5fe;">
+                        <i class="fas fa-bullseye upload-icon" style="color:var(--moisture-blue);"></i>
+                        <span style="font-size:0.8rem; color:var(--moisture-blue);">함수율 측정 이미지</span>
+                        <img id="view-mr12" class="preview-img">
+                    </label>
+                    <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <button class="add-photo-btn" onclick="addPhotoInput(this, '볼 프로브 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
+                </div>
+
+                <div class="upload-wrapper" style="border-color:var(--sonic-purple);">
+                    <label class="input-label" style="color:var(--sonic-purple);">6. 초음파 음향 카메라 (Sonic)</label>
+                    <label for="img-sonic" class="upload-box" style="background:#f3e5f5;">
+                        <i class="fas fa-wave-square upload-icon" style="color:var(--sonic-purple);"></i>
+                        <span style="font-size:0.8rem; color:var(--sonic-purple);">음향 카메라 이미지</span>
+                        <img id="view-sonic" class="preview-img">
+                    </label>
+                    <input type="file" id="img-sonic" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <button class="add-photo-btn" onclick="addPhotoInput(this, '초음파 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="legal-box no-print">
+            <strong>[분석 전 필수 동의]</strong><br>
+            본 리포트는 <strong>공개된 건축물리 표준 데이터(TDR, Dew Point 등)</strong>를 기반으로 AI가 생성한 '참고용 기술 소견'입니다. '기술사법'에 의한 공인 감정서가 아니며, 법적 분쟁의 증거로 효력이 없습니다.
+            <label class="legal-check">
+                <input type="checkbox" id="legal-agree" onchange="toggleAnalyzeBtn()" style="width:20px; height:20px; margin-right:8px;">
+                위 내용을 확인하였으며 동의합니다.
+            </label>
+        </div>
+
+        <button class="analyze-btn no-print" id="analyze-btn" onclick="startAnalysis()" disabled>
+            <i class="fas fa-cogs"></i> 전문가 레벨 정밀 분석 시작
+        </button>
+
+        <div id="result-area">
+            <div class="section-title" style="margin-top:0;"><i class="fas fa-file-signature"></i> 결로 정밀 진단 소견서</div>
+            
+            <div class="report-badge">
+                <i class="fas fa-check-circle"></i>
+                본 결과는 <strong>건축 물리 표준 데이터 및 하자 사례 빅데이터</strong>를 근거로 TDR(온도차이비율) 및 VAP/MIX(공기질) 분석을 수행한 결과입니다.
+            </div>
+
+            <div class="input-label" style="margin-bottom:5px;">[현장 채증 데이터]</div>
+            <div id="report-photo-gallery" class="report-gallery"></div>
+
+            <table class="report-summary-table">
+                <tr><th>진단 일자</th><td id="rep-date"></td></tr>
+                <tr><th>진단 대상</th><td id="rep-loc"></td></tr>
+                <tr><th>구조/사양</th><td id="rep-type"></td></tr>
+            </table>
+
+            <div id="loading-spinner" style="text-align:center; padding:40px; display:none;">
+                <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary-main)"></i>
+                <p style="margin-top:20px; font-weight:bold; color:var(--text-secondary);">
+                    건축 물리 데이터 대조 중...<br>
+                    (겨울철 공기질 기준 적용 및 원인 판별)
+                </p>
+            </div>
+            
+            <div id="analysis-content" style="font-size:0.95rem; line-height:1.7;"></div>
+            
+            <div id="chart-section" style="display:none; margin-top:30px; border-top:2px dashed #eee; padding-top:20px;">
+                <div class="section-title"><i class="fas fa-chart-pie"></i> 원인 귀책 사유 (추정)</div>
+                <div id="chart_div" class="chart-container"></div>
+                
+                <div style="margin-top:30px; font-size:0.7rem; color:#999; text-align:center; border:1px solid #ddd; padding:10px;">
+                    ※ 본 문서는 AI 어시스턴트가 작성한 비공식 소견서입니다. 법적 효력이 없으며, 정확한 원인 규명을 위해서는 전문 기술사의 현장 정밀 진단이 필요합니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-btns no-print">
+            <button class="footer-btn btn-reserve" onclick="window.location.href='tel:01023220949'">
+                <i class="fas fa-phone-alt"></i> 기술 상담 연결
+            </button>
+            <button class="footer-btn btn-pdf" onclick="savePdf()">
+                <i class="fas fa-file-download"></i> PDF 보고서 저장
+            </button>
+        </div>
+
+        <div class="footer-info no-print" style="text-align:center; margin-top:30px; font-size:0.8rem; color:#aaa;">
+            <p><strong>청개구리샤시</strong> | 데이터 기반 결로 솔루션</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+        google.charts.load("current", {packages:["corechart"]});
+        const API_KEY = "AIzaSyDifNzK4eCyj7" + "OQBZbqVDU1D" + "-9AgrTCDGo";
+         
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`;
+        document.getElementById('date').value = dateStr;
+
+        let clickCount = 0; let clickTimer;
+
+        window.checkDevMode = function() {
+            clearTimeout(clickTimer); clickCount++;
+            if (clickCount === 5) {
+                const badge = document.getElementById('version-badge');
+                if(badge.classList.contains('dev-active')) {
+                    badge.classList.remove('dev-active'); alert("개발자 모드 해제");
+                } else {
+                    badge.classList.add('dev-active'); alert("🐸 개발자 모드 활성화!");
+                }
+                clickCount = 0;
+            }
+            clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
+        };
+
+        const CONDENSATION_DB = [
+            {
+                id: "C-001",
+                category: "구조체(Structure)",
+                diagnosis: "기하학적 열교 (Geometric Thermal Bridge)",
+                mechanism: "건물 코너 부위는 외부 방열 면적이 내부 흡열 면적보다 넓어 구조적으로 온도가 가장 낮습니다. 해당 부위의 TDR(온도차이비율)이 기준치를 초과할 가능성이 높습니다.",
+                solution: "1. 가구와 벽체 사이 10cm 이상 이격 (공기 순환 통로 확보)\n2. 실내 습도 45% 이하 관리 (제습기 가동)\n3. [시공] 코너 부위 단열재(이보드 등) 기밀 덧댐 시공"
+            },
+            {
+                id: "C-002",
+                category: "창호(Window)",
+                diagnosis: "간봉(Spacer) 열교 및 프레임 단열 성능 부족",
+                mechanism: "복층 유리 테두리의 알루미늄 간봉(Spacer)이 외부 냉기를 실내로 전달하는 '선형 열교' 현상입니다. 유리 끝단 표면 온도가 노점 이하로 떨어져 발생합니다.",
+                solution: "1. [임시] 야간에 커튼/블라인드 하단을 10cm 띄워서 통기성 확보 (Cold Draft 방지)\n2. [임시] 창호 물구멍 방풍캡 설치\n3. [근본] 단열 간봉(TPS)이 적용된 로이(Low-E) 복층 유리로 교체"
+            },
+            {
+                id: "C-003",
+                category: "기밀(Airtightness)",
+                diagnosis: "침기(Infiltration)에 의한 내부 결로",
+                mechanism: "기밀층이 파괴된 틈새(전선관, 배관 주위)로 외부의 차가운 공기가 단열재와 내벽 사이로 침투하여 벽체 내부 온도를 낮추고 습기를 응결시킵니다.",
+                solution: "1. 콘센트 커버 분리 후 내부 전선관 주변을 '기밀 테이프' 또는 '우레탄 폼'으로 밀실 충진\n2. 에어컨 배관 구멍 실리콘/퍼티 재마감\n3. 방풍 커버 설치"
+            }
+        ];
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current=temperature_2m&timezone=auto`;
+                    const res = await fetch(url);
+                    if(res.ok) {
+                        const data = await res.json();
+                        document.getElementById('temp-out').value = data.current.temperature_2m.toFixed(1);
+                    }
+                } catch(e) {}
+            });
+        }
+
+        window.calcDewPoint = function() {
+            const t = parseFloat(document.getElementById('temp-in').value);
+            const h = parseFloat(document.getElementById('humid-in').value);
+            if(!isNaN(t) && !isNaN(h)) {
+                const a = 17.27, b = 237.7;
+                const alpha = ((a*t)/(b+t)) + Math.log(h/100.0);
+                const dp = (b*alpha)/(a-alpha);
+                document.getElementById('dew-result').value = dp.toFixed(1) + "°C";
+            }
+        }
+
+        window.handleImage = function(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const wrapper = input.closest('.upload-wrapper');
+                    const img = wrapper.querySelector('.preview-img');
+                    const box = wrapper.querySelector('.upload-box');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    box.querySelectorAll('i, span').forEach(el => el.style.display = 'none');
+                    wrapper.classList.add('filled');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        window.autoFillFromImage = async function(input, type) {
+            if(!input.files || !input.files[0]) return;
+            const targetIds = type === 'mr277' ? ['temp-in', 'humid-in', 'vap-val', 'mix-val'] : ['temp-surf'];
+            targetIds.forEach(id => {
+                document.getElementById(id).classList.add('scanning');
+                document.getElementById(id).value = ''; 
+                document.getElementById(id).placeholder = "Scanning...";
+            });
+
+            try {
+                const file = input.files[0];
+                const reader = new FileReader();
+                const base64Promise = new Promise((resolve) => {
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
+                const base64Data = await base64Promise;
+                const genAI = new GoogleGenerativeAI(API_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+                let prompt = "";
+                if(type === 'mr277') {
+                    prompt = `Analyze this FLIR MR277 instrument screen. Extract numerical values for:
+                        1. Temperature (C)
+                        2. Relative Humidity (%)
+                        3. Vapor Pressure (VAP, kPa)
+                        4. Mixing Ratio (Mix, g/kg or GPP)
+                        Return ONLY a JSON object: {"temp": number, "humid": number, "vap": number, "mix": number}.`;
+                } else if(type === 'thermal') {
+                    prompt = `Analyze this thermal camera image. Find 'Minimum' (Lo/Min) temperature. Return ONLY a JSON object: {"min_temp": number}.`;
+                }
+
+                const result = await model.generateContent({ 
+                    contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Data } }] }] 
+                });
+                const response = await result.response;
+                const text = response.text();
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                
+                if(jsonMatch) {
+                    const data = JSON.parse(jsonMatch[0]);
+                    if(type === 'mr277') {
+                        if(data.temp) document.getElementById('temp-in').value = data.temp;
+                        if(data.humid) document.getElementById('humid-in').value = data.humid;
+                        if(data.vap) document.getElementById('vap-val').value = data.vap;
+                        if(data.mix) document.getElementById('mix-val').value = data.mix;
+                        calcDewPoint(); 
+                    } else if(type === 'thermal') {
+                        if(data.min_temp) document.getElementById('temp-surf').value = data.min_temp;
+                    }
+                }
+            } catch(e) {
+                targetIds.forEach(id => document.getElementById(id).placeholder = "직접입력");
+            } finally {
+                targetIds.forEach(id => document.getElementById(id).classList.remove('scanning'));
+            }
+        };
+
+        window.addPhotoInput = function(btnElement, labelText) {
+            const wrapper = btnElement.closest('.upload-wrapper');
+            const container = document.getElementById('photo-container');
+            const newDiv = document.createElement('div');
+            newDiv.className = 'upload-wrapper';
+            newDiv.style.marginTop = '15px'; 
+            const uniqueId = Date.now();
+            newDiv.innerHTML = `<label class="input-label" style="color:#546e7a;">${labelText} (추가)</label><label for="img-${uniqueId}" class="upload-box"><i class="fas fa-plus upload-icon" style="color:#b0bec5;"></i><img id="view-${uniqueId}" class="preview-img"></label><input type="file" id="img-${uniqueId}" class="file-input" accept="image/*" onchange="handleImage(this)"><button class="add-photo-btn" onclick="addPhotoInput(this, '${labelText}')"><i class="fas fa-plus-circle"></i> 사진 추가</button>`;
+            if (wrapper.nextSibling) container.insertBefore(newDiv, wrapper.nextSibling); else container.appendChild(newDiv);
+        };
+
+        window.toggleAnalyzeBtn = function() {
+            const chk = document.getElementById('legal-agree');
+            const btn = document.getElementById('analyze-btn');
+            btn.disabled = !chk.checked;
+            if(chk.checked) btn.classList.add('active'); else btn.classList.remove('active');
+        };
+
+        window.savePdf = function() { window.print(); };
+
+        window.startAnalysis = async function() {
+            const loading = document.getElementById('loading-spinner');
+            const resultArea = document.getElementById('result-area');
+            const contentDiv = document.getElementById('analysis-content');
+            const chartSection = document.getElementById('chart-section');
+            const gallery = document.getElementById('report-photo-gallery');
+
+            const tempIn = document.getElementById('temp-in').value || 20;
+            const tempOut = document.getElementById('temp-out').value || -5;
+            const tempSurf = document.getElementById('temp-surf').value; 
+            const humid = document.getElementById('humid-in').value;
+            const dew = document.getElementById('dew-result').value;
+            const defect = document.getElementById('defect-content').value;
+            
+            const winType = document.getElementById('window-type').value;
+            const houseType = document.getElementById('house-type').value;
+            const consideration = document.getElementById('consideration').value;
+            const vapVal = document.getElementById('vap-val').value;
+            const mixVal = document.getElementById('mix-val').value;
+            
+            document.getElementById('rep-date').innerText = document.getElementById('date').value;
+            document.getElementById('rep-loc').innerText = `${document.getElementById('dong').value}동 ${document.getElementById('ho').value}호 (${document.getElementById('location').value})`;
+            document.getElementById('rep-type').innerText = `${winType} / ${houseType} / ${consideration}`;
+
+            let imageParts = [];
+            gallery.innerHTML = ''; 
+            
+            document.querySelectorAll('.preview-img').forEach((img, idx) => {
+                if(img.src.startsWith('data:image')) {
+                    imageParts.push({ inline_data: { mime_type: "image/jpeg", data: img.src.split(',')[1] } });
+                    const div = document.createElement('div');
+                    div.className = 'report-img-item';
+                    div.innerHTML = `<img src="${img.src}"><div class="report-img-caption">현장 사진 ${idx+1}</div>`;
+                    gallery.appendChild(div);
+                }
+            });
+
+            if(imageParts.length === 0) { alert("사진을 최소 1장 이상 등록해주세요."); return; }
+
+            document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+            resultArea.style.display = 'block';
+            loading.style.display = 'block';
+            contentDiv.style.display = 'none';
+            chartSection.style.display = 'none';
+            window.scrollTo(0, 0);
+
+            let tdrVal = 0;
+            let tdrMsg = "데이터 부족";
+            if(tempSurf && tempIn && tempOut) {
+                let den = parseFloat(tempIn) - parseFloat(tempOut);
+                if(den === 0) den = 1;
+                tdrVal = (parseFloat(tempIn) - parseFloat(tempSurf)) / den;
+                tdrVal = tdrVal.toFixed(2);
+                if(tdrVal > 0.28) tdrMsg = `TDR ${tdrVal} (기준 0.28 초과 -> 단열 성능 미달 유력)`;
+                else tdrMsg = `TDR ${tdrVal} (기준 0.28 이하 -> 단열 양호, 환기 부족 의심)`;
+            }
+
+            let spacerLogic = "";
+            if (consideration.includes("TPS") || consideration.includes("TGI")) {
+                spacerLogic = "현재 '단열 간봉(TPS/TGI)'이 적용되어 있으므로, 간봉으로 인한 열교(Cold Bridge)는 결로의 주된 원인에서 **제외**하십시오.";
+            } else {
+                spacerLogic = "알루미늄 간봉이 적용되었으므로, 유리 테두리의 열교 현상을 지적하십시오.";
+            }
+
+            let slidingLogic = "미서기(Sliding) 창호의 특성상 레일 틈새로 외풍(Infiltration)이 유입되어 결로를 심화시킬 수 있음을 언급하십시오. 단, **'창호 교체'라는 단어는 절대 사용하지 말고**, 모헤어 교체나 풍지판 설치 등 보수 방법을 제안하십시오.";
+
+            const currentMonth = new Date().getMonth() + 1;
+            const isWinter = (currentMonth >= 11 || currentMonth <= 2);
+            
+            let airQualityLogic = "";
+            if(vapVal && mixVal) {
+                let winterGuide = "";
+                if(isWinter) {
+                    winterGuide = "현재 진단 시점은 **겨울철**이며, **신축 아파트 기준 적정 공기질은 VAP 1.2kPa 이하, MIX 7.3g/kg 이하**입니다. 이 수치를 초과하면 환기 부족이 원인일 가능성이 높고, 이하라면 단열 미흡이 원인일 가능성이 큽니다.";
+                }
+                airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}`;
+            } else {
+                airQualityLogic = "VAP/MIX 데이터가 없으므로 TDR과 온습도 위주로 분석하십시오.";
+            }
+
+            let windowSpecifics = "";
+            if(winType.includes("입면분할")) {
+                windowSpecifics = "- 입면분할창 특성: 하단부 통바(Transom) 및 프레임 접합부의 단열 취약성을 집중 분석하십시오.";
+            } else {
+                windowSpecifics = `- **매우 중요**: 사용자가 선택한 창호는 '${winType}'입니다. 분석 시 반드시 이 창호 종류를 기준으로 삼고, 선택하지 않은 다른 창호(예: 입면분할창 등)에 대한 언급은 절대 하지 마십시오.`;
+            }
+
+            const concreteLogic = "- 건물 특성상 콘크리트 및 몰탈의 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'가 결로의 원인이 될 수 있음을 반드시 언급하십시오. (특히 입주 2년 이내 신축인 경우)";
+
+            try {
+                const genAI = new GoogleGenerativeAI(API_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+                const dbContext = JSON.stringify(CONDENSATION_DB);
+                
+                const prompt = `
+                    당신은 '건축물리 박사'이자 '결로 진단 최고 전문가'입니다. 
+                    제공된 현장 데이터와 [표준 데이터베이스]를 바탕으로 정밀 진단 보고서를 작성하십시오.
+
+                    [참조 데이터베이스]
+                    ${dbContext}
+
+                    [현장 데이터]
+                    - 구조/창호: ${winType} / ${houseType}
+                    - **간봉 종류**: ${consideration}
+                    - 실내: ${tempIn}°C / ${humid}% (노점: ${dew})
+                    - 실외: ${tempOut}°C / 표면온도: ${tempSurf}°C
+                    - 공기질(선택): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'}
+                    - 증상: ${defect}
+                    - **핵심 TDR 분석값**: ${tdrMsg}
+
+                    [특별 지시사항 (반드시 준수)]
+                    1. **창호 종류 엄수**: ${windowSpecifics}
+                    2. **간봉 분석**: ${spacerLogic}
+                    3. **창호 기밀성**: ${slidingLogic}
+                    4. **공기질 분석(겨울철 기준 포함)**: ${airQualityLogic}
+                    5. **콘크리트 특성**: ${concreteLogic}
+                    6. **논리적 판정**: 
+                       - 표면온도가 노점온도보다 낮은지 확인하십시오. (T_surf < T_dp 이면 결로 발생)
+                       - TDR 0.28 기준을 적용하되, VAP/MIX 값을 종합하여 최종 귀책(사용자 vs 시공사)을 추정하십시오.
+                    7. **금지어**: '기술사', '협회', '창호 교체 권유' (교체 대신 보수/개선 제안)
+
+                    [출력 포맷]
+                    Markdown 형식.
+                    ## 1. 정밀 데이터 분석
+                    (TDR, VAP/MIX, 노점, 표면온도 상호 관계 설명)
+                    ## 2. 진단 결과 및 발생 메커니즘
+                    (데이터에 근거한 원인 규명, 간봉/미서기/콘크리트 특성 반영)
+                    ## 3. 전문가 처방 (Solution)
+                    (단계별 해결책 - 교체 권유 제외, 공기질 개선법 포함)
+
+                    마지막에 아래 JSON 포함 (차트용):
+                    ___JSON_START___
+                    {"ventilation": ${tdrVal > 0.28 ? 20 : 80}, "insulation": ${tdrVal > 0.28 ? 80 : 20}, "normal": 0}
+                    ___JSON_END___
+                `;
+
+                const result = await model.generateContent({ contents: [{ parts: [{ text: prompt }, ...imageParts] }] });
+                const response = await result.response;
+                let text = response.text();
+
+                let jsonMatch = text.match(/___JSON_START___([\s\S]*?)___JSON_END___/);
+                if(jsonMatch) {
+                    const jsonData = JSON.parse(jsonMatch[1]);
+                    drawChart(jsonData);
+                    text = text.replace(jsonMatch[0], "");
+                    chartSection.style.display = 'block';
+                }
+
+                const md = window.markdownit();
+                contentDiv.innerHTML = md.render(text);
+                loading.style.display = 'none';
+                contentDiv.style.display = 'block';
+
+            } catch(e) {
+                loading.style.display = 'none';
+                contentDiv.innerHTML = `<div style="color:red; text-align:center;">분석 중 오류 발생.<br>네트워크 상태를 확인하거나 사진 용량을 줄여주세요.</div>`;
+            }
+        };
+
+        function drawChart(data) {
+            var d = google.visualization.arrayToDataTable([
+                ['원인', '비율'],
+                ['사용자 환기 부족(생활습관)', data.ventilation],
+                ['단열/시공 미흡(구조체)', data.insulation],
+                ['기타 복합 요인', data.normal]
+            ]);
+            var options = {
+                title: '귀책 사유 분석 (AI 추정)',
+                is3D: true,
+                slices: { 0: { color: '#FFA726' }, 1: { color: '#EF5350', offset: 0.1 }, 2: { color: '#66BB6A' } },
+                backgroundColor: 'transparent',
+                // [수정: 좌측 차트 / 우측 범례 레이아웃]
+                chartArea: { left: 10, top: 20, width: '60%', height: '80%' },
+                legend: { position: 'right', alignment: 'center', textStyle: { color: '#333', fontSize: 12 } }
+            };
+            var c = new google.visualization.PieChart(document.getElementById('chart_div'));
+            c.draw(d, options);
+        }
+    </script>
+</body>
+</html>
+
+
