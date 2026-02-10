@@ -44,7 +44,6 @@
             padding-bottom: 100px;
         }
 
-        /* Animated background */
         body::before {
             content: '';
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -60,7 +59,6 @@
             position: relative; z-index: 1;
         }
 
-        /* ── Header ── */
         .main-header {
             background: linear-gradient(160deg, #0f2440, #1b3a5c, #1f4068);
             backdrop-filter: blur(20px);
@@ -93,7 +91,6 @@
 
         .content { padding: 8px; }
 
-        /* ── Sections ── */
         .section {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -127,7 +124,6 @@
         .icon-purple { background: rgba(91,33,182,0.08); color: var(--accent-purple); }
         .icon-blue { background: rgba(35,75,122,0.08); color: #234b7a; }
 
-        /* ── Form Inputs ── */
         .input-group { margin-bottom: 4px; }
         .input-label {
             display: block; font-weight: 600; font-size: 0.72rem;
@@ -163,17 +159,14 @@
             text-align-last: center;
         }
 
-        /* Grid layouts */
         .grid-4 { display: grid; grid-template-columns: 0.6fr 0.9fr 1.2fr 1.5fr; gap: 4px; align-items: end; margin-bottom: 8px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 4px; align-items: end; margin-bottom: 8px; }
         .grid-3 select { font-size: 0.78rem; letter-spacing: -0.5px; }
 
-        /* Special inputs */
         .tdr-input { background: #fff8e1 !important; border-color: #ffb74d !important; color: #e65100 !important; }
         .vap-input { background: #eef1f6 !important; border-color: #a8b5c8 !important; color: #1b3a5c !important; }
         .dew-input { background: #ffebee !important; border-color: #ef9a9a !important; color: #c62828 !important; font-weight: 900; }
 
-        /* Measurement card */
         .measure-card {
             background: var(--bg-card-alt);
             border: 1px solid var(--border-color);
@@ -192,14 +185,12 @@
             box-shadow: 0 0 6px rgba(184,134,11,0.4);
         }
 
-        /* Scan animation */
         @keyframes scan-pulse {
             0%, 100% { border-color: var(--border-color); box-shadow: none; }
             50% { border-color: #b8860b; box-shadow: 0 0 12px rgba(184,134,11,0.15); }
         }
         .scanning { animation: scan-pulse 1.2s infinite; }
 
-        /* ── Photo Upload ── */
         .photo-stack { display: flex; flex-direction: column; gap: 10px; }
         .upload-wrapper {
             background: var(--bg-card-alt);
@@ -254,7 +245,6 @@
         .add-photo-btn:hover { background: linear-gradient(180deg, #fff 0%, #eef1f5 100%); }
         .add-photo-btn:active { transform: translateY(2px); border-bottom-width: 1px; box-shadow: none; }
 
-        /* ── Legal & Buttons ── */
         .legal-box {
             background: #fff8e1;
             border: 1px solid #ffe0b2;
@@ -302,7 +292,6 @@
             box-shadow: 0 2px 8px rgba(15,36,64,0.2);
         }
 
-        /* ── Result Area ── */
         #result-area {
             display: none;
             background: var(--bg-card);
@@ -357,7 +346,6 @@
 
         .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
 
-        /* Analysis content markdown styling */
         #analysis-content { font-size: 0.9rem; line-height: 1.8; color: var(--text-primary); }
         #analysis-content h2 {
             font-size: 1rem; font-weight: 800; margin: 28px 0 12px;
@@ -392,11 +380,8 @@
         #analysis-content table th { background: #eef1f6; color: #1b3a5c; font-weight: 700; }
         #analysis-content table td { color: var(--text-secondary); }
 
-        /* Loading */
         @keyframes spin-glow { to { transform: rotate(360deg); } }
-        .loading-wrap {
-            text-align: center; padding: 50px 20px;
-        }
+        .loading-wrap { text-align: center; padding: 50px 20px; }
         .loading-spinner {
             width: 48px; height: 48px;
             border: 3px solid #d0d5de;
@@ -408,7 +393,6 @@
         .loading-text { color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
         .loading-text strong { color: #1b3a5c; }
 
-        /* Footer */
         .footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
         .footer-btn {
             padding: 14px;
@@ -453,7 +437,6 @@
 
         .footer-info { text-align: center; margin-top: 30px; padding: 20px; color: var(--text-muted); font-size: 0.75rem; }
 
-        /* Status indicator */
         .status-dot {
             width: 6px; height: 6px; border-radius: 50%;
             display: inline-block;
@@ -463,7 +446,6 @@
         }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* Air quality reference card */
         .ref-card {
             background: #ffebee;
             border: 1px solid #ef9a9a;
@@ -479,7 +461,18 @@
         }
         .hint-text.center { text-align: center; }
 
-        /* ── Mobile optimization ── */
+        /* Auto-fill success indicator */
+        @keyframes autofill-success {
+            0% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(76,175,80,0); }
+            100% { box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+        }
+        .autofill-success {
+            animation: autofill-success 0.8s ease-out;
+            border-color: #4caf50 !important;
+            background: #e8f5e9 !important;
+        }
+
         @media (max-width: 640px) {
             body { padding-bottom: 60px; }
             .content { padding: 6px; }
@@ -579,11 +572,11 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:8px;">
                     <div class="input-group">
                         <label class="input-label">실내온도(Ti)</label>
-                        <input type="number" id="temp-in" placeholder="Auto" oninput="calcDewPoint()">
+                        <input type="number" id="temp-in" placeholder="MR277 Auto" oninput="calcDewPoint()">
                     </div>
                     <div class="input-group">
                         <label class="input-label">상대습도(RH)</label>
-                        <input type="number" id="humid-in" placeholder="Auto" oninput="calcDewPoint()">
+                        <input type="number" id="humid-in" placeholder="MR277 Auto" oninput="calcDewPoint()">
                     </div>
                     <div class="input-group">
                         <label class="input-label">🔥 노점온도(Tdp)</label>
@@ -597,8 +590,8 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div class="input-group">
                         <label class="input-label">📉 표면온도(Tsi)</label>
-                        <input type="number" id="temp-surf" class="tdr-input" placeholder="열화상 Auto">
-                        <div class="hint-text center">* 열화상 최저값 자동 입력</div>
+                        <input type="number" id="temp-surf" class="tdr-input" placeholder="MR12 Auto">
+                        <div class="hint-text center">* MR12 볼프로브 또는 열화상 자동입력</div>
                     </div>
                     <div class="input-group">
                         <label class="input-label">외기온도(To)</label>
@@ -613,11 +606,11 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div class="input-group">
                         <label class="input-label">VAP (수증기압)</label>
-                        <input type="number" id="vap-val" class="vap-input" placeholder="kPa" step="0.01">
+                        <input type="number" id="vap-val" class="vap-input" placeholder="MR277 Auto" step="0.01">
                     </div>
                     <div class="input-group">
                         <label class="input-label">MIX (절대습도)</label>
-                        <input type="number" id="mix-val" class="vap-input" placeholder="g/kg" step="0.01">
+                        <input type="number" id="mix-val" class="vap-input" placeholder="MR277 Auto" step="0.01">
                     </div>
                 </div>
                 <div class="hint-text">* MR277 사진 등록 시 자동 입력됨</div>
@@ -668,7 +661,7 @@
                     <div class="upload-type-badge badge-mr277"><i class="fas fa-ruler-combined"></i> 4. FLIR MR277 (VAP 계측)</div>
                     <label for="img-mr277" class="upload-box">
                         <i class="fas fa-ruler-combined upload-icon" style="color:var(--accent-blue);"></i>
-                        <span>MR277 화면</span>
+                        <span>MR277 화면 → Ti, RH, VAP, MIX 자동입력</span>
                         <img id="view-mr277" class="preview-img">
                     </label>
                     <input type="file" id="img-mr277" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr277')">
@@ -676,13 +669,13 @@
                 </div>
 
                 <div class="upload-wrapper">
-                    <div class="upload-type-badge badge-mr12"><i class="fas fa-bullseye"></i> 5. FLIR MR12 볼 프로브</div>
+                    <div class="upload-type-badge badge-mr12"><i class="fas fa-bullseye"></i> 5. FLIR MR12 볼 프로브 → 표면온도(Tsi) 자동입력</div>
                     <label for="img-mr12" class="upload-box">
                         <i class="fas fa-bullseye upload-icon" style="color:var(--accent-cyan);"></i>
-                        <span>함수율 측정 이미지</span>
+                        <span>볼 프로브 측정 화면 → Tsi 자동입력</span>
                         <img id="view-mr12" class="preview-img">
                     </label>
-                    <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr12')">
                     <button class="add-photo-btn" onclick="addPhotoInput(this, '볼 프로브')"><i class="fas fa-plus"></i> 사진 추가</button>
                 </div>
 
@@ -867,14 +860,36 @@
         }
     };
 
+    // ── 자동입력 성공 시 시각적 피드백 ──
+    function showAutoFillSuccess(elementId, value) {
+        const el = document.getElementById(elementId);
+        if(el && value !== undefined && value !== null) {
+            el.value = value;
+            el.classList.remove('scanning');
+            el.classList.add('autofill-success');
+            setTimeout(() => el.classList.remove('autofill-success'), 1500);
+        }
+    }
+
     window.autoFillFromImage = async function(input, type) {
         if(!input.files || !input.files[0]) return;
-        const targetIds = type === 'mr277' ? ['temp-in','humid-in','vap-val','mix-val'] : ['temp-surf'];
+
+        // 각 타입별 대상 필드 지정
+        let targetIds = [];
+        if(type === 'mr277') {
+            targetIds = ['temp-in','humid-in','vap-val','mix-val'];
+        } else if(type === 'thermal') {
+            targetIds = ['temp-surf'];
+        } else if(type === 'mr12') {
+            targetIds = ['temp-surf'];
+        }
+
         targetIds.forEach(id => {
             document.getElementById(id).classList.add('scanning');
             document.getElementById(id).value = '';
-            document.getElementById(id).placeholder = "Scanning...";
+            document.getElementById(id).placeholder = "AI Scanning...";
         });
+
         try {
             const file = input.files[0];
             const reader = new FileReader();
@@ -888,35 +903,69 @@
 
             let prompt = "";
             if(type === 'mr277') {
-                prompt = `Analyze this FLIR MR277 instrument screen. Extract numerical values for:
-                    1. Temperature (C)
-                    2. Relative Humidity (%)
-                    3. Vapor Pressure (VAP, kPa)
-                    4. Mixing Ratio (Mix, g/kg or GPP)
-                    Return ONLY a JSON object: {"temp": number, "humid": number, "vap": number, "mix": number}.`;
+                prompt = `You are analyzing a FLIR MR277 moisture meter instrument screen photo.
+                    Extract ALL numerical values visible on the screen:
+                    1. Temperature (Air temperature, labeled as AIR, T, or °C) - this is the indoor room temperature
+                    2. Relative Humidity (labeled as RH, %) 
+                    3. Vapor Pressure (labeled as VAP, in kPa)
+                    4. Mixing Ratio (labeled as MIX, in g/kg or GPP)
+                    
+                    Also look for DEW point temperature if visible.
+                    
+                    IMPORTANT: Read the numbers carefully from the instrument display.
+                    Return ONLY a JSON object with no other text:
+                    {"temp": number, "humid": number, "vap": number, "mix": number}
+                    
+                    If a value is not visible, use null for that field.`;
             } else if(type === 'thermal') {
-                prompt = `Analyze this thermal camera image. Find 'Minimum' (Lo/Min) temperature. Return ONLY a JSON object: {"min_temp": number}.`;
+                prompt = `You are analyzing a thermal camera (infrared) image.
+                    Find the MINIMUM temperature value shown in the image.
+                    Look for labels like: Lo, Min, minimum, or the lowest temperature in the color scale.
+                    Also check for any cursor/crosshair temperature readings.
+                    
+                    Return ONLY a JSON object with no other text:
+                    {"min_temp": number}`;
+            } else if(type === 'mr12') {
+                prompt = `You are analyzing a FLIR MR12 ball probe (볼 프로브) or surface temperature measurement device screen.
+                    This device measures SURFACE TEMPERATURE of walls, windows, floors etc.
+                    
+                    Extract the surface temperature reading from the display.
+                    Look for:
+                    - The main large temperature number on screen
+                    - Any value labeled as surface temp, Tsi, T, or °C
+                    - If multiple readings exist, extract the primary/main displayed temperature
+                    
+                    Return ONLY a JSON object with no other text:
+                    {"surface_temp": number}`;
             }
+
             const result = await model.generateContent({
                 contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Data } }] }]
             });
             const response = await result.response;
             const text = response.text();
             const jsonMatch = text.match(/\{[\s\S]*\}/);
+
             if(jsonMatch) {
                 const data = JSON.parse(jsonMatch[0]);
+
                 if(type === 'mr277') {
-                    if(data.temp) document.getElementById('temp-in').value = data.temp;
-                    if(data.humid) document.getElementById('humid-in').value = data.humid;
-                    if(data.vap) document.getElementById('vap-val').value = data.vap;
-                    if(data.mix) document.getElementById('mix-val').value = data.mix;
+                    if(data.temp != null) showAutoFillSuccess('temp-in', data.temp);
+                    if(data.humid != null) showAutoFillSuccess('humid-in', data.humid);
+                    if(data.vap != null) showAutoFillSuccess('vap-val', data.vap);
+                    if(data.mix != null) showAutoFillSuccess('mix-val', data.mix);
                     calcDewPoint();
                 } else if(type === 'thermal') {
-                    if(data.min_temp) document.getElementById('temp-surf').value = data.min_temp;
+                    if(data.min_temp != null) showAutoFillSuccess('temp-surf', data.min_temp);
+                } else if(type === 'mr12') {
+                    if(data.surface_temp != null) showAutoFillSuccess('temp-surf', data.surface_temp);
                 }
             }
         } catch(e) {
-            targetIds.forEach(id => document.getElementById(id).placeholder = "직접입력");
+            console.error('Auto-fill error:', e);
+            targetIds.forEach(id => {
+                document.getElementById(id).placeholder = "직접 입력";
+            });
         } finally {
             targetIds.forEach(id => document.getElementById(id).classList.remove('scanning'));
         }
@@ -1154,4 +1203,3 @@
 </script>
 </body>
 </html>
-
