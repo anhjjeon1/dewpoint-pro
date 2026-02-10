@@ -899,7 +899,7 @@
             });
             const base64Data = await base64Promise;
             const genAI = new GoogleGenerativeAI(API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             let prompt = "";
             if(type === 'mr277') {
@@ -1069,7 +1069,7 @@
 
         try {
             const genAI = new GoogleGenerativeAI(API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const dbContext = JSON.stringify(CONDENSATION_DB);
 
             const prompt = `
