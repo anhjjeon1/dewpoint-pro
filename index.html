@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v27.1 Pro)</title>
+    <title>청개구리 결로진단 AI (v27.4 Pro)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
@@ -508,7 +508,7 @@
             <div class="header-logo"><i class="fas fa-microscope"></i></div>
             <div class="header-title"><span>청개구리</span> 결로진단 AI</div>
         </div>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.1 PRO</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.4 PRO</span>
     </header>
 
     <div class="content">
@@ -586,17 +586,48 @@
             </div>
 
             <div class="measure-card">
-                <div class="measure-card-title">표면 & 외기 온도</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="measure-card-title">표면 & 외기 온도 · TDR 자동산출</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
                     <div class="input-group">
                         <label class="input-label">📉 표면온도(Tsi)</label>
-                        <input type="number" id="temp-surf" class="tdr-input" placeholder="MR12 Auto">
-                        <div class="hint-text center">* MR12 볼프로브 또는 열화상 자동입력</div>
+                        <input type="number" id="temp-surf" class="tdr-input" placeholder="열화상 Auto" oninput="calcTDR()">
+                        <div class="hint-text center">* 열화상 최저온도 자동입력</div>
                     </div>
                     <div class="input-group">
                         <label class="input-label">외기온도(To)</label>
                         <input type="text" id="temp-out" placeholder="Loading.." style="background:var(--bg-card-alt);">
                     </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="input-group">
+                        <label class="input-label">⚡ TDR (온도차이비율)</label>
+                        <input type="text" id="tdr-result" placeholder="자동계산" readonly class="dew-input" style="background:#fff3e0 !important; border-color:#ff9800 !important; color:#e65100 !important;">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">📋 TDR 분석</label>
+                        <input type="text" id="tdr-judge" placeholder="─" readonly style="font-size:0.75rem; font-weight:800; background:#f5f5f5;">
+                    </div>
+                </div>
+                <div class="ref-card" style="margin-top:8px; margin-bottom:0; background:#fff8e1; border-color:#ffe0b2; color:#e65100;">
+                    ※ TDR 기준: 0.28 초과 → 단열성능 미달 의심 | 0.28 이하 → 단열 양호 (환기 부족 의심)
+                </div>
+            </div>
+
+            <div class="measure-card">
+                <div class="measure-card-title"><i class="fas fa-tint" style="margin-right:4px;"></i> 함수율 (Moisture Content)</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="input-group">
+                        <label class="input-label">함수율 MC(%)</label>
+                        <input type="number" id="mc-val" class="vap-input" placeholder="MR12 Auto" step="0.1">
+                        <div class="hint-text center">* MR12 볼프로브 자동입력</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">📋 함수율 분석</label>
+                        <input type="text" id="mc-judge" placeholder="─" readonly style="font-size:0.75rem; font-weight:800; background:#f5f5f5;">
+                    </div>
+                </div>
+                <div class="ref-card" style="margin-top:8px; margin-bottom:0;">
+                    ※ 함수율 기준: 17% 이상 → 과습(결로 흔적), 25% 이상 → 심각(누수 의심)
                 </div>
             </div>
 
@@ -647,10 +678,10 @@
                 </div>
 
                 <div class="upload-wrapper">
-                    <div class="upload-type-badge badge-thermal"><i class="fas fa-temperature-high"></i> 3. 열화상 카메라</div>
+                    <div class="upload-type-badge badge-thermal"><i class="fas fa-temperature-high"></i> 3. 열화상 카메라 → 표면온도(Tsi) 자동입력</div>
                     <label for="img-thermal" class="upload-box">
                         <i class="fas fa-temperature-high upload-icon" style="color:var(--accent-orange);"></i>
-                        <span>열화상 이미지</span>
+                        <span>열화상 이미지 → 최저온도(Tsi) 자동입력</span>
                         <img id="view-thermal" class="preview-img">
                     </label>
                     <input type="file" id="img-thermal" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'thermal')">
@@ -669,10 +700,10 @@
                 </div>
 
                 <div class="upload-wrapper">
-                    <div class="upload-type-badge badge-mr12"><i class="fas fa-bullseye"></i> 5. FLIR MR12 볼 프로브 → 표면온도(Tsi) 자동입력</div>
+                    <div class="upload-type-badge badge-mr12"><i class="fas fa-bullseye"></i> 5. FLIR MR12 볼 프로브 → 함수율(MC%) 자동입력</div>
                     <label for="img-mr12" class="upload-box">
                         <i class="fas fa-bullseye upload-icon" style="color:var(--accent-cyan);"></i>
-                        <span>볼 프로브 측정 화면 → Tsi 자동입력</span>
+                        <span>볼 프로브 측정 화면 → 함수율 자동입력</span>
                         <img id="view-mr12" class="preview-img">
                     </label>
                     <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr12')">
@@ -695,7 +726,7 @@
         <!-- ───── Legal & Analyze ───── -->
         <div class="legal-box no-print">
             <strong>[분석 전 필수 동의]</strong><br>
-            본 리포트는 <strong>공개된 건축물리 표준 데이터(TDR, Dew Point 등)</strong>를 기반으로 AI가 생성한 '참고용 기술 소견'입니다. '기술사법'에 의한 공인 감정서가 아니며, 법적 분쟁의 증거로 효력이 없습니다.
+            본 리포트는 <strong>공개된 건축물리 표준 데이터(TDR, Dew Point 등)</strong>를 기반으로 AI가 생성한 <strong>'참고용 데이터 분석 자료'</strong>입니다. 공인 기관의 공식 분석이 아니며, 법적 분쟁의 증거로 사용할 수 없습니다.
             <label class="legal-check">
                 <input type="checkbox" id="legal-agree" onchange="toggleAnalyzeBtn()">
                 위 내용을 확인하였으며 동의합니다.
@@ -710,13 +741,13 @@
         <div id="result-area">
             <div class="section-title" style="margin-top:0;">
                 <div class="icon-wrap icon-cyan"><i class="fas fa-file-signature"></i></div>
-                결로 정밀 진단 소견서
+                결로 AI 데이터 분석 리포트
             </div>
 
             <div class="report-badge">
                 <i class="fas fa-check-circle"></i>
-                본 결과는 <strong>건축 물리 표준 데이터 및 하자 사례 빅데이터</strong>를 근거로 TDR(온도차이비율) 및 VAP/MIX(공기질) 분석을 수행한 결과입니다.
-                <br><strong>Gemini 2.5 Flash</strong> 모델 기반 전문 분석.
+                본 결과는 <strong>건축 물리 표준 데이터 및 하자 사례 빅데이터</strong>를 근거로 TDR(온도차이비율) 및 VAP/MIX(공기질) 분석을 수행한 <strong>AI 자동 분석 결과</strong>입니다.
+                <br><strong>Gemini 2.5 Flash</strong> 모델 기반 데이터 종합 분석.
             </div>
 
             <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:8px; font-weight:600;">[현장 채증 데이터]</div>
@@ -741,11 +772,11 @@
             <div id="chart-section" style="display:none; margin-top:30px; border-top:1px solid var(--border-color); padding-top:20px;">
                 <div class="section-title">
                     <div class="icon-wrap icon-blue"><i class="fas fa-chart-pie"></i></div>
-                    원인 귀책 사유 (추정)
+                    원인 비율 분석 (AI 데이터 추정)
                 </div>
                 <div id="chart_div" class="chart-container"></div>
                 <div style="margin-top:24px; font-size:0.68rem; color:var(--text-muted); text-align:center; border:1px solid var(--border-color); padding:10px; border-radius:8px;">
-                    ※ 본 문서는 AI 어시스턴트가 작성한 비공식 소견서입니다. 법적 효력이 없으며, 정확한 원인 규명을 위해서는 전문 기술사의 현장 정밀 진단이 필요합니다.
+                    ※ 본 문서는 AI가 공개 데이터를 종합·분석하여 작성한 참고용 자료입니다. 법적 효력이 없으며, 정확한 원인 규명을 위해서는 별도의 현장 정밀 조사가 필요합니다.
                 </div>
             </div>
         </div>
@@ -842,6 +873,39 @@
             const dp = (b*alpha)/(a-alpha);
             document.getElementById('dew-result').value = dp.toFixed(1) + "°C";
         }
+        calcTDR();
+    }
+
+    window.calcTDR = function() {
+        const ti = parseFloat(document.getElementById('temp-in').value);
+        const to = parseFloat(document.getElementById('temp-out').value);
+        const tsi = parseFloat(document.getElementById('temp-surf').value);
+        const tdrResult = document.getElementById('tdr-result');
+        const tdrJudge = document.getElementById('tdr-judge');
+        if(!isNaN(ti) && !isNaN(to) && !isNaN(tsi)) {
+            let den = ti - to;
+            if(den === 0) den = 0.01;
+            const tdr = (ti - tsi) / den;
+            tdrResult.value = tdr.toFixed(3);
+            if(tdr > 0.28) {
+                tdrJudge.value = "⛔ 단열성능 미달 의심";
+                tdrJudge.style.color = "#b71c1c";
+                tdrJudge.style.background = "#ffebee";
+            } else if(tdr > 0.22) {
+                tdrJudge.value = "⚠️ 경계 구간 (주의)";
+                tdrJudge.style.color = "#e65100";
+                tdrJudge.style.background = "#fff8e1";
+            } else {
+                tdrJudge.value = "✅ 단열 양호 (환기 점검)";
+                tdrJudge.style.color = "#2e7d32";
+                tdrJudge.style.background = "#e8f5e9";
+            }
+        } else {
+            tdrResult.value = "";
+            tdrResult.placeholder = "자동계산";
+            tdrJudge.value = "";
+            tdrJudge.placeholder = "─";
+        }
     }
 
     window.handleImage = function(input) {
@@ -881,7 +945,7 @@
         } else if(type === 'thermal') {
             targetIds = ['temp-surf'];
         } else if(type === 'mr12') {
-            targetIds = ['temp-surf'];
+            targetIds = ['mc-val'];
         }
 
         targetIds.forEach(id => {
@@ -918,25 +982,34 @@
                     
                     If a value is not visible, use null for that field.`;
             } else if(type === 'thermal') {
-                prompt = `You are analyzing a thermal camera (infrared) image.
-                    Find the MINIMUM temperature value shown in the image.
-                    Look for labels like: Lo, Min, minimum, or the lowest temperature in the color scale.
-                    Also check for any cursor/crosshair temperature readings.
+                prompt = `You are an expert at reading thermal/infrared camera images (FLIR, testo, etc.).
+                    Your task is to find the MINIMUM (lowest) surface temperature in this thermal image.
+                    
+                    Look for these indicators IN ORDER OF PRIORITY:
+                    1. "Lo" or "Min" label with a temperature value (most reliable)
+                    2. The BOTTOM number on the color temperature scale bar (usually on the right side)
+                    3. A blue/purple/dark colored region with a temperature label
+                    4. Any crosshair/cursor showing a cold spot temperature
+                    5. If the image shows a range like "14.6°C ~ 19.2°C", the LOWER number is the min
+                    
+                    CRITICAL: Extract the actual number precisely. Include decimals if shown.
+                    For example, if you see "최소 14.6°C" or "Lo: 14.6" → min_temp is 14.6
                     
                     Return ONLY a JSON object with no other text:
                     {"min_temp": number}`;
             } else if(type === 'mr12') {
-                prompt = `You are analyzing a FLIR MR12 ball probe (볼 프로브) or surface temperature measurement device screen.
-                    This device measures SURFACE TEMPERATURE of walls, windows, floors etc.
+                prompt = `You are analyzing a FLIR MR12 ball probe (볼 프로브) moisture measurement device screen.
+                    This device measures MOISTURE CONTENT (함수율, MC%) of building materials like walls, floors, ceilings.
                     
-                    Extract the surface temperature reading from the display.
+                    Extract the moisture content reading from the display.
                     Look for:
-                    - The main large temperature number on screen
-                    - Any value labeled as surface temp, Tsi, T, or °C
-                    - If multiple readings exist, extract the primary/main displayed temperature
+                    - The main large number displayed on screen (this is usually the MC% value)
+                    - Any value labeled as MC, %, moisture, WME, or similar
+                    - The number shown with the ball probe icon
+                    - If the display shows "100" or similar large number, that is likely MC% or relative moisture
                     
                     Return ONLY a JSON object with no other text:
-                    {"surface_temp": number}`;
+                    {"moisture_content": number}`;
             }
 
             const result = await model.generateContent({
@@ -956,9 +1029,27 @@
                     if(data.mix != null) showAutoFillSuccess('mix-val', data.mix);
                     calcDewPoint();
                 } else if(type === 'thermal') {
-                    if(data.min_temp != null) showAutoFillSuccess('temp-surf', data.min_temp);
+                    if(data.min_temp != null) {
+                        showAutoFillSuccess('temp-surf', data.min_temp);
+                        calcTDR();
+                    }
                 } else if(type === 'mr12') {
-                    if(data.surface_temp != null) showAutoFillSuccess('temp-surf', data.surface_temp);
+                    if(data.moisture_content != null) {
+                        showAutoFillSuccess('mc-val', data.moisture_content);
+                        // 함수율 판정
+                        const mc = parseFloat(data.moisture_content);
+                        const mcJudge = document.getElementById('mc-judge');
+                        if(mc >= 25) {
+                            mcJudge.value = "⛔ 심각 (누수 의심)";
+                            mcJudge.style.color = "#b71c1c";
+                        } else if(mc >= 17) {
+                            mcJudge.value = "⚠️ 과습 (결로 흔적)";
+                            mcJudge.style.color = "#e65100";
+                        } else {
+                            mcJudge.value = "✅ 정상 범위";
+                            mcJudge.style.color = "#2e7d32";
+                        }
+                    }
                 }
             }
         } catch(e) {
@@ -1009,6 +1100,9 @@
         const consideration = document.getElementById('consideration').value;
         const vapVal = document.getElementById('vap-val').value;
         const mixVal = document.getElementById('mix-val').value;
+        const mcVal = document.getElementById('mc-val').value;
+        const tdrCalc = document.getElementById('tdr-result').value;
+        const tdrJudge = document.getElementById('tdr-judge').value;
 
         document.getElementById('rep-date').innerText = document.getElementById('date').value;
         document.getElementById('rep-loc').innerText = `${document.getElementById('dong').value}동 ${document.getElementById('ho').value}호 (${document.getElementById('location').value})`;
@@ -1073,22 +1167,41 @@
             const dbContext = JSON.stringify(CONDENSATION_DB);
 
             const prompt = `
-                당신은 '건축물리 박사'이자 '결로 진단 최고 전문가'이며 '하자 진단 감정사'입니다. 
-                제공된 현장 데이터와 [표준 데이터베이스]를 바탕으로 **최고 수준의 정밀 진단 보고서**를 작성하십시오.
+                당신은 건축물리 데이터를 기반으로 결로 현상을 분석하는 AI 시스템입니다.
+                제공된 현장 측정 데이터와 [참조 데이터베이스]를 바탕으로 **객관적 데이터 분석 리포트**를 작성하십시오.
                 
-                모든 분석은 과학적 근거와 수치 데이터에 기반하여 작성하고, 진단의 신뢰도를 높이기 위해 관련 건축 기준(KS F 2295, ISO 10211, 건축물 에너지절약 설계기준 등)을 인용하십시오.
+                ⚠️ 중요: 이 리포트는 AI가 공개 데이터를 종합·분석한 '참고용 자료'입니다.
+                - '전문가', '감정사', '소견서', '진단서', '감정', '기술사' 등 법적 자격을 암시하는 용어를 **절대 사용하지 마십시오**.
+                - 대신 'AI 데이터 분석', '데이터 기반 추정', '참고 자료', '분석 리포트' 등의 용어를 사용하십시오.
+                - '처방' 대신 '개선 방안', '권고' 대신 '참고 사항'으로 표현하십시오.
+                
+                모든 분석은 과학적 근거와 수치 데이터에 기반하여 작성하고, 관련 건축 기준(KS F 2295, ISO 10211, 건축물 에너지절약 설계기준 등)을 참조하십시오.
 
                 [참조 데이터베이스]
                 ${dbContext}
 
-                [현장 데이터]
+                [현장 측정 데이터]
                 - 구조/창호: ${winType} / ${houseType}
                 - **간봉 종류**: ${consideration}
                 - 실내: ${tempIn}°C / ${humid}% (노점: ${dew})
-                - 실외: ${tempOut}°C / 표면온도: ${tempSurf}°C
-                - 공기질(선택): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'}
+                - 실외: ${tempOut}°C / 표면온도(열화상 최저): ${tempSurf}°C
+                - 공기질: VAP ${vapVal || 'N/A'}kPa, MIX ${mixVal || 'N/A'}g/kg
+                - 함수율(MR12): ${mcVal || 'N/A'}%
                 - 증상: ${defect}
-                - **핵심 TDR 분석값**: ${tdrMsg}
+                - **TDR 산출값**: ${tdrCalc || '미산출'} (${tdrJudge || '분석 불가'})
+                - **핵심 TDR 분석**: ${tdrMsg}
+
+                [TDR(온도차이비율) 단열 분석 기준 - 반드시 적용]
+                - TDR = (Ti - Tsi) / (Ti - To)
+                - **TDR > 0.28**: 단열성능 미달 의심 → 시공 측 원인 가능성 높음
+                - **0.22 < TDR ≤ 0.28**: 경계 구간 → 복합 원인 분석 필요
+                - **TDR ≤ 0.22**: 단열 양호 → 환기 부족(사용자 측) 원인 가능성 높음
+                - KS F 2295 기준 TDR 0.28은 결로방지 성능 최소 기준임을 명시
+                
+                [함수율(MC%) 분석 기준]
+                - **MC < 17%**: 정상 범위
+                - **17% ≤ MC < 25%**: 과습 (결로 흔적 존재)
+                - **MC ≥ 25%**: 심각 (누수 또는 지속적 결로 의심)
 
                 [특별 지시사항 (반드시 준수)]
                 1. **창호 종류 엄수**: ${windowSpecifics}
@@ -1096,23 +1209,25 @@
                 3. **창호 기밀성**: ${slidingLogic}
                 4. **공기질 분석(겨울철 기준 포함)**: ${airQualityLogic}
                 5. **콘크리트 특성**: ${concreteLogic}
-                6. **논리적 판정**: 
+                6. **논리적 분석**: 
                    - 표면온도가 노점온도보다 낮은지 확인 (T_surf < T_dp → 결로 발생)
-                   - TDR 0.28 기준 적용, VAP/MIX 종합하여 최종 귀책(사용자 vs 시공사) 추정
+                   - TDR 분석 기준을 반드시 적용하여 단열 성능 평가
+                   - VAP/MIX 기준 종합하여 주요 원인(사용자 환기 vs 시공 단열) 추정
+                   - 함수율 데이터가 있으면 결로 이력 판단에 활용
                    - 결로 발생 확률을 % 수치로 제시하십시오.
-                7. **금지어**: '기술사', '협회', '창호 교체 권유'
+                7. **금지어**: '전문가', '감정사', '소견서', '진단서', '기술사', '협회', '창호 교체 권유', '처방', '감정', '판정', '판정서', '공인'
 
                 [출력 포맷 - Markdown]
                 
-                ## 📊 1. 정밀 데이터 분석
+                ## 📊 1. 측정 데이터 종합 분석
                 
-                | 항목 | 측정값 | 기준값 | 판정 |
+                | 항목 | 측정값 | 기준값 | AI 해석 |
                 |------|--------|--------|------|
-                (TDR, 노점, 표면온도, VAP, MIX 등 테이블로 정리)
+                (TDR, 노점, 표면온도, VAP, MIX, 함수율 등 테이블로 정리)
                 
-                > **핵심 판정**: (결로 발생 여부와 확률을 한 문장으로)
+                > **AI 분석 결과**: (결로 발생 여부와 확률을 한 문장으로)
                 
-                ## 🔬 2. 진단 결과 및 발생 메커니즘
+                ## 🔬 2. 원인 분석 및 발생 메커니즘
                 
                 ### 2-1. 1차 원인 (Primary Cause)
                 (가장 유력한 원인을 데이터로 입증)
@@ -1123,19 +1238,21 @@
                 ### 2-3. 물리적 메커니즘
                 (결로 → 곰팡이 → 구조 손상 진행 과정 설명)
                 
-                ## 🛠️ 3. 전문가 처방 (Solution Plan)
+                ## 🛠️ 3. AI 기반 개선 방안
                 
                 ### [즉시 조치] (거주자 실행 가능)
                 (1~3개 구체적 방법)
                 
                 ### [단기 개선] (1~3개월 내)
-                (전문 보수 방법)
+                (보수 방법 참고 사항)
                 
                 ### [장기 대책] (근본 해결)
                 (구조적 개선안 - 교체 권유 제외)
                 
-                ## ⚖️ 4. 귀책 사유 분석
-                (사용자 과실 vs 시공 하자 비율 추정 및 근거)
+                ## ⚖️ 4. 원인 비율 분석 (AI 데이터 기반 추정)
+                (사용자 관리 요인 vs 시공·구조 요인 비율 추정 및 데이터 근거)
+                
+                > ⚠️ 본 분석은 AI가 공개된 건축물리 데이터를 종합한 참고 자료이며, 공인된 공식 분석이 아닙니다.
 
                 마지막에 아래 JSON 포함 (차트용):
                 ___JSON_START___
@@ -1183,7 +1300,7 @@
             ['기타 복합 요인', data.normal || 0]
         ]);
         var options = {
-            title: '귀책 사유 분석 (AI 추정)',
+            title: '원인 비율 분석 (AI 데이터 기반 추정)',
             titleTextStyle: { color: '#1b3a5c', fontSize: 13, bold: true },
             is3D: true,
             slices: {
