@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v27.8 Legal Safe)</title>
+    <title>청개구리 결로진단 AI (v27.9 Stable)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -301,7 +301,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.8 Legal Safe</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.9 Stable</span>
     </header>
 
     <div class="content">
@@ -505,11 +505,14 @@
                 <tr><th>구조/사양</th><td id="rep-type"></td></tr>
             </table>
 
-            <div id="loading-spinner" style="text-align:center; padding:40px; display:none;">
+            <div id="loading-spinner" style="text-align:center; padding:50px 20px; display:none; background:linear-gradient(135deg, #e8eaf6, #f3e5f5); border-radius:12px; margin:20px 0;">
                 <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary-main)"></i>
-                <p style="margin-top:20px; font-weight:bold; color:var(--text-secondary);">
-                    건축 물리 데이터 대조 중...<br>
-                    (겨울철 공기질 기준 적용 및 원인 판별)
+                <p style="margin-top:20px; font-weight:800; color:var(--primary-dark); font-size:1.05rem;">
+                    <i class="fas fa-brain" style="margin-right:5px;"></i> AI 정밀 분석 진행 중...
+                </p>
+                <p style="margin-top:8px; font-weight:500; color:var(--text-secondary); font-size:0.85rem;">
+                    건축 물리 데이터 대조 및 VAP/MIX 공기질 기준 적용 중<br>
+                    (약 15~30초 소요)
                 </p>
             </div>
             
@@ -893,7 +896,11 @@
             loading.style.display = 'block';
             contentDiv.style.display = 'none';
             chartSection.style.display = 'none';
-            window.scrollTo(0, 0);
+            
+            // 로딩 스피너가 화면에 보이도록 스크롤
+            setTimeout(() => {
+                loading.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
 
             let tdrVal = 0;
             let tdrMsg = "데이터 부족";
@@ -1068,8 +1075,19 @@
                 autoSavePdf();
 
             } catch(e) {
+                console.error('Analysis error:', e);
                 loading.style.display = 'none';
-                contentDiv.innerHTML = `<div style="color:red; text-align:center;">분석 중 오류 발생.<br>네트워크 상태를 확인하거나 사진 용량을 줄여주세요.</div>`;
+                contentDiv.style.display = 'block';
+                contentDiv.innerHTML = `<div style="color:#c62828; text-align:center; padding:30px; background:#ffebee; border-radius:10px; margin:20px 0;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:2rem; margin-bottom:10px;"></i>
+                    <p style="font-weight:800; font-size:1.1rem;">AI 분석 중 오류가 발생했습니다</p>
+                    <p style="font-size:0.85rem; margin-top:10px;">오류 내용: ${e.message || '알 수 없는 오류'}</p>
+                    <p style="font-size:0.8rem; color:#666; margin-top:15px;">
+                        • 네트워크 연결 상태를 확인해주세요<br>
+                        • 사진 용량이 너무 크면 줄여주세요<br>
+                        • 잠시 후 다시 시도해주세요
+                    </p>
+                </div>`;
             }
         };
 
