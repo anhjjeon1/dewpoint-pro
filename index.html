@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v28.2 Gemini25)</title>
+    <title>청개구리 결로진단 AI (v28.3 SavePath)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -251,7 +251,7 @@
         .btn-reserve { background: var(--expert-gold); }
         .btn-reserve:active { background: #e65100; }
 
-        /* 자동저장 토스트 알림 */
+        /* 자동저장 토스트 알림 - 경로 표시 포함 */
         .save-toast {
             position: fixed;
             top: 70px;
@@ -259,25 +259,43 @@
             transform: translateX(-50%) translateY(-20px);
             background: linear-gradient(135deg, #2e7d32, #43a047);
             color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
+            padding: 14px 20px;
+            border-radius: 14px;
             font-size: 0.85rem;
             font-weight: 700;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
             z-index: 9999;
             opacity: 0;
             transition: all 0.4s ease;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            max-width: 90%;
+            gap: 6px;
+            max-width: 92%;
             text-align: center;
+            pointer-events: none;
         }
         .save-toast.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .save-toast.saving {
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+        }
+        .save-toast.error {
+            background: linear-gradient(135deg, #c62828, #e53935);
         }
         .save-toast i { font-size: 1.1rem; }
+        .save-toast .toast-path {
+            font-size: 0.72rem;
+            font-weight: 400;
+            background: rgba(0,0,0,0.2);
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-top: 2px;
+            word-break: break-all;
+        }
 
         .legal-box { background: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.75rem; color: #e65100; line-height: 1.4; border: 1px solid #ffe0b2; }
         .legal-check { display: flex; align-items: center; margin-top: 10px; font-weight: bold; cursor: pointer; }
@@ -294,14 +312,14 @@
 
 <!-- 자동저장 토스트 -->
 <div class="save-toast" id="save-toast">
-    <i class="fas fa-check-circle"></i>
-    <span id="save-toast-msg">PDF 자동 저장 완료</span>
+    <div><i class="fas fa-check-circle"></i> <span id="save-toast-msg">PDF 자동 저장 완료</span></div>
+    <div class="toast-path" id="save-toast-path"></div>
 </div>
 
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.2 Gemini25</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.3 SavePath</span>
     </header>
 
     <div class="content">
@@ -709,13 +727,31 @@
             if(chk.checked) btn.classList.add('active'); else btn.classList.remove('active');
         };
 
-        // ★ 토스트 표시 함수
-        function showToast(msg, duration = 3000) {
+        // ★ 토스트 표시 함수 (경로 표시 + 상태 구분)
+        function showToast(msg, duration = 3000, options = {}) {
             const toast = document.getElementById('save-toast');
             const toastMsg = document.getElementById('save-toast-msg');
+            const toastPath = document.getElementById('save-toast-path');
+            
             toastMsg.textContent = msg;
+            
+            // 저장 경로 표시
+            if (options.path) {
+                toastPath.textContent = options.path;
+                toastPath.style.display = 'block';
+            } else {
+                toastPath.style.display = 'none';
+            }
+            
+            // 상태별 스타일
+            toast.classList.remove('saving', 'error');
+            if (options.status === 'saving') toast.classList.add('saving');
+            if (options.status === 'error') toast.classList.add('error');
+            
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), duration);
+            if (duration > 0) {
+                setTimeout(() => toast.classList.remove('show'), duration);
+            }
         }
 
         // ★ PDF 파일명 생성 함수
@@ -736,7 +772,7 @@
             }
 
             const filename = generatePdfFilename();
-            showToast(`📄 ${isAuto ? '자동' : 'PDF'} 저장 중: ${filename}`);
+            showToast(`📄 ${isAuto ? '자동' : 'PDF'} 저장 중...`, 0, { status: 'saving', path: `파일명: ${filename}` });
 
             try {
                 // 1) result-area를 클론하여 별도 컨테이너에 배치 (높이 제한 없이 전체 캡처)
@@ -825,9 +861,14 @@
                 // 3) 클론 제거
                 document.body.removeChild(clone);
                 
-                showToast(`✅ ${isAuto ? '자동' : ''} 저장 완료: ${filename}`, 4000);
+                showToast(`✅ ${isAuto ? '자동' : ''} 저장 완료!`, 5000, { 
+                    path: `📂 저장 위치: 내장메모리/Download/${filename}` 
+                });
             } catch(err) {
-                showToast(`❌ PDF 저장 실패. ${isAuto ? '수동 저장을 이용해주세요.' : '다시 시도해주세요.'}`, 3000);
+                showToast(`❌ PDF 저장 실패`, 4000, { 
+                    status: 'error', 
+                    path: isAuto ? '수동 저장 버튼을 이용해주세요' : '다시 시도해주세요' 
+                });
                 console.error('PDF save error:', err);
                 // 클론이 남아있으면 제거
                 const orphan = document.querySelector('[style*="-9999px"]');
