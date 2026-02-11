@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v28.3 SavePath)</title>
+    <title>청개구리 결로진단 AI (v28.4 PDF Fix)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -319,7 +319,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.3 SavePath</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.4 PDF Fix</span>
     </header>
 
     <div class="content">
@@ -763,7 +763,7 @@
             return `${dong}동${ho}호_결로진단보고서_${dateClean}.pdf`;
         }
 
-        // ★ PDF 생성 공통 함수 (클론 기반 - 전체 콘텐츠 캡처 보장)
+        // ★ PDF 생성 공통 함수 (원본 직접 캡처 - 모바일 호환)
         async function generatePdf(isAuto = false) {
             const resultArea = document.getElementById('result-area');
             if (resultArea.style.display === 'none' || resultArea.style.display === '') {
@@ -775,104 +775,113 @@
             showToast(`📄 ${isAuto ? '자동' : 'PDF'} 저장 중...`, 0, { status: 'saving', path: `파일명: ${filename}` });
 
             try {
-                // 1) result-area를 클론하여 별도 컨테이너에 배치 (높이 제한 없이 전체 캡처)
-                const clone = resultArea.cloneNode(true);
-                clone.style.position = 'absolute';
-                clone.style.left = '-9999px';
-                clone.style.top = '0';
-                clone.style.width = '550px';       // A4 너비에 맞춤
-                clone.style.display = 'block';
-                clone.style.overflow = 'visible';
-                clone.style.height = 'auto';
-                clone.style.maxHeight = 'none';
-                clone.style.border = '2px solid #283593';
-                clone.style.background = '#fff';
-                clone.style.padding = '20px';
+                // 1) 저장 전 스크롤 위치 기억
+                const savedScrollY = window.scrollY;
                 
-                // 로딩 스피너 제거 (분석 완료 후이므로)
-                const spinner = clone.querySelector('#loading-spinner');
-                if (spinner) spinner.style.display = 'none';
+                // 2) 하단 버튼 숨기기
+                const footerBtns = document.getElementById('footer-action-btns');
+                const footerOrigDisplay = footerBtns.style.display;
+                const footerOrigClass = footerBtns.className;
+                footerBtns.style.display = 'none';
+                footerBtns.classList.remove('sticky-bottom');
                 
-                // 분석 내용 & 차트 보이도록 강제 설정
-                const content = clone.querySelector('#analysis-content');
-                if (content) { content.style.display = 'block'; content.style.overflow = 'visible'; }
-                const chart = clone.querySelector('#chart-section');
-                if (chart) { chart.style.display = 'block'; chart.style.overflow = 'visible'; }
-                
-                // 차트를 이미지로 변환하여 삽입 (Google Charts는 SVG라 html2canvas에서 문제)
+                // 3) 차트 SVG → 이미지 변환 (Google Charts SVG는 html2canvas 호환 문제)
                 const chartDiv = document.getElementById('chart_div');
+                let chartOrigHTML = '';
                 if (chartDiv) {
                     const svg = chartDiv.querySelector('svg');
                     if (svg) {
-                        const svgData = new XMLSerializer().serializeToString(svg);
-                        const canvas = document.createElement('canvas');
-                        canvas.width = svg.clientWidth * 2 || 600;
-                        canvas.height = svg.clientHeight * 2 || 700;
-                        const ctx = canvas.getContext('2d');
-                        ctx.scale(2, 2);
-                        const img = new Image();
-                        const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-                        const url = URL.createObjectURL(svgBlob);
-                        
-                        await new Promise((resolve) => {
-                            img.onload = () => {
-                                ctx.drawImage(img, 0, 0);
-                                URL.revokeObjectURL(url);
-                                const cloneChartDiv = clone.querySelector('#chart_div');
-                                if (cloneChartDiv) {
-                                    cloneChartDiv.innerHTML = '';
+                        chartOrigHTML = chartDiv.innerHTML;
+                        try {
+                            const svgData = new XMLSerializer().serializeToString(svg);
+                            const canvas = document.createElement('canvas');
+                            const svgW = svg.clientWidth || 300;
+                            const svgH = svg.clientHeight || 300;
+                            canvas.width = svgW * 2;
+                            canvas.height = svgH * 2;
+                            const ctx = canvas.getContext('2d');
+                            ctx.scale(2, 2);
+                            const img = new Image();
+                            const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                            const url = URL.createObjectURL(svgBlob);
+                            
+                            await new Promise((resolve) => {
+                                img.onload = () => {
+                                    ctx.drawImage(img, 0, 0, svgW, svgH);
+                                    URL.revokeObjectURL(url);
+                                    chartDiv.innerHTML = '';
                                     const chartImg = document.createElement('img');
                                     chartImg.src = canvas.toDataURL('image/png');
                                     chartImg.style.width = '100%';
+                                    chartImg.style.maxWidth = '500px';
                                     chartImg.style.height = 'auto';
-                                    cloneChartDiv.appendChild(chartImg);
-                                    cloneChartDiv.style.height = 'auto';
-                                }
-                                resolve();
-                            };
-                            img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-                            img.src = url;
-                        });
+                                    chartDiv.appendChild(chartImg);
+                                    resolve();
+                                };
+                                img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+                                img.src = url;
+                            });
+                        } catch(svgErr) {
+                            console.warn('Chart SVG conversion failed:', svgErr);
+                        }
                     }
                 }
-                
-                document.body.appendChild(clone);
 
-                // 2) html2pdf로 클론 캡처
+                // 4) 페이지 맨 위로 스크롤 (html2canvas가 현재 뷰포트 기준으로 캡처하는 문제 방지)
+                window.scrollTo(0, 0);
+                
+                // 5) 약간 대기 (렌더링 안정화)
+                await new Promise(r => setTimeout(r, 500));
+
+                // 6) html2pdf로 원본 직접 캡처
                 const opt = {
                     margin:       [8, 5, 12, 5],
                     filename:     filename,
-                    image:        { type: 'jpeg', quality: 0.92 },
+                    image:        { type: 'jpeg', quality: 0.90 },
                     html2canvas:  { 
                         scale: 2, 
                         useCORS: true, 
-                        logging: false, 
+                        logging: false,
                         scrollY: 0,
                         scrollX: 0,
-                        windowWidth: 600,
+                        y: 0,
+                        x: 0,
+                        width: resultArea.scrollWidth,
+                        height: resultArea.scrollHeight,
+                        windowWidth: resultArea.scrollWidth,
                         allowTaint: true
                     },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['img', '.report-img-item', '.report-summary-table', 'tr'] }
+                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['.report-img-item', 'tr'] }
                 };
 
-                await html2pdf().set(opt).from(clone).save();
+                await html2pdf().set(opt).from(resultArea).save();
+
+                // 7) 차트 복원
+                if (chartOrigHTML && chartDiv) {
+                    chartDiv.innerHTML = chartOrigHTML;
+                }
                 
-                // 3) 클론 제거
-                document.body.removeChild(clone);
+                // 8) 하단 버튼 복원
+                footerBtns.style.display = footerOrigDisplay || 'flex';
+                footerBtns.className = footerOrigClass;
                 
+                // 9) 스크롤 복원
+                window.scrollTo(0, savedScrollY);
+
                 showToast(`✅ ${isAuto ? '자동' : ''} 저장 완료!`, 5000, { 
                     path: `📂 저장 위치: 내장메모리/Download/${filename}` 
                 });
             } catch(err) {
+                console.error('PDF save error:', err);
+                // 버튼 복원
+                const footerBtns = document.getElementById('footer-action-btns');
+                if (footerBtns) { footerBtns.style.display = 'flex'; footerBtns.classList.add('sticky-bottom'); }
+                
                 showToast(`❌ PDF 저장 실패`, 4000, { 
                     status: 'error', 
                     path: isAuto ? '수동 저장 버튼을 이용해주세요' : '다시 시도해주세요' 
                 });
-                console.error('PDF save error:', err);
-                // 클론이 남아있으면 제거
-                const orphan = document.querySelector('[style*="-9999px"]');
-                if (orphan && orphan.id !== 'result-area') orphan.remove();
             }
         }
 
