@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v26.16 Layout Fix)</title>
+    <title>청개구리 결로진단 AI (v27.5 AutoSave)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <!-- html2pdf for auto PDF save -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         /* --- [디자인 시스템] --- */
@@ -214,13 +216,65 @@
             box-shadow: 0 5px 15px rgba(26, 35, 126, 0.4); transform: translateY(-2px);
         }
 
-        .footer-btns { display: flex; gap: 10px; margin-top: 30px; }
+        /* ★ 하단 고정 버튼 영역 */
+        .footer-btns { 
+            display: flex; gap: 10px; margin-top: 30px; 
+            padding: 12px 10px;
+        }
+        /* 분석 후 하단 고정 스타일 */
+        .footer-btns.sticky-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: var(--container-max-width);
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+            z-index: 200;
+            padding: 12px 15px;
+            margin-top: 0;
+            border-top: 1px solid #e0e0e0;
+            box-sizing: border-box;
+        }
         .footer-btn {
             flex: 1; padding: 14px 0; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; color: white;
             display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn-pdf { background: #455a64; }
+        .btn-pdf:active { background: #37474f; }
         .btn-reserve { background: var(--expert-gold); }
+        .btn-reserve:active { background: #e65100; }
+
+        /* 자동저장 토스트 알림 */
+        .save-toast {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 90%;
+            text-align: center;
+        }
+        .save-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .save-toast i { font-size: 1.1rem; }
 
         .legal-box { background: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.75rem; color: #e65100; line-height: 1.4; border: 1px solid #ffe0b2; }
         .legal-check { display: flex; align-items: center; margin-top: 10px; font-weight: bold; cursor: pointer; }
@@ -228,17 +282,23 @@
         @media print {
             body { background: #fff; }
             .mobile-container { box-shadow: none; max-width: 100%; }
-            .no-print { display: none !important; }
+            .no-print, .footer-btns { display: none !important; }
             #result-area { display: block !important; border: 2px solid #000; }
         }
     </style>
 </head>
 <body>
 
+<!-- 자동저장 토스트 -->
+<div class="save-toast" id="save-toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="save-toast-msg">PDF 자동 저장 완료</span>
+</div>
+
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v26.16 Layout Fix</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.5 AutoSave</span>
     </header>
 
     <div class="content">
@@ -462,19 +522,21 @@
             </div>
         </div>
 
-        <div class="footer-btns no-print">
+        <!-- ★ 하단 버튼: no-print 대신 별도 ID로 관리, 분석 후에도 항상 표시 -->
+        <div class="footer-btns" id="footer-action-btns">
             <button class="footer-btn btn-reserve" onclick="window.location.href='tel:01023220949'">
                 <i class="fas fa-phone-alt"></i> 기술 상담 연결
             </button>
-            <button class="footer-btn btn-pdf" onclick="savePdf()">
+            <button class="footer-btn btn-pdf" onclick="savePdfAuto()">
                 <i class="fas fa-file-download"></i> PDF 보고서 저장
             </button>
         </div>
 
-        <div class="footer-info no-print" style="text-align:center; margin-top:30px; font-size:0.8rem; color:#aaa;">
+        <div class="footer-info no-print" style="text-align:center; margin-top:30px; font-size:0.8rem; color:#aaa; padding-bottom: 60px;">
             <p><strong>청개구리샤시</strong> | 데이터 기반 결로 솔루션</p>
         </div>
     </div>
+</div>
 
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
@@ -641,7 +703,87 @@
             if(chk.checked) btn.classList.add('active'); else btn.classList.remove('active');
         };
 
-        window.savePdf = function() { window.print(); };
+        // ★ 토스트 표시 함수
+        function showToast(msg, duration = 3000) {
+            const toast = document.getElementById('save-toast');
+            const toastMsg = document.getElementById('save-toast-msg');
+            toastMsg.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        // ★ PDF 파일명 생성 함수
+        function generatePdfFilename() {
+            const dong = document.getElementById('dong').value || '000';
+            const ho = document.getElementById('ho').value || '0000';
+            const dateVal = document.getElementById('date').value || '';
+            const dateClean = dateVal.replace(/\./g, '');
+            return `${dong}동${ho}호_결로진단보고서_${dateClean}.pdf`;
+        }
+
+        // ★ html2pdf 기반 자동 PDF 저장
+        window.savePdfAuto = function() {
+            const resultArea = document.getElementById('result-area');
+            if (resultArea.style.display === 'none' || resultArea.style.display === '') {
+                alert('먼저 분석을 실행해주세요.');
+                return;
+            }
+
+            const filename = generatePdfFilename();
+            showToast(`📄 PDF 저장 중: ${filename}`);
+
+            // 하단 버튼 잠시 숨기기 (PDF에 포함 방지)
+            const footerBtns = document.getElementById('footer-action-btns');
+            footerBtns.style.display = 'none';
+
+            const opt = {
+                margin:       [8, 5, 8, 5],
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 0.95 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(resultArea).save().then(() => {
+                footerBtns.style.display = 'flex';
+                showToast(`✅ 저장 완료: ${filename}`, 4000);
+            }).catch((err) => {
+                footerBtns.style.display = 'flex';
+                showToast('❌ PDF 저장 실패. 다시 시도해주세요.', 3000);
+                console.error('PDF save error:', err);
+            });
+        };
+
+        // ★ 자동 PDF 저장 (분석 완료 후 호출)
+        function autoSavePdf() {
+            setTimeout(() => {
+                const filename = generatePdfFilename();
+                showToast(`📄 자동 저장 중: ${filename}`);
+
+                const resultArea = document.getElementById('result-area');
+                const footerBtns = document.getElementById('footer-action-btns');
+                footerBtns.style.display = 'none';
+
+                const opt = {
+                    margin:       [8, 5, 8, 5],
+                    filename:     filename,
+                    image:        { type: 'jpeg', quality: 0.95 },
+                    html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                html2pdf().set(opt).from(resultArea).save().then(() => {
+                    footerBtns.style.display = 'flex';
+                    showToast(`✅ 자동 저장 완료: ${filename}`, 4000);
+                }).catch((err) => {
+                    footerBtns.style.display = 'flex';
+                    showToast('❌ 자동 저장 실패. 수동 저장을 이용해주세요.', 3000);
+                    console.error('Auto PDF save error:', err);
+                });
+            }, 2000); // 차트 렌더링 대기
+        }
 
         window.startAnalysis = async function() {
             const loading = document.getElementById('loading-spinner');
@@ -649,6 +791,7 @@
             const contentDiv = document.getElementById('analysis-content');
             const chartSection = document.getElementById('chart-section');
             const gallery = document.getElementById('report-photo-gallery');
+            const footerBtns = document.getElementById('footer-action-btns');
 
             const tempIn = document.getElementById('temp-in').value || 20;
             const tempOut = document.getElementById('temp-out').value || -5;
@@ -682,7 +825,15 @@
 
             if(imageParts.length === 0) { alert("사진을 최소 1장 이상 등록해주세요."); return; }
 
-            document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+            // ★ 수정: .no-print만 숨기되, footer-action-btns는 제외
+            document.querySelectorAll('.no-print').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // ★ 하단 버튼은 항상 표시 + 하단 고정 모드 전환
+            footerBtns.style.display = 'flex';
+            footerBtns.classList.add('sticky-bottom');
+
             resultArea.style.display = 'block';
             loading.style.display = 'block';
             contentDiv.style.display = 'none';
@@ -797,6 +948,9 @@
                 loading.style.display = 'none';
                 contentDiv.style.display = 'block';
 
+                // ★ 분석 완료 후 자동 PDF 저장
+                autoSavePdf();
+
             } catch(e) {
                 loading.style.display = 'none';
                 contentDiv.innerHTML = `<div style="color:red; text-align:center;">분석 중 오류 발생.<br>네트워크 상태를 확인하거나 사진 용량을 줄여주세요.</div>`;
@@ -815,7 +969,6 @@
                 is3D: true,
                 slices: { 0: { color: '#FFA726' }, 1: { color: '#EF5350', offset: 0.1 }, 2: { color: '#66BB6A' } },
                 backgroundColor: 'transparent',
-                // [수정: 좌측 차트 / 우측 범례 레이아웃]
                 chartArea: { left: 10, top: 20, width: '60%', height: '80%' },
                 legend: { position: 'right', alignment: 'center', textStyle: { color: '#333', fontSize: 12 } }
             };
@@ -825,5 +978,3 @@
     </script>
 </body>
 </html>
-
-
