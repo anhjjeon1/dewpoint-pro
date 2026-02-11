@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v28.0 Stable)</title>
+    <title>청개구리 결로진단 AI (v28.1 Gemini25)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -301,7 +301,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.0 Stable</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.1 Gemini25</span>
     </header>
 
     <div class="content">
@@ -651,7 +651,7 @@
                 });
                 const base64Data = await base64Promise;
                 const genAI = new GoogleGenerativeAI(API_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
 
                 let prompt = "";
                 if(type === 'mr277') {
@@ -1002,7 +1002,7 @@
 
             try {
                 const genAI = new GoogleGenerativeAI(API_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
 
                 const dbContext = JSON.stringify(CONDENSATION_DB);
                 
