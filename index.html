@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v28.4 PDF Fix)</title>
+    <title>청개구리 결로진단 AI (v28.5 Print PDF)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -301,10 +301,27 @@
         .legal-check { display: flex; align-items: center; margin-top: 10px; font-weight: bold; cursor: pointer; }
         
         @media print {
-            body { background: #fff; }
-            .mobile-container { box-shadow: none; max-width: 100%; }
-            .no-print, .footer-btns { display: none !important; }
-            #result-area { display: block !important; border: 2px solid #000; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+            .mobile-container { box-shadow: none !important; max-width: 100% !important; margin: 0 !important; }
+            .no-print, .footer-btns, .save-toast, .main-header { display: none !important; }
+            #result-area { 
+                display: block !important; 
+                border: none !important; 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                padding: 15px !important;
+                page-break-inside: auto !important;
+            }
+            #analysis-content { display: block !important; overflow: visible !important; }
+            #chart-section { display: block !important; overflow: visible !important; }
+            .report-gallery { page-break-inside: avoid !important; }
+            .report-img-item { page-break-inside: avoid !important; }
+            .report-summary-table { page-break-inside: avoid !important; }
+            .chart-container { page-break-inside: avoid !important; height: auto !important; }
+            #loading-spinner { display: none !important; }
+            h1, h2, h3 { page-break-after: avoid !important; }
+            img { max-width: 100% !important; page-break-inside: avoid !important; }
         }
     </style>
 </head>
@@ -319,7 +336,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.4 PDF Fix</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v28.5 Print PDF</span>
     </header>
 
     <div class="content">
@@ -763,7 +780,7 @@
             return `${dong}동${ho}호_결로진단보고서_${dateClean}.pdf`;
         }
 
-        // ★ PDF 생성 공통 함수 (원본 직접 캡처 - 모바일 호환)
+        // ★ PDF 생성 - window.print() 기반 (모바일 안정적)
         async function generatePdf(isAuto = false) {
             const resultArea = document.getElementById('result-area');
             if (resultArea.style.display === 'none' || resultArea.style.display === '') {
@@ -772,117 +789,27 @@
             }
 
             const filename = generatePdfFilename();
-            showToast(`📄 ${isAuto ? '자동' : 'PDF'} 저장 중...`, 0, { status: 'saving', path: `파일명: ${filename}` });
-
-            try {
-                // 1) 저장 전 스크롤 위치 기억
-                const savedScrollY = window.scrollY;
-                
-                // 2) 하단 버튼 숨기기
-                const footerBtns = document.getElementById('footer-action-btns');
-                const footerOrigDisplay = footerBtns.style.display;
-                const footerOrigClass = footerBtns.className;
-                footerBtns.style.display = 'none';
-                footerBtns.classList.remove('sticky-bottom');
-                
-                // 3) 차트 SVG → 이미지 변환 (Google Charts SVG는 html2canvas 호환 문제)
-                const chartDiv = document.getElementById('chart_div');
-                let chartOrigHTML = '';
-                if (chartDiv) {
-                    const svg = chartDiv.querySelector('svg');
-                    if (svg) {
-                        chartOrigHTML = chartDiv.innerHTML;
-                        try {
-                            const svgData = new XMLSerializer().serializeToString(svg);
-                            const canvas = document.createElement('canvas');
-                            const svgW = svg.clientWidth || 300;
-                            const svgH = svg.clientHeight || 300;
-                            canvas.width = svgW * 2;
-                            canvas.height = svgH * 2;
-                            const ctx = canvas.getContext('2d');
-                            ctx.scale(2, 2);
-                            const img = new Image();
-                            const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-                            const url = URL.createObjectURL(svgBlob);
-                            
-                            await new Promise((resolve) => {
-                                img.onload = () => {
-                                    ctx.drawImage(img, 0, 0, svgW, svgH);
-                                    URL.revokeObjectURL(url);
-                                    chartDiv.innerHTML = '';
-                                    const chartImg = document.createElement('img');
-                                    chartImg.src = canvas.toDataURL('image/png');
-                                    chartImg.style.width = '100%';
-                                    chartImg.style.maxWidth = '500px';
-                                    chartImg.style.height = 'auto';
-                                    chartDiv.appendChild(chartImg);
-                                    resolve();
-                                };
-                                img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-                                img.src = url;
-                            });
-                        } catch(svgErr) {
-                            console.warn('Chart SVG conversion failed:', svgErr);
-                        }
-                    }
-                }
-
-                // 4) 페이지 맨 위로 스크롤 (html2canvas가 현재 뷰포트 기준으로 캡처하는 문제 방지)
-                window.scrollTo(0, 0);
-                
-                // 5) 약간 대기 (렌더링 안정화)
-                await new Promise(r => setTimeout(r, 500));
-
-                // 6) html2pdf로 원본 직접 캡처
-                const opt = {
-                    margin:       [8, 5, 12, 5],
-                    filename:     filename,
-                    image:        { type: 'jpeg', quality: 0.90 },
-                    html2canvas:  { 
-                        scale: 2, 
-                        useCORS: true, 
-                        logging: false,
-                        scrollY: 0,
-                        scrollX: 0,
-                        y: 0,
-                        x: 0,
-                        width: resultArea.scrollWidth,
-                        height: resultArea.scrollHeight,
-                        windowWidth: resultArea.scrollWidth,
-                        allowTaint: true
-                    },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['.report-img-item', 'tr'] }
-                };
-
-                await html2pdf().set(opt).from(resultArea).save();
-
-                // 7) 차트 복원
-                if (chartOrigHTML && chartDiv) {
-                    chartDiv.innerHTML = chartOrigHTML;
-                }
-                
-                // 8) 하단 버튼 복원
-                footerBtns.style.display = footerOrigDisplay || 'flex';
-                footerBtns.className = footerOrigClass;
-                
-                // 9) 스크롤 복원
-                window.scrollTo(0, savedScrollY);
-
-                showToast(`✅ ${isAuto ? '자동' : ''} 저장 완료!`, 5000, { 
-                    path: `📂 저장 위치: 내장메모리/Download/${filename}` 
+            
+            if (isAuto) {
+                // 자동저장: 토스트로 안내만 (print 다이얼로그는 수동에서만)
+                showToast(`📄 분석 완료! PDF 저장은 하단 버튼을 눌러주세요`, 5000, { 
+                    path: `파일명: ${filename}` 
                 });
-            } catch(err) {
-                console.error('PDF save error:', err);
-                // 버튼 복원
-                const footerBtns = document.getElementById('footer-action-btns');
-                if (footerBtns) { footerBtns.style.display = 'flex'; footerBtns.classList.add('sticky-bottom'); }
-                
-                showToast(`❌ PDF 저장 실패`, 4000, { 
-                    status: 'error', 
-                    path: isAuto ? '수동 저장 버튼을 이용해주세요' : '다시 시도해주세요' 
-                });
+                return;
             }
+
+            showToast(`📄 PDF 저장 화면을 엽니다...`, 2000, { status: 'saving', path: `파일명: ${filename}` });
+
+            // print 스타일에서 result-area만 보이도록 이미 CSS가 설정되어 있음
+            // 약간 대기 후 print 호출
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    showToast(`✅ PDF 저장 방법`, 6000, { 
+                        path: `인쇄 화면에서 "PDF로 저장" 선택 → 저장 위치 지정` 
+                    });
+                }, 1000);
+            }, 500);
         }
 
         // ★ 수동 PDF 저장
