@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v27.5 AutoSave)</title>
+    <title>청개구리 결로진단 AI (v27.8 Legal Safe)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -171,7 +171,10 @@
         .add-photo-btn i { font-size: 0.9rem; }
 
         /* 결과 리포트 스타일 */
-        #result-area { margin-top: 30px; padding: 20px; background-color: #fff; border-radius: 15px; border: 2px solid var(--primary-main); display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        #result-area { margin-top: 30px; padding: 20px; background-color: #fff; border-radius: 15px; border: 2px solid var(--primary-main); display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: visible; }
+        #analysis-content { overflow: visible; word-break: break-word; }
+        #analysis-content h1, #analysis-content h2, #analysis-content h3 { color: var(--primary-dark); margin-top: 20px; }
+        #analysis-content p { margin-bottom: 12px; }
         .report-badge {
             background-color: #e8eaf6; color: var(--primary-dark); padding: 8px 12px; border-radius: 8px;
             font-size: 0.75rem; font-weight: 700; margin-bottom: 20px; border-left: 4px solid var(--primary-main);
@@ -298,7 +301,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.5 AutoSave</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v27.8 Legal Safe</span>
     </header>
 
     <div class="content">
@@ -490,7 +493,7 @@
             
             <div class="report-badge">
                 <i class="fas fa-check-circle"></i>
-                본 결과는 <strong>건축 물리 표준 데이터 및 하자 사례 빅데이터</strong>를 근거로 TDR(온도차이비율) 및 VAP/MIX(공기질) 분석을 수행한 결과입니다.
+                본 결과는 <strong>건축 물리 표준 데이터 및 결로 사례 빅데이터</strong>를 근거로 AI가 TDR(온도차이비율) 및 VAP/MIX(공기질) 분석을 수행한 <strong>참고용 기술 소견</strong>입니다.
             </div>
 
             <div class="input-label" style="margin-bottom:5px;">[현장 채증 데이터]</div>
@@ -513,11 +516,11 @@
             <div id="analysis-content" style="font-size:0.95rem; line-height:1.7;"></div>
             
             <div id="chart-section" style="display:none; margin-top:30px; border-top:2px dashed #eee; padding-top:20px;">
-                <div class="section-title"><i class="fas fa-chart-pie"></i> 원인 귀책 사유 (추정)</div>
+                <div class="section-title"><i class="fas fa-chart-pie"></i> 원인 비율 분석 (AI 추정)</div>
                 <div id="chart_div" class="chart-container"></div>
                 
                 <div style="margin-top:30px; font-size:0.7rem; color:#999; text-align:center; border:1px solid #ddd; padding:10px;">
-                    ※ 본 문서는 AI 어시스턴트가 작성한 비공식 소견서입니다. 법적 효력이 없으며, 정확한 원인 규명을 위해서는 전문 기술사의 현장 정밀 진단이 필요합니다.
+                    ※ 본 문서는 AI가 공개 데이터를 종합·분석하여 작성한 <strong>참고용 자료</strong>입니다. 법적 효력이 없으며, 특정 시공사 또는 개인의 책임을 판정하는 문서가 아닙니다. 정확한 원인 규명을 위해서는 별도의 현장 정밀 조사가 필요합니다.
                 </div>
             </div>
         </div>
@@ -721,68 +724,120 @@
             return `${dong}동${ho}호_결로진단보고서_${dateClean}.pdf`;
         }
 
-        // ★ html2pdf 기반 자동 PDF 저장
-        window.savePdfAuto = function() {
+        // ★ PDF 생성 공통 함수 (클론 기반 - 전체 콘텐츠 캡처 보장)
+        async function generatePdf(isAuto = false) {
             const resultArea = document.getElementById('result-area');
             if (resultArea.style.display === 'none' || resultArea.style.display === '') {
-                alert('먼저 분석을 실행해주세요.');
+                if (!isAuto) alert('먼저 분석을 실행해주세요.');
                 return;
             }
 
             const filename = generatePdfFilename();
-            showToast(`📄 PDF 저장 중: ${filename}`);
+            showToast(`📄 ${isAuto ? '자동' : 'PDF'} 저장 중: ${filename}`);
 
-            // 하단 버튼 잠시 숨기기 (PDF에 포함 방지)
-            const footerBtns = document.getElementById('footer-action-btns');
-            footerBtns.style.display = 'none';
+            try {
+                // 1) result-area를 클론하여 별도 컨테이너에 배치 (높이 제한 없이 전체 캡처)
+                const clone = resultArea.cloneNode(true);
+                clone.style.position = 'absolute';
+                clone.style.left = '-9999px';
+                clone.style.top = '0';
+                clone.style.width = '550px';       // A4 너비에 맞춤
+                clone.style.display = 'block';
+                clone.style.overflow = 'visible';
+                clone.style.height = 'auto';
+                clone.style.maxHeight = 'none';
+                clone.style.border = '2px solid #283593';
+                clone.style.background = '#fff';
+                clone.style.padding = '20px';
+                
+                // 로딩 스피너 제거 (분석 완료 후이므로)
+                const spinner = clone.querySelector('#loading-spinner');
+                if (spinner) spinner.style.display = 'none';
+                
+                // 분석 내용 & 차트 보이도록 강제 설정
+                const content = clone.querySelector('#analysis-content');
+                if (content) { content.style.display = 'block'; content.style.overflow = 'visible'; }
+                const chart = clone.querySelector('#chart-section');
+                if (chart) { chart.style.display = 'block'; chart.style.overflow = 'visible'; }
+                
+                // 차트를 이미지로 변환하여 삽입 (Google Charts는 SVG라 html2canvas에서 문제)
+                const chartDiv = document.getElementById('chart_div');
+                if (chartDiv) {
+                    const svg = chartDiv.querySelector('svg');
+                    if (svg) {
+                        const svgData = new XMLSerializer().serializeToString(svg);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = svg.clientWidth * 2 || 600;
+                        canvas.height = svg.clientHeight * 2 || 700;
+                        const ctx = canvas.getContext('2d');
+                        ctx.scale(2, 2);
+                        const img = new Image();
+                        const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                        const url = URL.createObjectURL(svgBlob);
+                        
+                        await new Promise((resolve) => {
+                            img.onload = () => {
+                                ctx.drawImage(img, 0, 0);
+                                URL.revokeObjectURL(url);
+                                const cloneChartDiv = clone.querySelector('#chart_div');
+                                if (cloneChartDiv) {
+                                    cloneChartDiv.innerHTML = '';
+                                    const chartImg = document.createElement('img');
+                                    chartImg.src = canvas.toDataURL('image/png');
+                                    chartImg.style.width = '100%';
+                                    chartImg.style.height = 'auto';
+                                    cloneChartDiv.appendChild(chartImg);
+                                    cloneChartDiv.style.height = 'auto';
+                                }
+                                resolve();
+                            };
+                            img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+                            img.src = url;
+                        });
+                    }
+                }
+                
+                document.body.appendChild(clone);
 
-            const opt = {
-                margin:       [8, 5, 8, 5],
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.95 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
-            html2pdf().set(opt).from(resultArea).save().then(() => {
-                footerBtns.style.display = 'flex';
-                showToast(`✅ 저장 완료: ${filename}`, 4000);
-            }).catch((err) => {
-                footerBtns.style.display = 'flex';
-                showToast('❌ PDF 저장 실패. 다시 시도해주세요.', 3000);
-                console.error('PDF save error:', err);
-            });
-        };
-
-        // ★ 자동 PDF 저장 (분석 완료 후 호출)
-        function autoSavePdf() {
-            setTimeout(() => {
-                const filename = generatePdfFilename();
-                showToast(`📄 자동 저장 중: ${filename}`);
-
-                const resultArea = document.getElementById('result-area');
-                const footerBtns = document.getElementById('footer-action-btns');
-                footerBtns.style.display = 'none';
-
+                // 2) html2pdf로 클론 캡처
                 const opt = {
-                    margin:       [8, 5, 8, 5],
+                    margin:       [8, 5, 12, 5],
                     filename:     filename,
-                    image:        { type: 'jpeg', quality: 0.95 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+                    image:        { type: 'jpeg', quality: 0.92 },
+                    html2canvas:  { 
+                        scale: 2, 
+                        useCORS: true, 
+                        logging: false, 
+                        scrollY: 0,
+                        scrollX: 0,
+                        windowWidth: 600,
+                        allowTaint: true
+                    },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['img', '.report-img-item', '.report-summary-table', 'tr'] }
                 };
 
-                html2pdf().set(opt).from(resultArea).save().then(() => {
-                    footerBtns.style.display = 'flex';
-                    showToast(`✅ 자동 저장 완료: ${filename}`, 4000);
-                }).catch((err) => {
-                    footerBtns.style.display = 'flex';
-                    showToast('❌ 자동 저장 실패. 수동 저장을 이용해주세요.', 3000);
-                    console.error('Auto PDF save error:', err);
-                });
-            }, 2000); // 차트 렌더링 대기
+                await html2pdf().set(opt).from(clone).save();
+                
+                // 3) 클론 제거
+                document.body.removeChild(clone);
+                
+                showToast(`✅ ${isAuto ? '자동' : ''} 저장 완료: ${filename}`, 4000);
+            } catch(err) {
+                showToast(`❌ PDF 저장 실패. ${isAuto ? '수동 저장을 이용해주세요.' : '다시 시도해주세요.'}`, 3000);
+                console.error('PDF save error:', err);
+                // 클론이 남아있으면 제거
+                const orphan = document.querySelector('[style*="-9999px"]');
+                if (orphan && orphan.id !== 'result-area') orphan.remove();
+            }
+        }
+
+        // ★ 수동 PDF 저장
+        window.savePdfAuto = function() { generatePdf(false); };
+
+        // ★ 자동 PDF 저장 (분석 완료 후 호출 - 차트 렌더링 대기 5초)
+        function autoSavePdf() {
+            setTimeout(() => { generatePdf(true); }, 5000);
         }
 
         window.startAnalysis = async function() {
@@ -864,14 +919,69 @@
             const isWinter = (currentMonth >= 11 || currentMonth <= 2);
             
             let airQualityLogic = "";
+            let vapMixDiagnosis = "";
             if(vapVal && mixVal) {
                 let winterGuide = "";
                 if(isWinter) {
                     winterGuide = "현재 진단 시점은 **겨울철**이며, **신축 아파트 기준 적정 공기질은 VAP 1.2kPa 이하, MIX 7.3g/kg 이하**입니다. 이 수치를 초과하면 환기 부족이 원인일 가능성이 높고, 이하라면 단열 미흡이 원인일 가능성이 큽니다.";
                 }
                 airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}`;
+                
+                // VAP/MIX 기준값 대비 상세 원인 판별 로직
+                const vapNum = parseFloat(vapVal);
+                const mixNum = parseFloat(mixVal);
+                const vapOver = vapNum > 1.2;
+                const mixOver = mixNum > 7.3;
+                
+                if(vapOver && mixOver) {
+                    vapMixDiagnosis = `
+                    8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
+                       - 측정값: VAP ${vapVal}kPa (기준 1.2kPa 대비 **${(vapNum - 1.2).toFixed(2)}kPa 초과**), MIX ${mixVal}g/kg (기준 7.3g/kg 대비 **${(mixNum - 7.3).toFixed(2)}g/kg 초과**)
+                       - VAP과 MIX 모두 기준 초과이므로, **실내 수증기 과다 상태**입니다.
+                       - 반드시 아래 3가지 원인 가능성을 **구체적으로 분석**하십시오:
+                         (A) **거주자 생활습관 원인**: 빨래 실내건조, 장시간 조리(가스레인지), 가습기 과다 사용, 환기 미실시, 욕실 문 개방, 수족관/어항, 실내 화분 과다 등 → 수증기 발생량 과다
+                         (B) **단열 성능 관련 원인** (AI 분석 소견): 벽체/창호 단열성능이 설계 기준 대비 미흡할 가능성 → 표면온도 저하 → 국부적 상대습도 상승 → 결로 발생 (이 경우 TDR값과 교차 검증)
+                         (C) **기타 복합 원인** (AI 분석 소견): 초기 건축물 습기(콘크리트 잔여 수분), 지하 습기 유입, 배관 누수 가능성, 환기 시스템(전열교환기) 미가동 또는 고장, 기밀성 저하에 의한 외부 습기 침투
+                       - TDR값(${tdrMsg})과 교차 분석하여 **주된 원인이 거주습관인지 단열 성능 부족인지** AI 소견을 제시하십시오.
+                    9. **[핵심] 원인별 맞춤 수리/개선 방법 (반드시 포함)**:
+                       - 각 원인(A/B/C)에 대해 **구체적이고 실행 가능한 수리/개선 방법**을 제시하십시오:
+                         (A) 거주습관 개선: 환기 횟수/시간(예: 1일 3회, 1회 10분 이상 맞통풍), 제습기 용량 및 설정습도, 빨래건조 방법 변경, 조리 시 레인지후드 사용법, 가습기 적정 사용량 등 **구체적 수치와 방법** 제시
+                         (B) 단열 보수: 열교 부위별 보수 방법(단열재 덧댐, 기밀테이프 시공, 단열간봉 교체, 창호 기밀보강 등), 예상 비용 범위, 시공 우선순위
+                         (C) 기타 수리: 전열교환기 필터 청소/가동법, 배관 누수 점검 방법, 욕실/주방 국소환기 개선 등`;
+                } else if(!vapOver && !mixOver) {
+                    vapMixDiagnosis = `
+                    8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
+                       - 측정값: VAP ${vapVal}kPa (기준 1.2kPa **이하**), MIX ${mixVal}g/kg (기준 7.3g/kg **이하**)
+                       - VAP과 MIX 모두 정상 범위이므로, **실내 수증기량은 적정 수준**입니다.
+                       - 이 경우 결로의 주원인은 **거주습관보다는 단열 성능 부족 가능성**이 AI 분석상 높게 나타납니다.
+                       - 반드시 아래를 **구체적으로 분석**하십시오:
+                         (A) **단열 성능 부족 가능성** (AI 분석 소견): 벽체/창호의 단열 성능이 현행 기준 대비 충분하지 않을 수 있으며, 이로 인해 표면온도가 노점 이하로 하락하여 결로가 발생하는 것으로 추정됨. TDR값(${tdrMsg})으로 참고.
+                         (B) **열교(Thermal Bridge) 부위 추정** (AI 분석 소견): 간봉, 프레임, 벽체 코너, 슬래브 접합부 등 열교 가능 위치 지적
+                         (C) **기타 원인** (AI 분석 소견): 기밀성 저하(외풍 침투 가능성), 초기 건축물 습기 잔존 가능성
+                    9. **[핵심] 원인별 맞춤 수리/개선 방법 (반드시 포함)**:
+                       - **단열 보강 중심**으로 구체적 개선 방법을 제시하십시오:
+                         (A) 열교 부위별 단열 보강: 코너부 단열재 덧댐(이보드/XPS), 간봉 교체(알루미늄→TPS/TGI), 창호 프레임 단열 보강, 기밀테이프/우레탄폼 충진
+                         (B) 단열 성능 개선: 성능 미흡 추정 부위의 보수/보강 방법 제시 (AI 분석 기반 권고사항이며, 정밀 현장 조사 후 확정 필요)
+                         (C) 보조 조치: 서큘레이터를 이용한 공기 순환, 결로 방지 히터 설치 등`;
+                } else {
+                    vapMixDiagnosis = `
+                    8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
+                       - 측정값: VAP ${vapVal}kPa (기준 1.2kPa ${vapOver ? '**초과**' : '이하'}), MIX ${mixVal}g/kg (기준 7.3g/kg ${mixOver ? '**초과**' : '이하'})
+                       - VAP과 MIX 중 일부만 기준 초과이므로 **복합 원인**이 의심됩니다.
+                       - 반드시 아래 3가지 원인을 **교차 분석**하십시오:
+                         (A) **거주습관 + 단열 복합 원인**: 경미한 수준의 수증기 과다와 부분적 단열 부족이 동시에 작용
+                         (B) **국소 환기 부족** (AI 분석 소견): 특정 공간(욕실, 주방, 드레스룸)의 환기 부족으로 국부적 습도 상승
+                         (C) **계절적 변동**: 측정 시점의 외기 조건에 따른 일시적 변동 가능성
+                       - TDR값(${tdrMsg})과 교차하여 주된 원인 비율을 AI 소견으로 제시하십시오.
+                    9. **[핵심] 원인별 맞춤 수리/개선 방법 (반드시 포함)**:
+                       - 복합 원인에 맞는 **병행 조치**를 제시하십시오:
+                         (A) 거주습관 일부 개선: 환기 빈도 증가(1일 3회 이상), 문제 공간 집중 환기
+                         (B) 단열 부분 보강: 열교 부위 우선 보수, 창호 기밀 보강
+                         (C) 환기 시스템: 전열교환기 가동, 욕실/주방 환풍기 상시 가동, 제습기 활용`;
+                }
             } else {
                 airQualityLogic = "VAP/MIX 데이터가 없으므로 TDR과 온습도 위주로 분석하십시오.";
+                vapMixDiagnosis = "";
             }
 
             let windowSpecifics = "";
@@ -913,17 +1023,23 @@
                     5. **콘크리트 특성**: ${concreteLogic}
                     6. **논리적 판정**: 
                        - 표면온도가 노점온도보다 낮은지 확인하십시오. (T_surf < T_dp 이면 결로 발생)
-                       - TDR 0.28 기준을 적용하되, VAP/MIX 값을 종합하여 최종 귀책(사용자 vs 시공사)을 추정하십시오.
-                    7. **금지어**: '기술사', '협회', '창호 교체 권유' (교체 대신 보수/개선 제안)
+                       - TDR 0.28 기준을 적용하되, VAP/MIX 값을 종합하여 **결로 원인 비율(환기 부족 vs 단열 성능 부족)**을 AI 소견으로 추정하십시오.
+                    7. **금지어**: '기술사', '협회', '창호 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송' (교체 대신 보수/개선 제안, 단정적 판정 대신 AI 분석 소견으로 표현)
+                    ※ **매우 중요**: 모든 분석 결과는 반드시 'AI 분석에 의한 추정 소견'임을 명시하십시오. '시공 하자', '시공 불량', '시공사 귀책' 등 법적 분쟁을 유발할 수 있는 표현은 절대 사용하지 마십시오. 대신 '단열 성능 개선 필요 부위(AI 추정)', '설계 기준 대비 성능 미흡 가능성(AI 분석)', '추가 정밀 진단 권고' 등의 중립적 표현을 사용하십시오.
+                    ${vapMixDiagnosis}
 
                     [출력 포맷]
                     Markdown 형식.
                     ## 1. 정밀 데이터 분석
                     (TDR, VAP/MIX, 노점, 표면온도 상호 관계 설명)
-                    ## 2. 진단 결과 및 발생 메커니즘
-                    (데이터에 근거한 원인 규명, 간봉/미서기/콘크리트 특성 반영)
-                    ## 3. 전문가 처방 (Solution)
-                    (단계별 해결책 - 교체 권유 제외, 공기질 개선법 포함)
+                    ## 2. 수증기압(VAP)/절대습도(MIX) 원인 판별 (AI 분석)
+                    (VAP/MIX 측정값의 기준 초과/미달 여부를 명시하고, 이것이 거주환경 관리 문제인지, 단열 성능 관련인지, 기타 원인인지 AI 소견으로 분석. VAP/MIX 데이터가 없으면 이 섹션 생략)
+                    ## 3. 진단 결과 및 발생 메커니즘 (AI 분석)
+                    (데이터에 근거한 원인 추정, 간봉/미서기/콘크리트 특성 반영. 모든 판단은 AI 분석에 의한 추정임을 명시)
+                    ## 4. 원인별 맞춤 개선/보수 방법 (AI 권고)
+                    (거주환경 개선법, 단열 보강 방법, 기타 개선 방법을 원인별로 구분하여 구체적 수치/방법/우선순위와 함께 제시. 교체 권유 제외. 정밀 현장 조사 후 확정 필요함을 안내.)
+                    ## 5. AI 종합 소견
+                    (AI 데이터 분석 기반 종합 의견, 긴급도, 향후 관리 방안 요약. 본 소견은 AI 분석에 의한 참고자료이며 법적 효력이 없음을 마지막에 명시.)
 
                     마지막에 아래 JSON 포함 (차트용):
                     ___JSON_START___
@@ -960,12 +1076,12 @@
         function drawChart(data) {
             var d = google.visualization.arrayToDataTable([
                 ['원인', '비율'],
-                ['사용자 환기 부족(생활습관)', data.ventilation],
-                ['단열/시공 미흡(구조체)', data.insulation],
-                ['기타 복합 요인', data.normal]
+                ['환기/거주환경 관련 (AI 추정)', data.ventilation],
+                ['단열 성능 관련 (AI 추정)', data.insulation],
+                ['기타 복합 요인 (AI 추정)', data.normal]
             ]);
             var options = {
-                title: '귀책 사유 분석 (AI 추정)',
+                title: '결로 원인 비율 분석 (AI 데이터 기반 추정)',
                 is3D: true,
                 slices: { 0: { color: '#FFA726' }, 1: { color: '#EF5350', offset: 0.1 }, 2: { color: '#66BB6A' } },
                 backgroundColor: 'transparent',
