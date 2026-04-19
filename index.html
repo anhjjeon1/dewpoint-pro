@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v30.0 Pro Design)</title>
+    <title>청개구리 결로진단 AI (v30.1 Photo Grid)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -170,40 +170,28 @@
         }
         .scanning { animation: scan-glow 1.5s infinite; transition: all 0.3s; }
 
-        /* 사진 업로드 UI */
-        .photo-stack { display: flex; flex-direction: column; gap: 14px; }
+        /* 사진 업로드 UI - 2열 그리드 (4:3) */
+        .photo-stack {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
         .upload-wrapper {
-            border: 1.5px solid var(--border-color); padding: 12px; border-radius: 12px;
+            border: 1.5px solid var(--border-color); padding: 10px; border-radius: 12px;
             background: var(--bg-color); position: relative; transition: all 0.2s;
         }
         .upload-wrapper.filled { border-color: var(--brand-accent); background: var(--accent-tint); }
 
         .upload-box {
-            border: 2px dashed var(--border-color); background-color: #fff; border-radius: 10px; width: 100%; aspect-ratio: 4 / 2.5;
+            border: 2px dashed var(--border-color); background-color: #fff; border-radius: 10px; width: 100%; aspect-ratio: 4 / 3;
             text-align: center; color: var(--text-muted); cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            position: relative; overflow: hidden; transition: all 0.2s; margin-bottom: 10px;
+            position: relative; overflow: hidden; transition: all 0.2s; margin-bottom: 0;
         }
         .upload-box:hover { border-color: var(--brand-accent); background: var(--accent-tint); color: var(--brand-accent); }
         .upload-icon { font-size: 1.8rem; margin-bottom: 6px; opacity: 0.8; }
         .preview-img { width: 100%; height: 100%; object-fit: contain; display: none; background: #0F172A; }
         .file-input { display: none; }
 
-        .add-photo-btn {
-            display: inline-flex;
-            align-items: center; justify-content: center; gap: 6px;
-            padding: 9px 16px;
-            background: #fff;
-            color: var(--brand-primary);
-            border: 1.5px solid var(--border-color); border-radius: 10px;
-            font-size: 0.8rem; font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(15,23,42,0.05);
-            transition: all 0.15s;
-            margin-top: 6px;
-        }
-        .add-photo-btn:hover { border-color: var(--brand-accent); color: var(--brand-accent); background: var(--accent-tint); }
-        .add-photo-btn:active { transform: translateY(1px); }
-        .add-photo-btn i { font-size: 0.9rem; color: var(--brand-accent); }
 
         /* 결과 리포트 스타일 */
         #result-area {
@@ -399,7 +387,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v29.0 Robust AI</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.1 Photo Grid</span>
     </header>
 
     <div class="content">
@@ -505,70 +493,63 @@
             <div class="photo-stack" id="photo-container">
                 
                 <div class="upload-wrapper" id="wrap-1">
-                    <label class="input-label">1. 결로/곰팡이 메인 (필수)</label>
+                    <label class="input-label" style="color:var(--brand-primary);">1. 결로/곰팡이 메인 (필수)</label>
                     <label for="img-1" class="upload-box">
-                        <i class="fas fa-camera upload-icon"></i>
-                        <span style="font-size:0.8rem;">터치하여 사진 촬영/선택</span>
+                        <i class="fas fa-camera upload-icon" style="color:var(--brand-accent);"></i>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">터치하여 촬영/선택</span>
                         <img id="view-1" class="preview-img">
                     </label>
                     <input type="file" id="img-1" class="file-input" accept="image/*" onchange="handleImage(this)">
-                    <button class="add-photo-btn" onclick="addPhotoInput(this, '추가 사진')">
-                        <i class="fas fa-plus-circle"></i> 사진 추가
-                    </button>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">2. UV (자외선) 형광 촬영</label>
+                    <label class="input-label" style="color:var(--brand-primary);">2. UV (자외선) 형광</label>
                     <label for="img-uv" class="upload-box">
                         <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.8rem; color:var(--text-secondary);">UV 형광 이미지</span>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">UV 형광 이미지</span>
                         <img id="view-uv" class="preview-img">
                     </label>
                     <input type="file" id="img-uv" class="file-input" accept="image/*" onchange="handleImage(this)">
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">3. 열화상 카메라 (Thermal)</label>
+                    <label class="input-label" style="color:var(--brand-primary);">3. 열화상 카메라</label>
                     <label for="img-thermal" class="upload-box">
                         <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.8rem; color:var(--text-secondary);">열화상 이미지</span>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">열화상 이미지</span>
                         <img id="view-thermal" class="preview-img">
                     </label>
                     <input type="file" id="img-thermal" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'thermal')">
-                    <button class="add-photo-btn" onclick="addPhotoInput(this, '열화상 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">4. FLIR MR277 (습도/VAP 계측)</label>
+                    <label class="input-label" style="color:var(--brand-primary);">4. FLIR MR277 (VAP)</label>
                     <label for="img-mr277" class="upload-box">
                         <i class="fas fa-ruler-combined upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.8rem; color:var(--text-secondary);">MR277 화면</span>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">MR277 화면</span>
                         <img id="view-mr277" class="preview-img">
                     </label>
                     <input type="file" id="img-mr277" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr277')">
-                    <button class="add-photo-btn" onclick="addPhotoInput(this, 'MR277 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">5. FLIR MR12 볼 프로브 (비파괴)</label>
+                    <label class="input-label" style="color:var(--brand-primary);">5. FLIR MR12 볼 프로브</label>
                     <label for="img-mr12" class="upload-box">
                         <i class="fas fa-bullseye upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.8rem; color:var(--text-secondary);">함수율 측정 이미지</span>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">함수율 측정</span>
                         <img id="view-mr12" class="preview-img">
                     </label>
                     <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this)">
-                    <button class="add-photo-btn" onclick="addPhotoInput(this, '볼 프로브 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">6. 초음파 음향 카메라 (Sonic)</label>
+                    <label class="input-label" style="color:var(--brand-primary);">6. 초음파 음향 카메라</label>
                     <label for="img-sonic" class="upload-box">
                         <i class="fas fa-wave-square upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.8rem; color:var(--text-secondary);">음향 카메라 이미지</span>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">음향 이미지</span>
                         <img id="view-sonic" class="preview-img">
                     </label>
                     <input type="file" id="img-sonic" class="file-input" accept="image/*" onchange="handleImage(this)">
-                    <button class="add-photo-btn" onclick="addPhotoInput(this, '초음파 사진')"><i class="fas fa-plus-circle"></i> 사진 추가</button>
                 </div>
             </div>
         </div>
@@ -829,17 +810,6 @@
             } finally {
                 targetIds.forEach(id => document.getElementById(id).classList.remove('scanning'));
             }
-        };
-
-        window.addPhotoInput = function(btnElement, labelText) {
-            const wrapper = btnElement.closest('.upload-wrapper');
-            const container = document.getElementById('photo-container');
-            const newDiv = document.createElement('div');
-            newDiv.className = 'upload-wrapper';
-            newDiv.style.marginTop = '15px'; 
-            const uniqueId = Date.now();
-            newDiv.innerHTML = `<label class="input-label" style="color:var(--text-secondary);">${labelText} (추가)</label><label for="img-${uniqueId}" class="upload-box"><i class="fas fa-plus upload-icon" style="color:var(--brand-accent);"></i><img id="view-${uniqueId}" class="preview-img"></label><input type="file" id="img-${uniqueId}" class="file-input" accept="image/*" onchange="handleImage(this)"><button class="add-photo-btn" onclick="addPhotoInput(this, '${labelText}')"><i class="fas fa-plus-circle"></i> 사진 추가</button>`;
-            if (wrapper.nextSibling) container.insertBefore(newDiv, wrapper.nextSibling); else container.appendChild(newDiv);
         };
 
         window.toggleAnalyzeBtn = function() {
