@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v30.3 Voice Input)</title>
+    <title>청개구리 결로진단 AI (v30.4 Compact)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -68,7 +68,7 @@
         /* 컴팩트 헤더 */
         .main-header {
             background: linear-gradient(135deg, var(--brand-primary) 0%, #1E293B 100%); color: #fff;
-            padding: 14px 18px 12px 18px;
+            padding: 10px 16px 8px 16px;
             display: flex; flex-direction: column; align-items: center;
             box-shadow: 0 4px 20px rgba(15,23,42,0.15);
             position: sticky; top: 0; z-index: 100;
@@ -90,29 +90,29 @@
         }
         .version-badge.dev-active { background: var(--brand-accent); border-color: var(--accent-strong); box-shadow: 0 0 12px rgba(6,182,212,0.6); color: #fff;}
 
-        .content { padding: 14px; padding-top: 16px; background: var(--bg-color); }
+        .content { padding: 10px; padding-top: 10px; background: var(--bg-color); }
         .section {
-            margin-bottom: 16px; background: var(--card-bg);
-            border-radius: 14px; border: 1px solid var(--border-color);
-            padding: 16px; box-shadow: var(--shadow-card);
+            margin-bottom: 10px; background: var(--card-bg);
+            border-radius: 12px; border: 1px solid var(--border-color);
+            padding: 10px 12px; box-shadow: var(--shadow-card);
         }
 
         .section-title {
-            font-weight: 800; color: var(--brand-primary); margin-bottom: 14px; margin-top: 0;
-            display: flex; align-items: center; font-size: 1.0rem;
-            padding: 8px 0 8px 12px; letter-spacing: -0.2px;
+            font-weight: 800; color: var(--brand-primary); margin-bottom: 8px; margin-top: 0;
+            display: flex; align-items: center; font-size: 0.95rem;
+            padding: 4px 0 4px 10px; letter-spacing: -0.2px;
             border-left: 3px solid var(--brand-accent);
         }
-        .section-title i { margin-right: 10px; color: var(--brand-accent); opacity: 1; }
+        .section-title i { margin-right: 8px; color: var(--brand-accent); opacity: 1; }
 
         /* 입력 폼 스타일 */
-        .input-group { margin-bottom: 6px; }
-        .input-label { display: block; font-weight: 700; margin-bottom: 3px; color: var(--text-secondary); font-size: 0.8rem; text-align: center; }
-        
+        .input-group { margin-bottom: 4px; }
+        .input-label { display: block; font-weight: 700; margin-bottom: 2px; color: var(--text-secondary); font-size: 0.78rem; text-align: center; }
+
         input[type="text"], input[type="number"], textarea, select {
-            width: 100%; padding: 10px;
+            width: 100%; padding: 7px 10px;
             border: 1.5px solid var(--border-color); border-radius: 8px;
-            background-color: #fff; font-size: 0.92rem; box-sizing: border-box;
+            background-color: #fff; font-size: 0.9rem; box-sizing: border-box;
             color: var(--text-primary);
             font-weight: 600;
             transition: all 0.15s ease;
@@ -140,18 +140,18 @@
             border-color: var(--brand-accent); outline: none;
             box-shadow: 0 0 0 3px rgba(6,182,212,0.12); background: #fff;
         }
-        textarea { resize: none; height: 74px; text-align: left !important; }
+        textarea { resize: none; height: 56px; text-align: left !important; padding: 8px 10px !important; }
         
         /* 그리드 조정 */
-        .info-grid-row { 
-            display: grid; 
-            grid-template-columns: 0.7fr 1fr 1.2fr 1.5fr; 
-            gap: 5px; align-items: end; margin-bottom: 8px; 
+        .info-grid-row {
+            display: grid;
+            grid-template-columns: 0.7fr 1fr 1.2fr 1.5fr;
+            gap: 5px; align-items: end; margin-bottom: 6px;
         }
-        .info-triple-row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 0.8fr; 
-            gap: 5px; align-items: end; margin-bottom: 8px; 
+        .info-triple-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.8fr;
+            gap: 5px; align-items: end; margin-bottom: 6px;
         }
         .info-triple-row select {
             padding: 8px 20px 8px 8px;
@@ -187,8 +187,8 @@
             50%     { box-shadow: 0 0 0 7px rgba(220,38,38,0); }
         }
         .mic-status {
-            font-size: 0.72rem; color: var(--brand-accent);
-            margin-top: 4px; min-height: 14px; text-align: center; font-weight: 600;
+            font-size: 0.7rem; color: var(--brand-accent);
+            margin-top: 2px; min-height: 12px; text-align: center; font-weight: 600;
         }
 
         .tdr-input { background-color: var(--accent-tint) !important; border: 1.5px solid var(--brand-accent) !important; color: var(--brand-primary) !important; font-weight: 800; }
@@ -206,16 +206,16 @@
         .photo-stack {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 8px;
         }
         .upload-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 8px;
+            gap: 8px;
+            margin-top: 5px;
         }
         .upload-wrapper {
-            border: 1.5px solid var(--border-color); padding: 12px; border-radius: 12px;
+            border: 1.5px solid var(--border-color); padding: 8px; border-radius: 10px;
             background: var(--bg-color); position: relative; transition: all 0.2s;
         }
         .upload-wrapper.filled { border-color: var(--brand-accent); background: var(--accent-tint); }
@@ -280,11 +280,11 @@
         .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
 
         .analyze-btn {
-            width: 100%; padding: 18px; background: var(--border-color); color: var(--text-muted);
-            border: none; border-radius: 14px;
-            font-size: 1.05rem; font-weight: 800; cursor: not-allowed;
+            width: 100%; padding: 14px; background: var(--border-color); color: var(--text-muted);
+            border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 800; cursor: not-allowed;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            margin-top: 20px; box-shadow: none; transition: all 0.3s;
+            margin-top: 10px; box-shadow: none; transition: all 0.3s;
             letter-spacing: -0.2px;
         }
         .analyze-btn.active {
@@ -382,12 +382,12 @@
         }
 
         .legal-box {
-            background: var(--accent-tint); padding: 14px; border-radius: 10px;
-            margin-top: 18px; font-size: 0.78rem; color: var(--brand-primary);
-            line-height: 1.5; border: 1px solid var(--accent-soft);
+            background: var(--accent-tint); padding: 10px 12px; border-radius: 10px;
+            margin-top: 10px; font-size: 0.75rem; color: var(--brand-primary);
+            line-height: 1.45; border: 1px solid var(--accent-soft);
             border-left: 3px solid var(--brand-accent);
         }
-        .legal-check { display: flex; align-items: center; margin-top: 10px; font-weight: 700; cursor: pointer; color: var(--brand-primary); }
+        .legal-check { display: flex; align-items: center; margin-top: 6px; font-weight: 700; cursor: pointer; color: var(--brand-primary); }
         
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
@@ -425,7 +425,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.3 Voice Input</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.4 Compact</span>
     </header>
 
     <div class="content">
@@ -433,21 +433,21 @@
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
             <div class="info-grid-row">
                 <div class="input-group">
-                    <label class="input-label">동 🎤</label>
+                    <label class="input-label">동</label>
                     <div class="mic-input-wrap">
                         <input type="text" id="dong" placeholder="101">
                         <button type="button" class="mic-btn" id="mic-dong" onclick="voiceInput('dong')" aria-label="동 음성입력"><i class="fas fa-microphone"></i></button>
                     </div>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">호 🎤</label>
+                    <label class="input-label">호</label>
                     <div class="mic-input-wrap">
                         <input type="text" id="ho" placeholder="1204">
                         <button type="button" class="mic-btn" id="mic-ho" onclick="voiceInput('ho')" aria-label="호 음성입력"><i class="fas fa-microphone"></i></button>
                     </div>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">장소 🎤</label>
+                    <label class="input-label">장소</label>
                     <div class="mic-input-wrap">
                         <input type="text" id="location" placeholder="거실창">
                         <button type="button" class="mic-btn" id="mic-location" onclick="voiceInput('location')" aria-label="장소 음성입력"><i class="fas fa-microphone"></i></button>
@@ -487,7 +487,7 @@
             </div>
 
             <div class="input-group">
-                <label class="input-label" style="text-align:left;">상세 증상 🎤 <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">(음성 최대 20초 자동 종료)</span></label>
+                <label class="input-label" style="text-align:left;">상세 증상 <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">(음성 최대 20초 자동 종료)</span></label>
                 <div class="mic-input-wrap textarea-wrap">
                     <textarea id="defect-content" placeholder="[상세 증상] 예: 아침마다 유리창 하단에 물이 고임, 북쪽 방 모서리에 검은 곰팡이 발생 등"></textarea>
                     <button type="button" class="mic-btn" id="mic-defect-content" onclick="voiceInput('defect-content')" aria-label="상세증상 음성입력"><i class="fas fa-microphone"></i></button>
@@ -499,7 +499,7 @@
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-temperature-high"></i> 정밀 계측 데이터 (Measurement)</div>
             
-            <div style="background:var(--accent-tint); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid var(--accent-soft);">
+            <div style="background:var(--accent-tint); padding:8px; border-radius:10px; margin-bottom:8px; border:1px solid var(--accent-soft);">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px;">
                     <div class="input-group">
                         <label class="input-label">실내온도(Ti)</label>
@@ -528,10 +528,10 @@
                 </div>
             </div>
 
-            <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-subtle);">
+            <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
                 <label class="input-label"><i class="fas fa-wind" style="color:var(--brand-accent);"></i> 공기질 정밀 진단 (Auto)</label>
 
-                <div style="font-size:0.78rem; color:var(--brand-primary); margin-bottom:8px; font-weight:600; text-align:center; background:var(--accent-tint); padding:6px 8px; border-radius:6px; border:1px solid var(--accent-soft);">
+                <div style="font-size:0.74rem; color:var(--brand-primary); margin-bottom:5px; font-weight:600; text-align:center; background:var(--accent-tint); padding:4px 8px; border-radius:6px; border:1px solid var(--accent-soft);">
                     ※ 겨울철 적정(신축): VAP 1.2kPa ↓ / MIX 7.3g/kg ↓
                 </div>
 
