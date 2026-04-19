@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI v30.6</title>
+    <title>청개구리 결로진단 AI v30.7</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -184,6 +184,14 @@
         .mic-input-wrap.textarea-wrap .mic-btn { top: 8px; transform: none; }
         .mic-input-wrap.textarea-wrap .mic-btn:active { transform: scale(0.92); }
         .mic-input-wrap.textarea-wrap .mic-btn.listening { transform: none; }
+        /* v30.7: 입력칸 내부 우측 인라인 라벨 (동/호/장소) */
+        .mic-input-wrap .input-suffix {
+            position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
+            color: #94A3B8; font-size: 0.7rem; font-weight: 600;
+            pointer-events: none; z-index: 1; white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .mic-input-wrap.with-suffix > input { padding-right: 60px !important; }
         @keyframes micPulse {
             0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.55); }
             50%     { box-shadow: 0 0 0 7px rgba(220,38,38,0); }
@@ -427,7 +435,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1>청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.6</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.7</span>
     </header>
 
     <div class="content">
@@ -435,23 +443,23 @@
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
             <div class="info-grid-row">
                 <div class="input-group">
-                    <label class="input-label">동</label>
-                    <div class="mic-input-wrap">
+                    <div class="mic-input-wrap with-suffix">
                         <input type="text" id="dong" placeholder="101">
+                        <span class="input-suffix">동</span>
                         <button type="button" class="mic-btn" id="mic-dong" onclick="voiceInput('dong')" aria-label="동 음성입력"><i class="fas fa-microphone"></i></button>
                     </div>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">호</label>
-                    <div class="mic-input-wrap">
+                    <div class="mic-input-wrap with-suffix">
                         <input type="text" id="ho" placeholder="1204">
+                        <span class="input-suffix">호</span>
                         <button type="button" class="mic-btn" id="mic-ho" onclick="voiceInput('ho')" aria-label="호 음성입력"><i class="fas fa-microphone"></i></button>
                     </div>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">장소</label>
-                    <div class="mic-input-wrap">
+                    <div class="mic-input-wrap with-suffix">
                         <input type="text" id="location" placeholder="거실창">
+                        <span class="input-suffix">장소</span>
                         <button type="button" class="mic-btn" id="mic-location" onclick="voiceInput('location')" aria-label="장소 음성입력"><i class="fas fa-microphone"></i></button>
                     </div>
                 </div>
@@ -460,7 +468,6 @@
             
             <div class="info-triple-row">
                 <div class="input-group">
-                    <label class="input-label">창호 사양</label>
                     <select id="window-type">
                         <option value="PVC 이중창">PVC 이중창 (일반)</option>
                         <option value="입면분할창">입면분할창 (고급형)</option>
@@ -470,7 +477,6 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">구조 특성</label>
                     <select id="house-type">
                         <option value="확장형(Extension)">발코니 확장형</option>
                         <option value="비확장(Non-Ext)">비확장 (기본형)</option>
@@ -479,7 +485,6 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">고려사항</label>
                     <select id="consideration">
                         <option value="알루미늄 간봉">알루미늄 간봉</option>
                         <option value="TPS 단열간봉">TPS 단열간봉</option>
