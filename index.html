@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v30.2 Dual Photos)</title>
+    <title>청개구리 결로진단 AI (v30.3 Voice Input)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -157,6 +157,38 @@
             padding: 8px 20px 8px 8px;
             font-size: 0.85rem;
             letter-spacing: -0.5px;
+        }
+
+        /* === v30.3: 음성입력 마이크 버튼 === */
+        .mic-input-wrap { position: relative; }
+        .mic-input-wrap > input,
+        .mic-input-wrap > textarea { padding-right: 42px !important; }
+        .mic-btn {
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 1.5px solid var(--border-color); background: #fff;
+            color: var(--text-secondary); cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; padding: 0; transition: all 0.15s;
+            z-index: 2;
+        }
+        .mic-btn:hover { border-color: var(--brand-accent); color: var(--brand-accent); background: var(--accent-tint); }
+        .mic-btn:active { transform: translateY(-50%) scale(0.92); }
+        .mic-btn.listening {
+            background: linear-gradient(135deg, #DC2626, #FF6B6B);
+            border-color: #DC2626; color: #fff;
+            animation: micPulse 1.2s ease-in-out infinite;
+        }
+        .mic-input-wrap.textarea-wrap .mic-btn { top: 8px; transform: none; }
+        .mic-input-wrap.textarea-wrap .mic-btn:active { transform: scale(0.92); }
+        .mic-input-wrap.textarea-wrap .mic-btn.listening { transform: none; }
+        @keyframes micPulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.55); }
+            50%     { box-shadow: 0 0 0 7px rgba(220,38,38,0); }
+        }
+        .mic-status {
+            font-size: 0.72rem; color: var(--brand-accent);
+            margin-top: 4px; min-height: 14px; text-align: center; font-weight: 600;
         }
 
         .tdr-input { background-color: var(--accent-tint) !important; border: 1.5px solid var(--brand-accent) !important; color: var(--brand-primary) !important; font-weight: 800; }
@@ -393,16 +425,34 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.2 Dual Photos</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.3 Voice Input</span>
     </header>
 
     <div class="content">
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
             <div class="info-grid-row">
-                <div class="input-group"><label class="input-label">동</label><input type="text" id="dong" placeholder="101"></div>
-                <div class="input-group"><label class="input-label">호</label><input type="text" id="ho" placeholder="1204"></div>
-                <div class="input-group"><label class="input-label">장소</label><input type="text" id="location" placeholder="거실창"></div>
+                <div class="input-group">
+                    <label class="input-label">동 🎤</label>
+                    <div class="mic-input-wrap">
+                        <input type="text" id="dong" placeholder="101">
+                        <button type="button" class="mic-btn" id="mic-dong" onclick="voiceInput('dong')" aria-label="동 음성입력"><i class="fas fa-microphone"></i></button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">호 🎤</label>
+                    <div class="mic-input-wrap">
+                        <input type="text" id="ho" placeholder="1204">
+                        <button type="button" class="mic-btn" id="mic-ho" onclick="voiceInput('ho')" aria-label="호 음성입력"><i class="fas fa-microphone"></i></button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">장소 🎤</label>
+                    <div class="mic-input-wrap">
+                        <input type="text" id="location" placeholder="거실창">
+                        <button type="button" class="mic-btn" id="mic-location" onclick="voiceInput('location')" aria-label="장소 음성입력"><i class="fas fa-microphone"></i></button>
+                    </div>
+                </div>
                 <div class="input-group"><label class="input-label">일자</label><input type="text" id="date" style="color:var(--brand-accent);"></div>
             </div>
             
@@ -437,7 +487,12 @@
             </div>
 
             <div class="input-group">
-                <textarea id="defect-content" placeholder="[상세 증상] 예: 아침마다 유리창 하단에 물이 고임, 북쪽 방 모서리에 검은 곰팡이 발생 등"></textarea>
+                <label class="input-label" style="text-align:left;">상세 증상 🎤 <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">(음성 최대 20초 자동 종료)</span></label>
+                <div class="mic-input-wrap textarea-wrap">
+                    <textarea id="defect-content" placeholder="[상세 증상] 예: 아침마다 유리창 하단에 물이 고임, 북쪽 방 모서리에 검은 곰팡이 발생 등"></textarea>
+                    <button type="button" class="mic-btn" id="mic-defect-content" onclick="voiceInput('defect-content')" aria-label="상세증상 음성입력"><i class="fas fa-microphone"></i></button>
+                </div>
+                <div class="mic-status" id="mic-status"></div>
             </div>
         </div>
 
@@ -749,6 +804,200 @@
                 solution: "1. 콘센트 커버 분리 후 내부 전선관 주변을 '기밀 테이프' 또는 '우레탄 폼'으로 밀실 충진\n2. 에어컨 배관 구멍 실리콘/퍼티 재마감\n3. 방풍 커버 설치"
             }
         ];
+
+        // ★ v30.3: 음성입력 (STT - Web Speech API, 사전점검앱 패턴 포팅)
+        const _SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let _recActive = null;
+        let _currentRec = null;
+        let _micPrimed = false;
+
+        function _setMicStatus(msg){
+            const el = document.getElementById('mic-status');
+            if(el) el.textContent = msg || '';
+        }
+
+        async function _primeMic(){
+            if(_micPrimed) return true;
+            try{
+                if(!localStorage.getItem('_micGuideShown')){
+                    alert('🎤 마이크 권한 안내\n\n곧 브라우저에서 마이크 권한 팝업이 뜹니다.\n"항상 허용"(또는 "사이트 접속 시 허용")을 선택해 주세요.\n\n⚠️ "이번만 허용"을 고르면 음성 버튼을 누를 때마다 팝업이 다시 나타납니다.');
+                    localStorage.setItem('_micGuideShown','1');
+                }
+                if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+                    const s = await navigator.mediaDevices.getUserMedia({audio:true});
+                    s.getTracks().forEach(t => { try{ t.stop(); }catch(e){} });
+                }
+                _micPrimed = true;
+                return true;
+            }catch(e){
+                const err = (e && (e.name||e.message))||'';
+                if(err.indexOf('NotAllowed')>=0 || err.indexOf('Permission')>=0){
+                    alert('🎤 마이크가 차단되었습니다.\n브라우저 주소창 좌측 자물쇠 아이콘 ▸ 사이트 설정 ▸ 마이크 ▸ 허용으로 변경해 주세요.');
+                }
+                return false;
+            }
+        }
+
+        function _mkRec(onResult, onEnd, opts){
+            opts = opts || {};
+            const longForm = !!opts.longForm;
+            const silenceMs = opts.silenceMs || 8000;
+            const maxDurationMs = opts.maxDurationMs || 20000;
+            const onInterim = opts.onInterim;
+            const rec = new _SR();
+            rec.lang = 'ko-KR';
+            rec.interimResults = longForm;
+            rec.continuous = longForm;
+            rec.maxAlternatives = 1;
+
+            if(longForm){
+                let savedAccumulated = '';
+                let accumulated = '';
+                let silenceTimer = null;
+                let maxDurationTimer = null;
+                let hasStartedSpeaking = false;
+                let isIntendedStop = false;
+                const resetSilence = () => {
+                    if(!hasStartedSpeaking) return;
+                    clearTimeout(silenceTimer);
+                    silenceTimer = setTimeout(() => {
+                        isIntendedStop = true;
+                        try{ rec.stop(); }catch(e){}
+                    }, silenceMs);
+                };
+                rec.onresult = (e) => {
+                    const finalParts = [];
+                    let interim = '';
+                    for(let i = 0; i < e.results.length; i++){
+                        const t = (e.results[i][0].transcript || '').trim();
+                        if(!t) continue;
+                        if(e.results[i].isFinal){
+                            const last = finalParts[finalParts.length-1];
+                            if(!last) finalParts.push(t);
+                            else if(t === last) {}
+                            else if(t.startsWith(last)) finalParts[finalParts.length-1] = t;
+                            else if(last.startsWith(t)) {}
+                            else finalParts.push(t);
+                        } else {
+                            interim += t;
+                        }
+                    }
+                    const currentSession = finalParts.join(' ');
+                    accumulated = (savedAccumulated + (currentSession ? (savedAccumulated ? ' ' : '') + currentSession : '')).trim();
+                    const display = (accumulated + (interim ? ' ' + interim : '')).trim();
+                    if(display && !hasStartedSpeaking){
+                        hasStartedSpeaking = true;
+                        if(!maxDurationTimer){
+                            maxDurationTimer = setTimeout(() => {
+                                isIntendedStop = true;
+                                try{ rec.stop(); }catch(e){}
+                            }, maxDurationMs);
+                        }
+                    }
+                    if(display && onInterim) onInterim(display);
+                    resetSilence();
+                };
+                rec.onend = () => {
+                    clearTimeout(silenceTimer);
+                    if(!isIntendedStop){
+                        savedAccumulated = accumulated;
+                        hasStartedSpeaking = false;
+                        try{ rec.start(); return; }catch(e){}
+                    }
+                    clearTimeout(maxDurationTimer);
+                    const text = accumulated.trim();
+                    if(text) onResult(text);
+                    if(onEnd) onEnd();
+                };
+                rec._lfMarkIntended = () => { isIntendedStop = true; };
+                rec._lfStart = () => {};
+            } else {
+                rec.onresult = (e) => {
+                    try{
+                        const transcript = (e.results[0][0].transcript||'').trim();
+                        if(transcript) onResult(transcript);
+                    }catch(err){}
+                };
+                rec.onend = () => { if(onEnd) onEnd(); };
+            }
+
+            rec.onerror = (e) => {
+                const err = e.error||'';
+                if(err === 'not-allowed' || err === 'permission-denied' || err === 'service-not-allowed'){
+                    alert('🎤 마이크 권한이 필요합니다.\n브라우저 설정에서 마이크를 허용해주세요.');
+                } else if(err === 'no-speech'){
+                    _setMicStatus('🎤 음성이 감지되지 않았습니다');
+                } else if(err && err !== 'aborted'){
+                    _setMicStatus('🎤 오류: '+err);
+                }
+            };
+            return rec;
+        }
+
+        function _stopRec(){
+            if(_currentRec){
+                const isLongForm = !!_currentRec._lfStart;
+                if(isLongForm && _currentRec._lfMarkIntended) _currentRec._lfMarkIntended();
+                try{ isLongForm ? _currentRec.stop() : _currentRec.abort(); }catch(e){}
+                _currentRec = null;
+            }
+            _recActive = null;
+            document.querySelectorAll('.mic-btn.listening').forEach(b => b.classList.remove('listening'));
+        }
+
+        window.voiceInput = async function(targetId){
+            if(!_SR){ alert('이 브라우저는 음성입력을 지원하지 않습니다.\nChrome, Edge, Safari(iOS 14.5+)를 사용해주세요.'); return; }
+            const btn = document.getElementById('mic-' + targetId);
+            if(_recActive === targetId){ _stopRec(); _setMicStatus('🎤 음성입력 종료'); return; }
+            const ok = await _primeMic();
+            if(!ok) return;
+            _stopRec();
+            _recActive = targetId;
+            if(btn) btn.classList.add('listening');
+
+            // 필드별 음성입력 설정
+            const cfg = ({
+                'dong':           {longForm:false, msg:'🎤 동을 말씀해 주세요... (예: "101")'},
+                'ho':             {longForm:false, msg:'🎤 호수를 말씀해 주세요... (예: "1204")'},
+                'location':       {longForm:false, msg:'🎤 장소를 말씀해 주세요... (예: "거실창")'},
+                'defect-content': {longForm:true,  silenceMs:8000, maxDurationMs:20000,
+                                   msg:'🎤 상세 증상을 말씀해 주세요... (20초 후 자동 종료)'}
+            })[targetId] || {longForm:false, msg:'🎤 말씀해 주세요...'};
+
+            _setMicStatus(cfg.msg);
+            const rec = _mkRec(
+                (text) => {
+                    const f = document.getElementById(targetId);
+                    if(f){
+                        f.value = text;
+                        f.dispatchEvent(new Event('input', {bubbles:true}));
+                        f.dispatchEvent(new Event('change', {bubbles:true}));
+                    }
+                    _setMicStatus('🎤 입력 완료: ' + text.slice(0, 60) + (text.length>60?'...':''));
+                    setTimeout(() => _setMicStatus(''), 3000);
+                },
+                () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; },
+                cfg.longForm ? {
+                    longForm: true,
+                    silenceMs: cfg.silenceMs,
+                    maxDurationMs: cfg.maxDurationMs,
+                    onInterim: (txt) => { const f = document.getElementById(targetId); if(f) f.value = txt; }
+                } : undefined
+            );
+            _currentRec = rec;
+            try{ rec.start(); if(cfg.longForm && rec._lfStart) rec._lfStart(); }catch(e){
+                if(btn) btn.classList.remove('listening');
+                _recActive = null; _currentRec = null;
+                _setMicStatus('🎤 시작 실패: ' + (e.message||''));
+            }
+        };
+
+        // 브라우저가 STT 미지원이면 마이크 버튼 자동 숨김
+        if(!_SR){
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.mic-btn').forEach(b => b.style.display = 'none');
+            });
+        }
 
         // ★ v29.0: Gemini 호출 견고화 (재시도 + 타임아웃 + 생성 설정)
         async function callGeminiWithRetry(modelName, request, options = {}) {
