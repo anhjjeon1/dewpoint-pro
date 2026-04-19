@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI (v30.1 Photo Grid)</title>
+    <title>청개구리 결로진단 AI (v30.2 Dual Photos)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -170,14 +170,20 @@
         }
         .scanning { animation: scan-glow 1.5s infinite; transition: all 0.3s; }
 
-        /* 사진 업로드 UI - 2열 그리드 (4:3) */
+        /* 사진 업로드 UI - 검사 항목 세로 스택, 항목당 좌우 2장 (4:3) */
         .photo-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .upload-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
+            margin-top: 8px;
         }
         .upload-wrapper {
-            border: 1.5px solid var(--border-color); padding: 10px; border-radius: 12px;
+            border: 1.5px solid var(--border-color); padding: 12px; border-radius: 12px;
             background: var(--bg-color); position: relative; transition: all 0.2s;
         }
         .upload-wrapper.filled { border-color: var(--brand-accent); background: var(--accent-tint); }
@@ -387,7 +393,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1><i class="fas fa-microscope"></i> 청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.1 Photo Grid</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.2 Dual Photos</span>
     </header>
 
     <div class="content">
@@ -494,62 +500,134 @@
                 
                 <div class="upload-wrapper" id="wrap-1">
                     <label class="input-label" style="color:var(--brand-primary);">1. 결로/곰팡이 메인 (필수)</label>
-                    <label for="img-1" class="upload-box">
-                        <i class="fas fa-camera upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.75rem; color:var(--text-secondary);">터치하여 촬영/선택</span>
-                        <img id="view-1" class="preview-img">
-                    </label>
-                    <input type="file" id="img-1" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <div class="upload-grid">
+                        <div>
+                            <label for="img-1" class="upload-box">
+                                <i class="fas fa-camera upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">사진 1</span>
+                                <img id="view-1" class="preview-img">
+                            </label>
+                            <input type="file" id="img-1" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                        <div>
+                            <label for="img-1b" class="upload-box">
+                                <i class="fas fa-camera upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">사진 2</span>
+                                <img id="view-1b" class="preview-img">
+                            </label>
+                            <input type="file" id="img-1b" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">2. UV (자외선) 형광</label>
-                    <label for="img-uv" class="upload-box">
-                        <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.75rem; color:var(--text-secondary);">UV 형광 이미지</span>
-                        <img id="view-uv" class="preview-img">
-                    </label>
-                    <input type="file" id="img-uv" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <label class="input-label" style="color:var(--brand-primary);">2. UV (자외선) 형광 촬영</label>
+                    <div class="upload-grid">
+                        <div>
+                            <label for="img-uv" class="upload-box">
+                                <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">UV 사진 1</span>
+                                <img id="view-uv" class="preview-img">
+                            </label>
+                            <input type="file" id="img-uv" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                        <div>
+                            <label for="img-uv-b" class="upload-box">
+                                <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">UV 사진 2</span>
+                                <img id="view-uv-b" class="preview-img">
+                            </label>
+                            <input type="file" id="img-uv-b" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">3. 열화상 카메라</label>
-                    <label for="img-thermal" class="upload-box">
-                        <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.75rem; color:var(--text-secondary);">열화상 이미지</span>
-                        <img id="view-thermal" class="preview-img">
-                    </label>
-                    <input type="file" id="img-thermal" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'thermal')">
+                    <label class="input-label" style="color:var(--brand-primary);">3. 열화상 카메라 (Thermal)</label>
+                    <div class="upload-grid">
+                        <div>
+                            <label for="img-thermal" class="upload-box">
+                                <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 1 (자동 OCR)</span>
+                                <img id="view-thermal" class="preview-img">
+                            </label>
+                            <input type="file" id="img-thermal" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'thermal')">
+                        </div>
+                        <div>
+                            <label for="img-thermal-b" class="upload-box">
+                                <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 2</span>
+                                <img id="view-thermal-b" class="preview-img">
+                            </label>
+                            <input type="file" id="img-thermal-b" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">4. FLIR MR277 (VAP)</label>
-                    <label for="img-mr277" class="upload-box">
-                        <i class="fas fa-ruler-combined upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.75rem; color:var(--text-secondary);">MR277 화면</span>
-                        <img id="view-mr277" class="preview-img">
-                    </label>
-                    <input type="file" id="img-mr277" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr277')">
+                    <label class="input-label" style="color:var(--brand-primary);">4. FLIR MR277 (습도/VAP 계측)</label>
+                    <div class="upload-grid">
+                        <div>
+                            <label for="img-mr277" class="upload-box">
+                                <i class="fas fa-ruler-combined upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">MR277 1 (자동 OCR)</span>
+                                <img id="view-mr277" class="preview-img">
+                            </label>
+                            <input type="file" id="img-mr277" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'mr277')">
+                        </div>
+                        <div>
+                            <label for="img-mr277-b" class="upload-box">
+                                <i class="fas fa-ruler-combined upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">MR277 2</span>
+                                <img id="view-mr277-b" class="preview-img">
+                            </label>
+                            <input type="file" id="img-mr277-b" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">5. FLIR MR12 볼 프로브</label>
-                    <label for="img-mr12" class="upload-box">
-                        <i class="fas fa-bullseye upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.75rem; color:var(--text-secondary);">함수율 측정</span>
-                        <img id="view-mr12" class="preview-img">
-                    </label>
-                    <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <label class="input-label" style="color:var(--brand-primary);">5. FLIR MR12 볼 프로브 (비파괴)</label>
+                    <div class="upload-grid">
+                        <div>
+                            <label for="img-mr12" class="upload-box">
+                                <i class="fas fa-bullseye upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">MR12 사진 1</span>
+                                <img id="view-mr12" class="preview-img">
+                            </label>
+                            <input type="file" id="img-mr12" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                        <div>
+                            <label for="img-mr12-b" class="upload-box">
+                                <i class="fas fa-bullseye upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">MR12 사진 2</span>
+                                <img id="view-mr12-b" class="preview-img">
+                            </label>
+                            <input type="file" id="img-mr12-b" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">6. 초음파 음향 카메라</label>
-                    <label for="img-sonic" class="upload-box">
-                        <i class="fas fa-wave-square upload-icon" style="color:var(--brand-accent);"></i>
-                        <span style="font-size:0.75rem; color:var(--text-secondary);">음향 이미지</span>
-                        <img id="view-sonic" class="preview-img">
-                    </label>
-                    <input type="file" id="img-sonic" class="file-input" accept="image/*" onchange="handleImage(this)">
+                    <label class="input-label" style="color:var(--brand-primary);">6. 초음파 음향 카메라 (Sonic)</label>
+                    <div class="upload-grid">
+                        <div>
+                            <label for="img-sonic" class="upload-box">
+                                <i class="fas fa-wave-square upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">초음파 1</span>
+                                <img id="view-sonic" class="preview-img">
+                            </label>
+                            <input type="file" id="img-sonic" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                        <div>
+                            <label for="img-sonic-b" class="upload-box">
+                                <i class="fas fa-wave-square upload-icon" style="color:var(--brand-accent);"></i>
+                                <span style="font-size:0.72rem; color:var(--text-secondary);">초음파 2</span>
+                                <img id="view-sonic-b" class="preview-img">
+                            </label>
+                            <input type="file" id="img-sonic-b" class="file-input" accept="image/*" onchange="handleImage(this)">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
