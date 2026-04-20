@@ -435,7 +435,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1>청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.7</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v30.8</span>
     </header>
 
     <div class="content">
@@ -1121,7 +1121,7 @@
                 }
 
                 const text = await callGeminiWithRetry(
-                    "gemini-2.5-flash",
+                    "gemini-2.5-flash-lite",
                     { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Data } }] }] },
                     { maxAttempts: 2, timeoutMs: 30000, temperature: 0.1 }
                 );
@@ -1439,7 +1439,7 @@
 
                 // ★ v29.0: 1차 분석 (temperature 0.2, 재시도 최대 3회, 타임아웃 90초)
                 let text = await callGeminiWithRetry(
-                    "gemini-2.5-flash",
+                    "gemini-2.5-flash-lite",
                     { contents: [{ parts: [{ text: prompt }, ...imageParts] }] },
                     { maxAttempts: 3, timeoutMs: 90000, temperature: 0.2 }
                 );
@@ -1450,7 +1450,7 @@
                     try {
                         const verifyPrompt = prompt + `\n\n[재작성 지시]\n이전 응답이 부실하거나 섹션이 누락되었습니다. 반드시 아래 5개 섹션(## 1. ~ ## 5.)을 모두 포함하고, 구체적 수치·방법·우선순위를 빠짐없이 작성하십시오.`;
                         const text2 = await callGeminiWithRetry(
-                            "gemini-2.5-flash",
+                            "gemini-2.5-flash-lite",
                             { contents: [{ parts: [{ text: verifyPrompt }, ...imageParts] }] },
                             { maxAttempts: 2, timeoutMs: 90000, temperature: 0.1 }
                         );
