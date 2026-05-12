@@ -1131,13 +1131,16 @@
             if(input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    // v31.1 fix: 같은 wrapper 안 사진1·2가 첫 번째 슬롯에 합쳐지던 버그 수정
+                    // input의 직전 형제(label.upload-box)에서 자기 슬롯의 preview-img 찾기
+                    const box = input.previousElementSibling;
+                    const img = box && box.querySelector ? box.querySelector('.preview-img') : null;
                     const wrapper = input.closest('.upload-wrapper');
-                    const img = wrapper.querySelector('.preview-img');
-                    const box = wrapper.querySelector('.upload-box');
+                    if (!box || !img) return;
                     img.src = e.target.result;
                     img.style.display = 'block';
                     box.querySelectorAll('i, span').forEach(el => el.style.display = 'none');
-                    wrapper.classList.add('filled');
+                    if (wrapper) wrapper.classList.add('filled');
                 };
                 reader.readAsDataURL(input.files[0]);
             }
