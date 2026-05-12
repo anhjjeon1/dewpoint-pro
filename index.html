@@ -769,6 +769,14 @@
         // ★ v31.0: GAS 프록시 전환 — Gemini 키는 서버에만 보관 (클라이언트 노출 0)
         // GAS 프로젝트 "청개구리-결로진단-Backend" 배포 URL로 교체
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
+
+        // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
+        const APP_VERSION = 'v31.2';
+        document.addEventListener('DOMContentLoaded', () => {
+            const badge = document.getElementById('version-badge');
+            if (badge) badge.textContent = APP_VERSION;
+            document.title = '청개구리 결로진단 AI ' + APP_VERSION;
+        });
         let ADMIN_TOKEN = localStorage.getItem('dewpoint_admin_token') || '';
         let _fp = localStorage.getItem('dewpoint_fp') || '';
         if (!_fp) {
