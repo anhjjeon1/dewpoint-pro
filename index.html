@@ -811,7 +811,10 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v33.0';
+        const APP_VERSION = 'v33.1';
+        // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
+        //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
+        const ANALYSIS_MODEL = 'gemini-3.5-flash';
 
         // ★ v32.0: 계절 진단 모드 (겨울용=난방 실내결로 / 여름용=냉방 역결로)
         //  - 물리 원리는 동일(표면온도 < 접촉공기 노점 → 결로)하나, '차가운 면'과 '습한 공기'의
@@ -1173,9 +1176,10 @@
         }
 
         // ★ v31.0: Gemini 호출 — GAS 프록시 경유 (Gemini 키 서버 보관, 관리자 토큰 필수)
-        // modelName 파라미터는 호환성 유지용 (실제 모델은 GAS 측 GEMINI_MODEL 상수 = gemini-3.1-flash-lite)
+        // modelName 인자는 호환성 유지용. 실제 모델은 options.model로 GAS에 전달(미지정 시 서버 기본 lite).
+        // v33.1: 본분석은 options.model = ANALYSIS_MODEL(3.5-flash), OCR은 미지정 → lite.
         async function callGeminiWithRetry(modelName, request, options = {}) {
-            const { maxAttempts = 3, timeoutMs = 60000, temperature = 0.2 } = options;
+            const { maxAttempts = 3, timeoutMs = 60000, temperature = 0.2, model = null, maxOutputTokens = null } = options;
             // request → GAS payload 변환 (contents[0].parts → prompt + images)
             const allParts = (request && request.contents && request.contents[0] && request.contents[0].parts) || [];
             const prompt = allParts.filter(p => p.text).map(p => p.text).join('\n');
@@ -1184,6 +1188,7 @@
                 data: p.inline_data.data
             }));
             const config = { temperature: temperature, topP: 0.8, topK: 40 };
+            if (maxOutputTokens) config.maxOutputTokens = maxOutputTokens;
 
             let lastErr = null;
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -1197,7 +1202,7 @@
                         body: JSON.stringify({
                             action: 'ai',
                             adminToken: token,
-                            prompts: [{ prompt, images, config }]
+                            prompts: [{ prompt, images, config, ...(model ? { model } : {}) }]
                         }),
                         signal: ctrl.signal
                     });
@@ -1705,11 +1710,11 @@
                 `;
                 }
 
-                // ★ v29.0: 1차 분석 (temperature 0.2, 재시도 최대 3회, 타임아웃 90초)
+                // ★ v33.1: 1차 분석 — 본분석만 상위 모델(ANALYSIS_MODEL) 사용 (OCR은 기본 lite)
                 let text = await callGeminiWithRetry(
-                    "gemini-2.5-flash-lite",
+                    ANALYSIS_MODEL,
                     { contents: [{ parts: [{ text: prompt }, ...imageParts] }] },
-                    { maxAttempts: 3, timeoutMs: 90000, temperature: 0.2 }
+                    { maxAttempts: 3, timeoutMs: 90000, temperature: 0.2, model: ANALYSIS_MODEL, maxOutputTokens: 8192 }
                 );
 
                 // ★ v29.0: 품질 평가 → 부실한 경우 2차 검증 자동 재분석
@@ -1718,9 +1723,9 @@
                     try {
                         const verifyPrompt = prompt + `\n\n[재작성 지시]\n이전 응답이 부실하거나 섹션이 누락되었습니다. 반드시 아래 5개 섹션(## 1. ~ ## 5.)을 모두 포함하고, 구체적 수치·방법·우선순위를 빠짐없이 작성하십시오.`;
                         const text2 = await callGeminiWithRetry(
-                            "gemini-2.5-flash-lite",
+                            ANALYSIS_MODEL,
                             { contents: [{ parts: [{ text: verifyPrompt }, ...imageParts] }] },
-                            { maxAttempts: 2, timeoutMs: 90000, temperature: 0.1 }
+                            { maxAttempts: 2, timeoutMs: 90000, temperature: 0.1, model: ANALYSIS_MODEL, maxOutputTokens: 8192 }
                         );
                         if (assessAnalysisQuality(text2) !== 'poor') text = text2;
                     } catch (e) { /* 1차 결과 유지 */ }
