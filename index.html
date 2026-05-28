@@ -506,7 +506,7 @@
                 <input type="hidden" id="date">
             </div>
             
-            <div class="info-triple-row">
+            <div class="info-triple-row" id="overview-window-row">
                 <div class="input-group">
                     <select id="window-type">
                         <option value="PVC 이중창">PVC 이중창 (일반)</option>
@@ -543,7 +543,7 @@
             </div>
         </div>
 
-        <div class="section no-print">
+        <div class="section no-print" id="measurement-section">
             <div class="section-title"><i class="fas fa-temperature-high"></i> 정밀 계측 데이터 (Measurement)</div>
             
             <div style="background:var(--accent-tint); padding:8px; border-radius:10px; margin-bottom:8px; border:1px solid var(--accent-soft);">
@@ -601,7 +601,7 @@
             <div class="photo-stack" id="photo-container">
                 
                 <div class="upload-wrapper" id="wrap-1">
-                    <label class="input-label" style="color:var(--brand-primary);">1. 결로/곰팡이 메인 (필수)</label>
+                    <label class="input-label" id="lbl-photo-main" style="color:var(--brand-primary);">1. 결로/곰팡이 메인 (필수)</label>
                     <div class="upload-grid">
                         <div>
                             <label for="img-1" class="upload-box">
@@ -622,7 +622,7 @@
                     </div>
                 </div>
 
-                <div class="upload-wrapper">
+                <div class="upload-wrapper" id="wrap-uv">
                     <label class="input-label" style="color:var(--brand-primary);">2. UV (자외선) 형광 촬영</label>
                     <div class="upload-grid">
                         <div>
@@ -644,7 +644,7 @@
                     </div>
                 </div>
 
-                <div class="upload-wrapper">
+                <div class="upload-wrapper" id="wrap-thermal">
                     <label class="input-label" style="color:var(--brand-primary);">3. 열화상 카메라 (Thermal)</label>
                     <div class="upload-grid">
                         <div>
@@ -666,7 +666,7 @@
                     </div>
                 </div>
 
-                <div class="upload-wrapper">
+                <div class="upload-wrapper" id="wrap-mr277">
                     <label class="input-label" style="color:var(--brand-primary);">4. FLIR MR277 (습도/VAP 계측)</label>
                     <div class="upload-grid">
                         <div>
@@ -689,7 +689,7 @@
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">5. FLIR MR12 볼 프로브 (비파괴)</label>
+                    <label class="input-label" id="lbl-photo-mr12" style="color:var(--brand-primary);">5. FLIR MR12 볼 프로브 (비파괴)</label>
                     <div class="upload-grid">
                         <div>
                             <label for="img-mr12" class="upload-box">
@@ -711,7 +711,7 @@
                 </div>
 
                 <div class="upload-wrapper">
-                    <label class="input-label" style="color:var(--brand-primary);">6. 초음파 음향 카메라 (Sonic)</label>
+                    <label class="input-label" id="lbl-photo-sonic" style="color:var(--brand-primary);">6. 초음파 음향 카메라 (Sonic)</label>
                     <div class="upload-grid">
                         <div>
                             <label for="img-sonic" class="upload-box">
@@ -811,7 +811,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v32.0';
+        const APP_VERSION = 'v33.0';
 
         // ★ v32.0: 계절 진단 모드 (겨울용=난방 실내결로 / 여름용=냉방 역결로)
         //  - 물리 원리는 동일(표면온도 < 접촉공기 노점 → 결로)하나, '차가운 면'과 '습한 공기'의
@@ -836,7 +836,7 @@
                 surfHint:'* 열화상 최저값 — 냉방으로 차가워진 결로면(방화문 계단실측 등)',
                 tempOut: '냉방측 온도(Tc)',
                 vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 기준(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
-                banner:  '☀️ <b>여름용 모드(역결로)</b> — 고온다습한 <b>외기·계단실 공기</b>가 냉방으로 차가워진 <b>표면</b>(방화문 계단실측·배관·북측벽)에 응결. 온·습도는 <b>고온다습한 쪽</b>에서, 표면온도는 <b>결로 생기는 차가운 면</b>에서 측정하세요.'
+                banner:  '☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어클로저(자동닫힘) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·열화상·온습도(MR277)·창호 검사는 생략됩니다.'
             }
         };
 
@@ -857,6 +857,22 @@
             const bs = document.getElementById('season-summer');
             if (bw) bw.classList.toggle('active', SEASON === 'winter');
             if (bs) bs.classList.toggle('active', SEASON === 'summer');
+
+            // ★ v33.0: 여름 = 방화문 전용 — 창호검사/계측섹션/UV·열화상·MR277 숨김, MR12+초음파만
+            const isSummer = (SEASON === 'summer');
+            const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
+            show('overview-window-row', !isSummer);
+            show('measurement-section',  !isSummer);
+            show('wrap-uv',      !isSummer);
+            show('wrap-thermal', !isSummer);
+            show('wrap-mr277',   !isSummer);
+            set('lbl-photo-main',  isSummer ? '1. 방화문 결로/녹·문틀 메인 (필수)' : '1. 결로/곰팡이 메인 (필수)');
+            set('lbl-photo-mr12',  isSummer ? '5. FLIR MR12 표면 수분 (문틀·하부·힌지)' : '5. FLIR MR12 볼 프로브 (비파괴)');
+            set('lbl-photo-sonic', isSummer ? '6. 초음파 누설 검사 (냉기 침투 경로)' : '6. 초음파 음향 카메라 (Sonic)');
+            const dc = document.getElementById('defect-content');
+            if (dc) dc.placeholder = isSummer
+                ? '[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어클로저(자동닫힘) 작동 불량, 잠금 뻑뻑함 등'
+                : '[상세 증상] 예: 아침마다 유리창 하단에 물이 고임, 북쪽 방 모서리에 검은 곰팡이 발생 등';
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1431,7 +1447,9 @@
             
             document.getElementById('rep-date').innerText = document.getElementById('date').value;
             document.getElementById('rep-loc').innerText = `${document.getElementById('dong').value}동 ${document.getElementById('ho').value}호 (${document.getElementById('location').value})`;
-            document.getElementById('rep-type').innerText = `${winType} / ${houseType} / ${consideration}`;
+            document.getElementById('rep-type').innerText = (SEASON === 'summer')
+                ? '세대 현관 방화문 (여름 점검 · MR12 표면수분 + 초음파 누설)'
+                : `${winType} / ${houseType} / ${consideration}`;
 
             let imageParts = [];
             gallery.innerHTML = ''; 
@@ -1472,7 +1490,7 @@
 
             let tdrVal = 0;                       // 겨울 차트 가중치 산출용
             let tdrMsg = "데이터 부족";
-            let summerVent = 50, summerIns = 50;  // 여름 차트 기본 가중치
+            let summerVent = 60, summerIns = 40;  // 여름(방화문) 차트 기본 — 기밀불량·냉기침투 우세
 
             if (SEASON_IS_SUMMER) {
                 // 여름철 역결로: 결로면 온도(Ts)가 접촉 고온다습 공기의 노점(Tdp)보다 낮으면 결로
@@ -1593,45 +1611,44 @@
                 let prompt;
                 if (SEASON_IS_SUMMER) {
                     prompt = `
-                    당신은 '건축물리 박사'이자 '여름철(냉방기) 역결로 진단 전문가'입니다.
-                    지금은 **여름철 냉방 결로(역결로)** 진단이며, 겨울철 결로와 메커니즘이 반대임을 반드시 전제로 분석하십시오.
+                    당신은 '건축물리 박사'이자 '방화문 결로·기밀 진단 전문가'입니다.
+                    지금은 **여름철에 시행하는 '세대 현관 방화문 전용' 점검**입니다.
+                    단, 진단 대상 하자는 **겨울철 결로로 발생한 것**(문틀 녹·부식, 도어클로저(자동 닫힘 장치) 작동 불량)이며, 여름 점검의 목적은 그 **근본 원인(겨울철 냉기 침투 경로·기밀 취약부·수분 잔존부)을 역추적**하는 것입니다.
 
-                    [여름철 역결로 핵심 원리]
-                    - 결로는 '차가워진 표면'에서 발생합니다. 냉방으로 차가워진 면(방화문 강판, 냉수 배관, 북측/지하 벽)의 표면온도(Ts)가, 그 면에 접촉하는 고온다습 공기의 노점온도(Tdp)보다 낮으면 결로가 생깁니다. 판정: **Ts < Tdp 이면 결로 발생**.
-                    - 겨울철 지표인 **TDR 0.28 기준, VAP 1.2kPa / MIX 7.3g/kg 기준은 여름철에 적용하지 마십시오.** 여름철 절대습도(MIX)는 15~20g/kg로 자연히 높습니다.
-                    - '냉기 유입'의 방향이 겨울과 반대입니다. 여름엔 냉방 찬공기가 틈으로 '유출(exfiltration)'되며 그 지점 표면을 더 차게 만들어 결로를 집중시키고, 외부 고온다습 공기가 틈으로 유입되어 냉방면에 응결합니다.
-                    - 초음파 발생기 + 초음파(음향) 카메라 검사 해석: 발생기를 냉방측에 두고 고온다습측에서 누설 경로를 촬영하면, 신호가 강한 누설 지점이 곧 결로 집중부와 일치합니다.
+                    [핵심 진단 원리]
+                    - 방화문 강판은 열교가 큰 금속이라, 겨울철 문틈·가스켓 틈으로 냉기가 침투하면 문틀·하부 표면이 실내 노점 이하로 떨어져 결로수가 맺힙니다. 그 물이 문틀 하부·경첩·도어클로저에 고여 부식을 일으키고, 부식이 마찰·고착을 유발해 자동 닫힘(도어클로저) 작동 불량으로 이어집니다.
+                    - 여름 점검에서는 결로가 실시간으로 보이지 않으므로 **초음파(누설 경로) + MR12(표면 수분/부식 잔존)** 로 근본 원인을 역추적합니다.
+                    - 초음파 음향 카메라: 발생기를 한쪽(실내)에 두고 반대쪽에서 촬영하면 누설 경로가 시각화됩니다. **신호가 강한 지점 = 겨울철 냉기 침투 지점 = 결로·녹 발생 근원**입니다. 위치(상부/측면/하부 문틀, 경첩측, 잠금측, 하부 문턱·도어실)를 구체적으로 지목하십시오.
+                    - MR12 표면 수분: 문틀·하부·경첩의 수분 함유율/부식 잔존을 확인해 결로 피해 누적부를 판정합니다.
 
-                    [참조 데이터베이스 — 여름철]
+                    [참조 데이터베이스]
                     ${dbContext}
 
                     [현장 데이터]
-                    - 구조/대상: ${winType} / ${houseType} (방화문 진단이면 '장소'에 방화문/세대 현관문 명시)
-                    - 고온다습부(접촉 공기): ${tempIn}°C / ${humid}% (노점: ${dew})
-                    - 냉방측 온도: ${tempOut}°C / 결로면 표면온도(Ts): ${tempSurf}°C
-                    - 공기질(참고): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'} (※ 여름엔 겨울 기준 적용 금지)
+                    - 대상: 세대 현관 방화문
                     - 증상: ${defect}
-                    - **핵심 결로 판정값**: ${tdrMsg}
+                    - 사용 장비: FLIR MR12(표면 수분), 초음파 음향 카메라(누설). ※ 본 점검에서 UV·열화상·온습도(MR277)·창호 사양 검사는 생략됨 — 해당 데이터가 없음을 전제로 하고, 온습도·노점·열화상 수치를 추정하거나 요구하지 마십시오.
+                    - 첨부 사진: 방화문 현황 + MR12 표면수분 + 초음파 누설 이미지
 
                     [특별 지시사항 (반드시 준수)]
-                    1. Ts(결로면 표면온도)와 Tdp(접촉 공기 노점)를 비교해 결로 여부를 1차 확정하고, 결로가 생기는 면을 구체적으로 지목하십시오(예: 방화문 계단실측 하부, 가스켓 주변 냉기 누설부).
-                    2. 원인을 (A) 표면 과냉·단열부족 (B) 고온다습 공기 접촉·틈새 유입/냉기 유출 (C) 기타 복합 으로 구분하여 AI 소견 비율을 제시하십시오.
-                    3. 방화문이면: 강판 열교, 냉방 토출 풍향, 가스켓/문틈 기밀, 계단실 환기·제습을 중심으로 제안하되 **방화 성능을 해치지 않는 단열/기밀 자재**를 전제로 하십시오.
-                    4. 여름철 부적합 조치는 배제하십시오: 결로방지 히터, 무조건적 통기 확대(습기 유입 증가), 겨울식 외풍 차단만으로의 접근.
-                    5. **금지어**: '기술사', '협회', '창호/문 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송'. 모든 판단은 'AI 분석에 의한 추정 소견'으로 표현하고, 단정적 귀책 판정을 피하십시오.
+                    1. 사진의 초음파 누설 신호 위치를 해석해 **냉기 침투/기밀 취약 지점을 구체적으로 지목**하고, 그곳이 겨울철 결로·녹 발생부와 어떻게 연결되는지 인과를 설명하십시오.
+                    2. MR12 수분 사진이 있으면 수분/부식 잔존부를 판정하십시오.
+                    3. 도어클로저(자동 닫힘) 작동 불량의 원인을 결로 피해와 연결해 분석하십시오(부식에 의한 마찰 증가, 경첩 처짐, 문틀 변형 가능성 등).
+                    4. **TDR·노점 등 온도 기반 수치 분석은 하지 마십시오**(데이터 없음). 누설 경로 + 표면 수분 + 증상 중심으로 분석하십시오.
+                    5. 금지어: '기술사', '협회', '문/창호 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송'. 모든 판단은 'AI 분석에 의한 추정 소견'으로 표현하십시오.
 
                     [출력 포맷]
                     Markdown 형식.
-                    ## 1. 정밀 데이터 분석 (여름철)
-                    (Ts vs 노점, 냉방측·고온다습부 온습도 관계, 결로 안전마진 설명. 겨울 TDR/VAP·MIX 기준 미적용임을 명시)
-                    ## 2. 결로 발생 메커니즘 (여름철 역결로, AI 분석)
-                    (차가워진 표면에 고온다습 공기가 응결하는 원리, 방화문 강판 열교·냉기 유출/습기 유입 경로 설명)
-                    ## 3. 방화문/대상 집중 분석 (AI 분석)
-                    (초음파 누설 경로와 결로 집중부의 일치 해석, 결로면 위치·심각도 추정)
+                    ## 1. 점검 개요 (여름철 방화문 점검)
+                    (겨울 결로 하자를 여름에 점검하는 맥락, 사용 장비 MR12+초음파, 생략 항목 명시)
+                    ## 2. 초음파 누설 경로 분석 (AI 분석)
+                    (누설 지점의 위치·강도 해석 → 겨울철 냉기 침투/결로 발생부와의 인과)
+                    ## 3. 표면 수분·부식 진단 (MR12, AI 분석)
+                    (문틀·하부·경첩 수분/부식 잔존, 도어클로저 작동 불량 연계)
                     ## 4. 원인별 맞춤 개선/보수 방법 (AI 권고)
-                    ((A) 단열 보강 (B) 기밀·환기·제습 (C) 냉방 운전 조정으로 구분해 구체적 수치·방법·우선순위 제시. 교체 권유 제외, 방화 성능 유지 전제, 정밀 현장조사 후 확정 안내)
+                    (① 가스켓·도어실 기밀 보강 ② 문틀 단열·열교 차단 ③ 하부 문턱 배수/실링 ④ 부식부 방청·도어클로저 점검 ⑤ 계단실 환기·제습 — 구체 방법·우선순위. 교체 권유 제외, 방화 성능 유지 전제, 정밀 현장조사 후 확정 안내)
                     ## 5. AI 종합 소견
-                    (긴급도, 향후 관리방안 요약. 본 소견은 AI 분석 참고자료이며 법적 효력이 없음을 마지막에 명시)
+                    (긴급도, 재발 방지·향후 관리방안 요약. 본 소견은 AI 분석 참고자료이며 법적 효력이 없음을 마지막에 명시)
 
                     마지막에 아래 JSON 포함 (차트용):
                     ___JSON_START___
@@ -1750,8 +1767,8 @@
 
         function drawChart(data) {
             const isSummer = (SEASON === 'summer');
-            const ventLabel = isSummer ? '고온다습 공기 접촉·유입 (AI 추정)' : '환기/거주환경 관련 (AI 추정)';
-            const insLabel  = isSummer ? '표면 과냉·단열부족 (AI 추정)'     : '단열 성능 관련 (AI 추정)';
+            const ventLabel = isSummer ? '기밀 불량·냉기 침투 경로 (AI 추정)' : '환기/거주환경 관련 (AI 추정)';
+            const insLabel  = isSummer ? '문틀 단열 부족·열교 (AI 추정)'      : '단열 성능 관련 (AI 추정)';
             var d = google.visualization.arrayToDataTable([
                 ['원인', '비율'],
                 [ventLabel, data.ventilation],
@@ -1759,7 +1776,7 @@
                 ['기타 복합 요인 (AI 추정)', data.normal]
             ]);
             var options = {
-                title: isSummer ? '여름철 역결로 원인 비율 분석 (AI 추정)' : '결로 원인 비율 분석 (AI 데이터 기반 추정)',
+                title: isSummer ? '방화문 결로·하자 원인 비율 (AI 추정)' : '결로 원인 비율 분석 (AI 데이터 기반 추정)',
                 titleTextStyle: { color: '#0F172A', fontSize: 14, bold: true },
                 is3D: false,
                 pieHole: 0.45,
