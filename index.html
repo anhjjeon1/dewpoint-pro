@@ -398,7 +398,37 @@
             border-left: 3px solid var(--brand-accent);
         }
         .legal-check { display: flex; align-items: center; margin-top: 6px; font-weight: 700; cursor: pointer; color: var(--brand-primary); }
-        
+
+        /* === v32.0 [계절 모드 토글: 겨울용 / 여름용] === */
+        .season-toggle {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+            padding: 8px 10px 0 10px; background: var(--bg-color);
+        }
+        .season-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px 8px; border-radius: 10px; cursor: pointer;
+            font-size: 0.86rem; font-weight: 800; letter-spacing: -0.3px;
+            border: 1.5px solid var(--border-color); background: #fff; color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .season-btn .sb-sub { font-size: 0.66rem; font-weight: 600; opacity: 0.85; }
+        .season-btn.active.winter {
+            background: linear-gradient(135deg, #1E40AF 0%, #0EA5E9 100%); color: #fff;
+            border-color: #1E40AF; box-shadow: 0 6px 16px -6px rgba(30,64,175,0.55);
+        }
+        .season-btn.active.summer {
+            background: linear-gradient(135deg, #C2410C 0%, #F59E0B 100%); color: #fff;
+            border-color: #C2410C; box-shadow: 0 6px 16px -6px rgba(194,65,12,0.55);
+        }
+        .season-banner {
+            margin: 8px 10px 0 10px; padding: 10px 12px; border-radius: 10px;
+            font-size: 0.76rem; font-weight: 600; line-height: 1.5;
+            border-left: 3px solid var(--brand-accent);
+        }
+        .season-banner.winter { background: #EFF6FF; color: #1E3A8A; border-left-color: #1E40AF; }
+        .season-banner.summer { background: #FFF7ED; color: #9A3412; border-left-color: #C2410C; }
+        .season-banner b { font-weight: 800; }
+
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
@@ -439,6 +469,16 @@
     </header>
 
     <div class="content">
+        <div class="season-toggle no-print" role="group" aria-label="계절 진단 모드">
+            <button type="button" class="season-btn winter" id="season-winter" onclick="setSeason('winter')">
+                <i class="fas fa-snowflake"></i> 겨울용 <span class="sb-sub">(난방·실내결로)</span>
+            </button>
+            <button type="button" class="season-btn summer" id="season-summer" onclick="setSeason('summer')">
+                <i class="fas fa-sun"></i> 여름용 <span class="sb-sub">(냉방·역결로)</span>
+            </button>
+        </div>
+        <div class="season-banner no-print" id="season-banner"></div>
+
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
             <div class="info-grid-row">
@@ -509,15 +549,15 @@
             <div style="background:var(--accent-tint); padding:8px; border-radius:10px; margin-bottom:8px; border:1px solid var(--accent-soft);">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px;">
                     <div class="input-group">
-                        <label class="input-label">실내온도(Ti)</label>
+                        <label class="input-label" id="lbl-temp-in">실내온도(Ti)</label>
                         <input type="number" id="temp-in" placeholder="Auto" oninput="calcDewPoint()">
                     </div>
                     <div class="input-group">
-                        <label class="input-label">상대습도(RH)</label>
+                        <label class="input-label" id="lbl-humid-in">상대습도(RH)</label>
                         <input type="number" id="humid-in" placeholder="Auto" oninput="calcDewPoint()">
                     </div>
                     <div class="input-group">
-                        <label class="input-label" style="color:var(--brand-accent);">● 노점온도(Tdp)</label>
+                        <label class="input-label" id="lbl-dew" style="color:var(--brand-accent);">● 노점온도(Tdp)</label>
                         <input type="text" id="dew-result" placeholder="자동계산" readonly class="dew-result-input" style="background-color:var(--brand-primary); color:#fff; font-weight:900; border-color:var(--brand-primary);">
                     </div>
                 </div>
@@ -525,12 +565,12 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div class="input-group">
-                    <label class="input-label">● 표면온도(Tsi)</label>
+                    <label class="input-label" id="lbl-temp-surf">● 표면온도(Tsi)</label>
                     <input type="number" id="temp-surf" class="tdr-input" placeholder="열화상 Auto">
-                    <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:4px; text-align:center;">* 열화상 사진 최저값 자동 입력</div>
+                    <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:4px; text-align:center;" id="hint-temp-surf">* 열화상 사진 최저값 자동 입력</div>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">외기온도(To)</label>
+                    <label class="input-label" id="lbl-temp-out">외기온도(To)</label>
                     <input type="text" id="temp-out" placeholder="Loading.." style="background:var(--bg-color);">
                 </div>
             </div>
@@ -538,7 +578,7 @@
             <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
                 <label class="input-label"><i class="fas fa-wind" style="color:var(--brand-accent);"></i> 공기질 정밀 진단 (Auto)</label>
 
-                <div style="font-size:0.74rem; color:var(--brand-primary); margin-bottom:5px; font-weight:600; text-align:center; background:var(--accent-tint); padding:4px 8px; border-radius:6px; border:1px solid var(--accent-soft);">
+                <div id="vapmix-guide" style="font-size:0.74rem; color:var(--brand-primary); margin-bottom:5px; font-weight:600; text-align:center; background:var(--accent-tint); padding:4px 8px; border-radius:6px; border:1px solid var(--accent-soft);">
                     ※ 겨울철 적정(신축): VAP 1.2kPa ↓ / MIX 7.3g/kg ↓
                 </div>
 
@@ -730,7 +770,7 @@
                     <i class="fas fa-brain" style="margin-right:5px; color:var(--brand-accent);"></i> AI 정밀 분석 진행 중...
                 </p>
                 <p style="margin-top:8px; font-weight:500; color:var(--text-secondary); font-size:0.85rem;">
-                    건축 물리 데이터 대조 및 VAP/MIX 공기질 기준 적용 중<br>
+                    건축 물리 데이터 대조 및 계절별 결로 메커니즘 분석 중<br>
                     (약 15~30초 소요)
                 </p>
             </div>
@@ -771,11 +811,61 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v31.2';
+        const APP_VERSION = 'v32.0';
+
+        // ★ v32.0: 계절 진단 모드 (겨울용=난방 실내결로 / 여름용=냉방 역결로)
+        //  - 물리 원리는 동일(표면온도 < 접촉공기 노점 → 결로)하나, '차가운 면'과 '습한 공기'의
+        //    위치가 계절별로 반대이므로 라벨/판정기준/AI 프롬프트를 모드별로 분기한다.
+        let SEASON = 'winter';
+        const SEASON_LABELS = {
+            winter: {
+                tempIn:  '실내온도(Ti)',
+                humidIn: '실내습도(RH)',
+                dew:     '● 노점온도(Tdp)',
+                surf:    '● 실내측 표면온도(Tsi)',
+                surfHint:'* 열화상 최저값 — 결로 생기는 실내측 차가운 면',
+                tempOut: '외기온도(To)',
+                vapmix:  '※ 겨울철 적정(신축): VAP 1.2kPa ↓ / MIX 7.3g/kg ↓',
+                banner:  '❄️ <b>겨울용 모드</b> — 따뜻·습한 <b>실내 공기</b>가 외기 냉기로 차가워진 <b>실내측 표면</b>(유리·벽 코너·방화문 실내면)에 응결. 온·습도는 실내에서, 표면온도는 결로 생기는 실내측 면에서 측정하세요.'
+            },
+            summer: {
+                tempIn:  '다습부 온도(Tw)',
+                humidIn: '다습부 습도(RH)',
+                dew:     '● 노점온도(Tdp)',
+                surf:    '● 결로면 온도(Ts)',
+                surfHint:'* 열화상 최저값 — 냉방으로 차가워진 결로면(방화문 계단실측 등)',
+                tempOut: '냉방측 온도(Tc)',
+                vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 기준(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
+                banner:  '☀️ <b>여름용 모드(역결로)</b> — 고온다습한 <b>외기·계단실 공기</b>가 냉방으로 차가워진 <b>표면</b>(방화문 계단실측·배관·북측벽)에 응결. 온·습도는 <b>고온다습한 쪽</b>에서, 표면온도는 <b>결로 생기는 차가운 면</b>에서 측정하세요.'
+            }
+        };
+
+        window.setSeason = function(s) {
+            SEASON = (s === 'summer') ? 'summer' : 'winter';
+            const L = SEASON_LABELS[SEASON];
+            const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+            set('lbl-temp-in',   L.tempIn);
+            set('lbl-humid-in',  L.humidIn);
+            set('lbl-dew',       L.dew);
+            set('lbl-temp-surf', L.surf);
+            set('hint-temp-surf',L.surfHint);
+            set('lbl-temp-out',  L.tempOut);
+            set('vapmix-guide',  L.vapmix);
+            const banner = document.getElementById('season-banner');
+            if (banner) { banner.innerHTML = L.banner; banner.className = 'season-banner no-print ' + SEASON; }
+            const bw = document.getElementById('season-winter');
+            const bs = document.getElementById('season-summer');
+            if (bw) bw.classList.toggle('active', SEASON === 'winter');
+            if (bs) bs.classList.toggle('active', SEASON === 'summer');
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const badge = document.getElementById('version-badge');
             if (badge) badge.textContent = APP_VERSION;
             document.title = '청개구리 결로진단 AI ' + APP_VERSION;
+            // 현재 월 기준 기본 모드 자동 선택 (4~10월 = 여름/냉방, 그 외 = 겨울/난방)
+            const m = new Date().getMonth() + 1;
+            setSeason((m >= 4 && m <= 10) ? 'summer' : 'winter');
         });
         let ADMIN_TOKEN = localStorage.getItem('dewpoint_admin_token') || '';
         let _fp = localStorage.getItem('dewpoint_fp') || '';
@@ -844,6 +934,31 @@
                 diagnosis: "침기(Infiltration)에 의한 내부 결로",
                 mechanism: "기밀층이 파괴된 틈새(전선관, 배관 주위)로 외부의 차가운 공기가 단열재와 내벽 사이로 침투하여 벽체 내부 온도를 낮추고 습기를 응결시킵니다.",
                 solution: "1. 콘센트 커버 분리 후 내부 전선관 주변을 '기밀 테이프' 또는 '우레탄 폼'으로 밀실 충진\n2. 에어컨 배관 구멍 실리콘/퍼티 재마감\n3. 방풍 커버 설치"
+            }
+        ];
+
+        // ★ v32.0: 여름철(냉방기) '역결로' 전용 메커니즘 DB
+        const SUMMER_DB = [
+            {
+                id: "S-001",
+                category: "여름철 표면결로(역결로)",
+                diagnosis: "냉방면 표면결로 (Summer Surface Condensation)",
+                mechanism: "여름철 고온다습한 공기가 냉방으로 차가워진 표면(금속 방화문·냉수 배관·북측/지하 벽)에 닿으면, 표면온도가 그 공기의 노점보다 낮을 때 표면에 물이 맺힙니다. 겨울 결로와 달리 '차가운 쪽 표면'에서 발생합니다.",
+                solution: "1. 결로면 단열(방화문 단열패드/시트 부착)로 표면온도를 노점 위로 끌어올림\n2. 냉방 토출구가 결로면을 직접 때리지 않도록 풍향 조정\n3. 고온다습 공기 접촉 차단(접촉부 기밀·환기·제습)"
+            },
+            {
+                id: "S-002",
+                category: "방화문 여름결로",
+                diagnosis: "방화문 강판 열교 + 냉기 유출(Exfiltration)",
+                mechanism: "세대 내부 냉방 공기가 방화문 강판을 냉각시키면 계단실(고온다습)측 문 표면이 노점 이하로 떨어져 결로·물맺힘·하부 부식이 발생합니다. 또한 가스켓/문틈으로 찬 냉방공기가 새어나가는 지점은 국부적으로 더 차가워져 그 자리에 결로가 집중됩니다.",
+                solution: "1. 방화문 실내측 강판면 단열 보강(방화 성능 유지 자재)\n2. 가스켓·문틀 기밀 보강으로 냉기 유출/습기 접촉 최소화\n3. 계단실 환기·제습으로 접촉 공기의 노점을 낮춤\n※ 여름엔 결로방지 히터·무조건 통기 확대는 역효과(습기 유입 증가)"
+            },
+            {
+                id: "S-003",
+                category: "기밀(여름)",
+                diagnosis: "틈새 고온다습 공기 유입 / 냉기 유출 결로",
+                mechanism: "여름에는 겨울과 반대로, 냉방공간의 찬 공기가 틈으로 빠져나가거나 외부 고온다습 공기가 틈으로 들어와 냉방면 주변에서 응결합니다. 초음파 검사에서 잡히는 누설 경로가 결로 집중부와 일치합니다.",
+                solution: "1. 초음파로 확인된 누설 경로를 기밀 테이프/가스켓으로 밀폐\n2. 배관·전선관 관통부 재마감\n3. 냉방 운전 시 표면의 과도한 과냉 방지(직접 토출 회피)"
             }
         ];
 
@@ -1352,15 +1467,37 @@
                 loading.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
 
-            let tdrVal = 0;
+            const SEASON_IS_SUMMER = (SEASON === 'summer');
+            const dpNum = parseFloat(String(dew).replace('°C', '').trim());
+
+            let tdrVal = 0;                       // 겨울 차트 가중치 산출용
             let tdrMsg = "데이터 부족";
-            if(tempSurf && tempIn && tempOut) {
-                let den = parseFloat(tempIn) - parseFloat(tempOut);
-                if(den === 0) den = 1;
-                tdrVal = (parseFloat(tempIn) - parseFloat(tempSurf)) / den;
-                tdrVal = tdrVal.toFixed(2);
-                if(tdrVal > 0.28) tdrMsg = `TDR ${tdrVal} (기준 0.28 초과 -> 단열 성능 미달 유력)`;
-                else tdrMsg = `TDR ${tdrVal} (기준 0.28 이하 -> 단열 양호, 환기 부족 의심)`;
+            let summerVent = 50, summerIns = 50;  // 여름 차트 기본 가중치
+
+            if (SEASON_IS_SUMMER) {
+                // 여름철 역결로: 결로면 온도(Ts)가 접촉 고온다습 공기의 노점(Tdp)보다 낮으면 결로
+                if (tempSurf && !isNaN(dpNum)) {
+                    const margin = (parseFloat(tempSurf) - dpNum).toFixed(1);
+                    const mNum = parseFloat(margin);
+                    if (parseFloat(tempSurf) < dpNum) {
+                        tdrMsg = `결로안전마진 ${margin}°C (결로면 ${tempSurf}°C < 노점 ${dpNum}°C → 결로 발생: 차가운 표면에 고온다습 공기 응결)`;
+                    } else {
+                        tdrMsg = `결로안전마진 ${margin}°C (결로면 ${tempSurf}°C ≥ 노점 ${dpNum}°C → 현재 결로 위험 낮음, 냉방 강화·외기 습도 상승 시 위험)`;
+                    }
+                    if (mNum < -3) { summerIns = 65; summerVent = 35; }       // 표면 과냉/단열부족 우세
+                    else if (mNum < 0) { summerIns = 50; summerVent = 50; }   // 경계
+                    else { summerVent = 60; summerIns = 40; }                 // 고온다습 공기 접촉 변수 우세
+                }
+            } else {
+                // 겨울철: TDR(온도차이비율) — 실내 따뜻/외기 차가움 전제
+                if(tempSurf && tempIn && tempOut) {
+                    let den = parseFloat(tempIn) - parseFloat(tempOut);
+                    if(den === 0) den = 1;
+                    tdrVal = (parseFloat(tempIn) - parseFloat(tempSurf)) / den;
+                    tdrVal = tdrVal.toFixed(2);
+                    if(tdrVal > 0.28) tdrMsg = `TDR ${tdrVal} (기준 0.28 초과 -> 단열 성능 미달 유력)`;
+                    else tdrMsg = `TDR ${tdrVal} (기준 0.28 이하 -> 단열 양호, 환기 부족 의심)`;
+                }
             }
 
             let spacerLogic = "";
@@ -1451,10 +1588,59 @@
             const concreteLogic = "- 건물 특성상 콘크리트 및 몰탈의 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'가 결로의 원인이 될 수 있음을 반드시 언급하십시오. (특히 입주 2년 이내 신축인 경우)";
 
             try {
-                const dbContext = JSON.stringify(CONDENSATION_DB);
-                
-                const prompt = `
-                    당신은 '건축물리 박사'이자 '결로 진단 최고 전문가'입니다. 
+                const dbContext = JSON.stringify(SEASON_IS_SUMMER ? SUMMER_DB : CONDENSATION_DB);
+
+                let prompt;
+                if (SEASON_IS_SUMMER) {
+                    prompt = `
+                    당신은 '건축물리 박사'이자 '여름철(냉방기) 역결로 진단 전문가'입니다.
+                    지금은 **여름철 냉방 결로(역결로)** 진단이며, 겨울철 결로와 메커니즘이 반대임을 반드시 전제로 분석하십시오.
+
+                    [여름철 역결로 핵심 원리]
+                    - 결로는 '차가워진 표면'에서 발생합니다. 냉방으로 차가워진 면(방화문 강판, 냉수 배관, 북측/지하 벽)의 표면온도(Ts)가, 그 면에 접촉하는 고온다습 공기의 노점온도(Tdp)보다 낮으면 결로가 생깁니다. 판정: **Ts < Tdp 이면 결로 발생**.
+                    - 겨울철 지표인 **TDR 0.28 기준, VAP 1.2kPa / MIX 7.3g/kg 기준은 여름철에 적용하지 마십시오.** 여름철 절대습도(MIX)는 15~20g/kg로 자연히 높습니다.
+                    - '냉기 유입'의 방향이 겨울과 반대입니다. 여름엔 냉방 찬공기가 틈으로 '유출(exfiltration)'되며 그 지점 표면을 더 차게 만들어 결로를 집중시키고, 외부 고온다습 공기가 틈으로 유입되어 냉방면에 응결합니다.
+                    - 초음파 발생기 + 초음파(음향) 카메라 검사 해석: 발생기를 냉방측에 두고 고온다습측에서 누설 경로를 촬영하면, 신호가 강한 누설 지점이 곧 결로 집중부와 일치합니다.
+
+                    [참조 데이터베이스 — 여름철]
+                    ${dbContext}
+
+                    [현장 데이터]
+                    - 구조/대상: ${winType} / ${houseType} (방화문 진단이면 '장소'에 방화문/세대 현관문 명시)
+                    - 고온다습부(접촉 공기): ${tempIn}°C / ${humid}% (노점: ${dew})
+                    - 냉방측 온도: ${tempOut}°C / 결로면 표면온도(Ts): ${tempSurf}°C
+                    - 공기질(참고): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'} (※ 여름엔 겨울 기준 적용 금지)
+                    - 증상: ${defect}
+                    - **핵심 결로 판정값**: ${tdrMsg}
+
+                    [특별 지시사항 (반드시 준수)]
+                    1. Ts(결로면 표면온도)와 Tdp(접촉 공기 노점)를 비교해 결로 여부를 1차 확정하고, 결로가 생기는 면을 구체적으로 지목하십시오(예: 방화문 계단실측 하부, 가스켓 주변 냉기 누설부).
+                    2. 원인을 (A) 표면 과냉·단열부족 (B) 고온다습 공기 접촉·틈새 유입/냉기 유출 (C) 기타 복합 으로 구분하여 AI 소견 비율을 제시하십시오.
+                    3. 방화문이면: 강판 열교, 냉방 토출 풍향, 가스켓/문틈 기밀, 계단실 환기·제습을 중심으로 제안하되 **방화 성능을 해치지 않는 단열/기밀 자재**를 전제로 하십시오.
+                    4. 여름철 부적합 조치는 배제하십시오: 결로방지 히터, 무조건적 통기 확대(습기 유입 증가), 겨울식 외풍 차단만으로의 접근.
+                    5. **금지어**: '기술사', '협회', '창호/문 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송'. 모든 판단은 'AI 분석에 의한 추정 소견'으로 표현하고, 단정적 귀책 판정을 피하십시오.
+
+                    [출력 포맷]
+                    Markdown 형식.
+                    ## 1. 정밀 데이터 분석 (여름철)
+                    (Ts vs 노점, 냉방측·고온다습부 온습도 관계, 결로 안전마진 설명. 겨울 TDR/VAP·MIX 기준 미적용임을 명시)
+                    ## 2. 결로 발생 메커니즘 (여름철 역결로, AI 분석)
+                    (차가워진 표면에 고온다습 공기가 응결하는 원리, 방화문 강판 열교·냉기 유출/습기 유입 경로 설명)
+                    ## 3. 방화문/대상 집중 분석 (AI 분석)
+                    (초음파 누설 경로와 결로 집중부의 일치 해석, 결로면 위치·심각도 추정)
+                    ## 4. 원인별 맞춤 개선/보수 방법 (AI 권고)
+                    ((A) 단열 보강 (B) 기밀·환기·제습 (C) 냉방 운전 조정으로 구분해 구체적 수치·방법·우선순위 제시. 교체 권유 제외, 방화 성능 유지 전제, 정밀 현장조사 후 확정 안내)
+                    ## 5. AI 종합 소견
+                    (긴급도, 향후 관리방안 요약. 본 소견은 AI 분석 참고자료이며 법적 효력이 없음을 마지막에 명시)
+
+                    마지막에 아래 JSON 포함 (차트용):
+                    ___JSON_START___
+                    {"ventilation": ${summerVent}, "insulation": ${summerIns}, "normal": 0}
+                    ___JSON_END___
+                `;
+                } else {
+                prompt = `
+                    당신은 '건축물리 박사'이자 '결로 진단 최고 전문가'입니다.
                     제공된 현장 데이터와 [표준 데이터베이스]를 바탕으로 정밀 진단 보고서를 작성하십시오.
 
                     [참조 데이터베이스]
@@ -1500,6 +1686,7 @@
                     {"ventilation": ${tdrVal > 0.28 ? 20 : 80}, "insulation": ${tdrVal > 0.28 ? 80 : 20}, "normal": 0}
                     ___JSON_END___
                 `;
+                }
 
                 // ★ v29.0: 1차 분석 (temperature 0.2, 재시도 최대 3회, 타임아웃 90초)
                 let text = await callGeminiWithRetry(
@@ -1562,14 +1749,17 @@
         };
 
         function drawChart(data) {
+            const isSummer = (SEASON === 'summer');
+            const ventLabel = isSummer ? '고온다습 공기 접촉·유입 (AI 추정)' : '환기/거주환경 관련 (AI 추정)';
+            const insLabel  = isSummer ? '표면 과냉·단열부족 (AI 추정)'     : '단열 성능 관련 (AI 추정)';
             var d = google.visualization.arrayToDataTable([
                 ['원인', '비율'],
-                ['환기/거주환경 관련 (AI 추정)', data.ventilation],
-                ['단열 성능 관련 (AI 추정)', data.insulation],
+                [ventLabel, data.ventilation],
+                [insLabel, data.insulation],
                 ['기타 복합 요인 (AI 추정)', data.normal]
             ]);
             var options = {
-                title: '결로 원인 비율 분석 (AI 데이터 기반 추정)',
+                title: isSummer ? '여름철 역결로 원인 비율 분석 (AI 추정)' : '결로 원인 비율 분석 (AI 데이터 기반 추정)',
                 titleTextStyle: { color: '#0F172A', fontSize: 14, bold: true },
                 is3D: false,
                 pieHole: 0.45,
