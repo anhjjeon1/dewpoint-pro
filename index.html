@@ -87,11 +87,11 @@
         }
         .version-badge.dev-active { background: var(--brand-accent); border-color: var(--accent-strong); box-shadow: 0 0 12px rgba(6,182,212,0.6); color: #fff;}
 
-        .content { padding: 10px; padding-top: 10px; background: var(--bg-color); }
+        .content { padding: 6px; padding-top: 8px; background: var(--bg-color); }
         .section {
             margin-bottom: 10px; background: var(--card-bg);
             border-radius: 12px; border: 1px solid var(--border-color);
-            padding: 10px 12px; box-shadow: var(--shadow-card);
+            padding: 10px 8px; box-shadow: var(--shadow-card);
         }
 
         .section-title {
@@ -147,8 +147,8 @@
         /* 그리드 조정 — v30.5: 일자 칸 제거, 동/호/장소 폭 확장 */
         .info-grid-row {
             display: grid;
-            grid-template-columns: 1fr 1fr 1.4fr;
-            gap: 6px; align-items: end; margin-bottom: 6px;
+            grid-template-columns: 1.2fr 1.2fr 1fr;
+            gap: 5px; align-items: end; margin-bottom: 6px;
         }
         .info-triple-row {
             display: grid;
@@ -166,8 +166,8 @@
         .mic-input-wrap > input,
         .mic-input-wrap > textarea { padding-right: 34px !important; }
         .mic-btn {
-            position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
-            width: 26px; height: 26px; border-radius: 50%;
+            position: absolute; right: 3px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px; border-radius: 50%;
             border: 1.5px solid var(--border-color); background: #fff;
             color: var(--text-secondary); cursor: pointer;
             display: inline-flex; align-items: center; justify-content: center;
@@ -186,12 +186,12 @@
         .mic-input-wrap.textarea-wrap .mic-btn.listening { transform: none; }
         /* v30.7: 입력칸 내부 우측 인라인 라벨 (동/호/장소) */
         .mic-input-wrap .input-suffix {
-            position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
-            color: #94A3B8; font-size: 0.7rem; font-weight: 600;
+            position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
+            color: #94A3B8; font-size: 0.68rem; font-weight: 600;
             pointer-events: none; z-index: 1; white-space: nowrap;
-            letter-spacing: 0.2px;
+            letter-spacing: 0;
         }
-        .mic-input-wrap.with-suffix > input { padding-right: 60px !important; }
+        .mic-input-wrap.with-suffix > input { padding-left: 6px !important; padding-right: 46px !important; }
         @keyframes micPulse {
             0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.55); }
             50%     { box-shadow: 0 0 0 7px rgba(220,38,38,0); }
@@ -910,7 +910,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v33.8';
+        const APP_VERSION = 'v33.9';
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         const ANALYSIS_MODEL = 'gemini-3.5-flash';
