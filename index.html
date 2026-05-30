@@ -678,12 +678,12 @@
                 </div>
 
                 <div class="upload-wrapper" id="wrap-thermal">
-                    <label class="input-label" style="color:var(--brand-primary);">3. 열화상 카메라 (Thermal)</label>
+                    <label class="input-label" id="lbl-photo-thermal" style="color:var(--brand-primary);">3. 열화상 카메라 (Thermal)</label>
                     <div class="upload-grid">
                         <div>
                             <label for="img-thermal" class="upload-box">
                                 <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 1 (자동 OCR)</span>
+                                <span id="cap-thermal-1" style="font-size:0.72rem; color:var(--text-secondary);">열화상 1 (자동 OCR)</span>
                                 <img id="view-thermal" class="preview-img">
                             </label>
                             <input type="file" id="img-thermal" class="file-input" accept="image/*" onchange="handleImage(this); autoFillFromImage(this, 'thermal')">
@@ -696,7 +696,7 @@
                             </label>
                             <input type="file" id="img-thermal-b" class="file-input" accept="image/*" onchange="handleImage(this)">
                         </div>
-                        <div>
+                        <div id="slot-thermal-c">
                             <label for="img-thermal-c" class="upload-box">
                                 <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
                                 <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 3</span>
@@ -704,7 +704,7 @@
                             </label>
                             <input type="file" id="img-thermal-c" class="file-input" accept="image/*" onchange="handleImage(this)">
                         </div>
-                        <div>
+                        <div id="slot-thermal-d">
                             <label for="img-thermal-d" class="upload-box">
                                 <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
                                 <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 4</span>
@@ -910,7 +910,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v33.7';
+        const APP_VERSION = 'v33.8';
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         const ANALYSIS_MODEL = 'gemini-3.5-flash';
@@ -940,7 +940,7 @@
                 surfHint:'* 열화상 최저값 — 냉방으로 차가워진 결로면(방화문 계단실측 등)',
                 tempOut: '냉방측 온도(Tc)',
                 vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 기준(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
-                banner:  '☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어락(잠금장치) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·열화상·온습도(MR277)·창호 검사는 생략됩니다.',
+                banner:  '☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어락(잠금장치) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·온습도(MR277)·창호 검사는 생략됩니다(<b>열화상은 선택 입력</b> — 표면 저온부·열교 정성 참고용).',
                 locPlaceholder: '현관',
                 locOptions: ['현관', '다용도실', '실외기실', '거실', '안방']
             }
@@ -974,8 +974,13 @@
             show('overview-window-row', !isSummer);
             show('measurement-section',  !isSummer);
             show('wrap-uv',      !isSummer);
-            show('wrap-thermal', !isSummer);
             show('wrap-mr277',   !isSummer);
+            // ★ v33.8: 여름(방화문) 모드에서도 열화상은 노출하되 2칸만(슬롯 c·d 숨김), OCR 없이 정성 증거용
+            show('wrap-thermal', true);
+            show('slot-thermal-c', !isSummer);
+            show('slot-thermal-d', !isSummer);
+            set('lbl-photo-thermal', isSummer ? '3. 열화상 (방화문 표면온도 · 선택)' : '3. 열화상 카메라 (Thermal)');
+            set('cap-thermal-1',     isSummer ? '열화상 1' : '열화상 1 (자동 OCR)');
             set('lbl-photo-main',  isSummer ? '1. 방화문 결로/녹·문틀 메인 (필수)' : '1. 결로/곰팡이 메인 (필수)');
             set('lbl-photo-mr12',  isSummer ? '5. FLIR MR12 표면 수분 (문틀·하부·힌지)' : '5. FLIR MR12 볼 프로브 (비파괴)');
             set('lbl-photo-sonic', isSummer ? '6. 초음파 누설 검사 (냉기 침투 경로)' : '6. 초음파 음향 카메라 (Sonic)');
@@ -1413,6 +1418,8 @@
 
         window.autoFillFromImage = async function(input, type) {
             if(!input.files || !input.files[0]) return;
+            // ★ v33.8: 여름(방화문) 모드는 온습도·표면온도 계측 섹션이 숨김 — OCR 자동입력 불필요(Gemini 비용·숨김 필드 오작동 방지). 열화상은 정성 증거로만 사용.
+            if (SEASON === 'summer') return;
             const targetIds = type === 'mr277' ? ['temp-in', 'humid-in', 'vap-val', 'mix-val'] : ['temp-surf'];
             targetIds.forEach(id => {
                 document.getElementById(id).classList.add('scanning');
@@ -1755,8 +1762,8 @@
                     [현장 데이터]
                     - 대상: 세대 현관 방화문
                     - 증상: ${defect}
-                    - 사용 장비: FLIR MR12(표면 수분), 초음파 음향 카메라(누설). ※ 본 점검에서 UV·열화상·온습도(MR277)·창호 사양 검사는 생략됨 — 해당 데이터가 없음을 전제로 하고, 온습도·노점·열화상 수치를 추정하거나 요구하지 마십시오.
-                    - 첨부 사진: 방화문 현황 + MR12 표면수분 + 초음파 누설 이미지
+                    - 사용 장비: FLIR MR12(표면 수분), 초음파 음향 카메라(누설), 열화상(선택). ※ 본 점검에서 UV·온습도(MR277)·창호 사양 검사는 생략됨 — 온습도·노점·TDR 등 온도 기반 수치를 추정하거나 요구하지 마십시오. 단, **열화상 이미지가 첨부된 경우** 표면 저온부·열교(열 손실) 위치를 정성적으로(수치 산출 없이) 해석해 누설·결로 발생부와 연결하십시오.
+                    - 첨부 사진: 방화문 현황 + MR12 표면수분 + 초음파 누설 이미지 (+ 열화상은 첨부 시)
 
                     [특별 지시사항 (반드시 준수)]
                     1. 사진의 초음파 누설 신호 위치를 해석해 **냉기 침투/기밀 취약 지점을 구체적으로 지목**하고, 그곳이 겨울철 결로·녹 발생부와 어떻게 연결되는지 인과를 설명하십시오.
