@@ -982,7 +982,7 @@
         </div>
 
         <button class="analyze-btn no-print" id="analyze-btn" onclick="startAnalysis()" disabled>
-            <i class="fas fa-cogs"></i> 전문가 레벨 정밀 분석 시작
+            <i class="fas fa-cogs"></i> AI 정밀 분석
         </button>
 
         <div id="result-area">
@@ -1051,7 +1051,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v34.5'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v34.6'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         const ANALYSIS_MODEL = 'gemini-3.5-flash';
@@ -1881,7 +1881,7 @@
             const concreteLogic = "- 건물 특성상 콘크리트 및 몰탈의 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'가 결로의 원인이 될 수 있음을 반드시 언급하십시오. (특히 입주 2년 이내 신축인 경우)";
 
             try {
-                const dbContext = JSON.stringify(SEASON_IS_SUMMER ? SUMMER_DB : CONDENSATION_DB);
+                let balconyInfo='';if(winType==='방화문'){var _g=function(id){var e=document.getElementById(id);return e?(e.innerText||'').replace(/\s+/g,' ').trim():'';};var _bp=document.getElementById('blc_preset');var _bpt=(_bp&&_bp.selectedIndex>=0)?_bp.options[_bp.selectedIndex].text:'';var _bv=_g('blc_verdict'),_bl=_g('blc_loss'),_bn=_g('blc_net'),_br=_g('blc_rec');if(_bv||_bl||_br){balconyInfo='\n\n[발코니 방화문 열손실·결로 계산 (방화문 전용)]\n- 건물유형: '+_bpt+'\n- 결로판정: '+_bv+'\n- 총열손실: '+_bl+' / 순필요난방: '+_bn+'\n- '+_br+'\n위 발코니 계산 결과를 방화문 결로위험과 난방·기밀 보완 진단에 반영하십시오.';}} const dbContext = JSON.stringify(SEASON_IS_SUMMER ? SUMMER_DB : CONDENSATION_DB);
 
                 let prompt;
                 if (SEASON_IS_SUMMER) {
@@ -1902,7 +1902,7 @@
 
                     [현장 데이터]
                     - 대상: 세대 현관 방화문
-                    - 증상: ${defect}
+                    - 증상: ${defect}${balconyInfo}
                     - 사용 장비: FLIR MR12(표면 수분), 초음파 음향 카메라(누설), 열화상(선택). ※ 본 점검에서 UV·온습도(MR277)·창호 사양 검사는 생략됨 — 온습도·노점·TDR 등 온도 기반 수치를 추정하거나 요구하지 마십시오. 단, **열화상 이미지가 첨부된 경우** 표면 저온부·열교(열 손실) 위치를 정성적으로(수치 산출 없이) 해석해 누설·결로 발생부와 연결하십시오.
                     - 첨부 사진: 방화문 현황 + MR12 표면수분 + 초음파 누설 이미지 (+ 열화상은 첨부 시)
 
@@ -1947,7 +1947,7 @@
                     - 실내: ${tempIn}°C / ${humid}% (노점: ${dew})
                     - 실외: ${tempOut}°C / 표면온도: ${tempSurf}°C
                     - 공기질(선택): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'}
-                    - 증상: ${defect}
+                    - 증상: ${defect}${balconyInfo}
                     - **핵심 TDR 분석값**: ${tdrMsg}
 
                     [특별 지시사항 (반드시 준수)]
