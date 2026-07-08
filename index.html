@@ -453,7 +453,7 @@
             img { max-width: 100% !important; page-break-inside: avoid !important; }
         }
     </style>
-</head>
+<style>.blc-box:not(.show-adv) .blc-hide{display:none!important}.blc-adv summary{list-style:none}</style></head>
 <body>
 
 <!-- 자동저장 토스트 -->
@@ -878,7 +878,7 @@
   <div class="blc-head"><span class="bar"></span><span id="bal-num">7</span>. 발코니 열손실 · 히터용량 산출 (겨울 난방)</div>
   <div class="blc-sub">치수·온습도·구조 U값을 입력하면 노점 판정과 적정 히터 용량이 자동 계산됩니다. 아래 버튼으로 결과를 구글 시트에 저장할 수 있습니다.</div>
   <div class="blc-box">
-    <div class="blc-grp">공간 치수</div>
+    <div class="blc-grp">건물 유형 (자동 설정)</div><div class="blc-row"><label>건물 단열유형</label><select id="blc_preset" style="flex:1;min-width:0"><option value="normal">일반 (2002~2017 · 표준)</option><option value="old">구축 (2001년 이전 · 단열 취약)</option><option value="new">신축·고단열 (2018년 이후)</option></select></div><div class="blc-note" style="font-size:0.7rem;color:var(--text-secondary);margin:2px 6px 6px">건물 유형만 고르면 U값·활기율·안전할증률이 자동으로 채워집니다. 외벽 면적은 치수에서 자동 계산됩니다. (직접 조정하려면 아래 “고급 설정”)</div><details class="blc-adv" style="margin:0 6px 8px"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer">고급 설정 (자동값 · 필요시 수정)</summary></details><div class="blc-grp">공간 치수</div>
     <div class="blc-row"><label>폭</label><input id="blc_w" type="number" value="1.0" step="0.1"><span class="u">m</span></div>
     <div class="blc-row"><label>깊이</label><input id="blc_d" type="number" value="2.0" step="0.1"><span class="u">m</span></div>
     <div class="blc-row"><label>높이</label><input id="blc_h" type="number" value="2.4" step="0.1"><span class="u">m</span></div>
@@ -888,17 +888,17 @@
     <div class="blc-grp">발코니 / 외부</div>
     <div class="blc-row"><label>목표 발코니온도</label><input id="blc_tbal" type="number" value="5" step="0.5"><span class="u">℃</span></div>
     <div class="blc-row"><label>외부온도(기준)</label><input id="blc_tout" type="number" value="-10" step="1"><span class="u">℃</span></div>
-    <div class="blc-grp">구조 · 면적 · U값</div>
+    <div class="blc-grp">면적 (직접 실측)</div>
     <div class="blc-row"><label>루버창 면적</label><input id="blc_alv" type="number" value="1.75" step="0.05"><span class="u">㎡</span></div>
-    <div class="blc-row"><label>루버창 U값</label><input id="blc_ulv" type="number" value="3.0" step="0.1"><span class="u">W/㎡K</span></div>
-    <div class="blc-row"><label>외벽 면적</label><input id="blc_awall" type="number" value="4.8" step="0.1"><span class="u">㎡</span></div>
-    <div class="blc-row"><label>외벽 U값</label><input id="blc_uwall" type="number" value="1.06" step="0.05"><span class="u">W/㎡K</span></div>
+    <div class="blc-row blc-hide"><label>루버창 U값</label><input id="blc_ulv" type="number" value="3.0" step="0.1"><span class="u">W/㎡K</span></div>
+    <div class="blc-row blc-hide"><label>외벽 면적</label><input id="blc_awall" type="number" value="4.8" step="0.1"><span class="u">㎡</span></div>
+    <div class="blc-row blc-hide"><label>외벽 U값</label><input id="blc_uwall" type="number" value="1.06" step="0.05"><span class="u">W/㎡K</span></div>
     <div class="blc-row"><label>방화문 면적</label><input id="blc_adoor" type="number" value="1.8" step="0.1"><span class="u">㎡</span></div>
-    <div class="blc-row"><label>방화문 U값</label><input id="blc_udoor" type="number" value="4.7" step="0.1"><span class="u">W/㎡K</span></div>
-    <div class="blc-grp">활기율 · 할증도</div>
-    <div class="blc-row"><label>침기 ACH(밀폑)</label><input id="blc_ach" type="number" value="1.5" step="0.5"><span class="u">회/h</span></div>
-    <div class="blc-row"><label>침기 ACH(루버개방)</label><input id="blc_achopen" type="number" value="10" step="1"><span class="u">회/h</span></div>
-    <div class="blc-row"><label>안전할증률</label><input id="blc_sf" type="number" value="10" step="5"><span class="u">%</span></div>
+    <div class="blc-row blc-hide"><label>방화문 U값</label><input id="blc_udoor" type="number" value="4.7" step="0.1"><span class="u">W/㎡K</span></div>
+    <div class="blc-grp blc-hide">활기율 · 할증도</div>
+    <div class="blc-row blc-hide"><label>침기 ACH(밀폑)</label><input id="blc_ach" type="number" value="1.5" step="0.5"><span class="u">회/h</span></div>
+    <div class="blc-row blc-hide"><label>침기 ACH(루버개방)</label><input id="blc_achopen" type="number" value="10" step="1"><span class="u">회/h</span></div>
+    <div class="blc-row blc-hide"><label>안전할증률</label><input id="blc_sf" type="number" value="10" step="5"><span class="u">%</span></div>
   </div>
   <div id="blc_verdict" class="blc-verdict ok"><div class="t" id="blc_vt">결로 안전</div><div class="s" id="blc_vs"></div></div>
   <div class="blc-stats">
@@ -2073,5 +2073,5 @@
             c.draw(d, options);
         }
     </script>
-</body>
+<script>(function(){var P={normal:{ulv:3.0,uwall:1.06,udoor:4.7,ach:1.5,achopen:10,sf:10},old:{ulv:3.5,uwall:1.20,udoor:5.5,ach:2.0,achopen:12,sf:20},nw:{ulv:2.4,uwall:0.30,udoor:2.7,ach:1.0,achopen:8,sf:10}};function g(i){return document.getElementById(i);}function sv(i,v){var e=g(i);if(e){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}));}}function n(i){var e=g(i);return e?(parseFloat(e.value)||0):0;}function autoWall(){var a=n("blc_w")*n("blc_h")-n("blc_alv")-n("blc_adoor");if(!(a>0.3))a=0.3;sv("blc_awall",Math.round(a*10)/10);}function apply(){var s=g("blc_preset");if(!s)return;var k=s.value==="old"?"old":(s.value==="new"?"nw":"normal");var p=P[k];sv("blc_ulv",p.ulv);sv("blc_uwall",p.uwall);sv("blc_udoor",p.udoor);sv("blc_ach",p.ach);sv("blc_achopen",p.achopen);sv("blc_sf",p.sf);autoWall();}function init(){var s=g("blc_preset");if(!s)return;s.addEventListener("change",apply);["blc_w","blc_h","blc_alv","blc_adoor"].forEach(function(i){var e=g(i);if(e)e.addEventListener("input",autoWall);});var d=document.querySelector(".blc-adv");var box=s.closest(".blc-box");if(d&&box){d.addEventListener("toggle",function(){box.classList.toggle("show-adv",d.open);});}apply();}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();})();</script></body>
 </html>
