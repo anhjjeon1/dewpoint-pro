@@ -875,7 +875,7 @@
   .blc-status a{color:#0e8bb0;font-weight:700}
 </style>
 <section class="blc-wrap">
-  <div class="blc-head"><span class="bar"></span>7. 발코니 열손실 · 히터용량 산출 (겨울 난방)</div>
+  <div class="blc-head"><span class="bar"></span><span id="bal-num">7</span>. 발코니 열손실 · 히터용량 산출 (겨울 난방)</div>
   <div class="blc-sub">치수·온습도·구조 U값을 입력하면 노점 판정과 적정 히터 용량이 자동 계산됩니다. 아래 버튼으로 결과를 구글 시트에 저장할 수 있습니다.</div>
   <div class="blc-box">
     <div class="blc-grp">공간 치수</div>
@@ -1125,11 +1125,11 @@
             show('wrap-thermal', true);
             show('slot-thermal-c', !isSummer);
             show('slot-thermal-d', !isSummer);
-            set('lbl-photo-thermal', isSummer ? '3. 열화상 (방화문 표면온도 · 선택)' : '3. 열화상 카메라 (Thermal)');
-            set('cap-thermal-1',     isSummer ? '열화상 1' : '열화상 1 (자동 OCR)');
+            set('lbl-photo-thermal', isSummer ? '2. 열화상 (방화문 표면온도 · 선택)' : '3. 열화상 카메라 (Thermal)');
+            set('cap-thermal-1',     isSummer ? '열화상 1' : '열화상 1 (자동 OCR)'); set('bal-num', isSummer ? '5' : '7');
             set('lbl-photo-main',  isSummer ? '1. 방화문 결로/녹·문틀 메인 (필수)' : '1. 결로/곰팡이 메인 (필수)');
-            set('lbl-photo-mr12',  isSummer ? '5. FLIR MR12 표면 수분 (문틀·하부·힌지)' : '5. FLIR MR12 볼 프로브 (비파괴)');
-            set('lbl-photo-sonic', isSummer ? '6. 초음파 누설 검사 (냉기 침투 경로)' : '6. 초음파 음향 카메라 (Sonic)');
+            set('lbl-photo-mr12',  isSummer ? '3. FLIR MR12 표면 수분 (문틀·하부·힌지)' : '5. FLIR MR12 볼 프로브 (비파괴)');
+            set('lbl-photo-sonic', isSummer ? '4. 초음파 누설 검사 (냉기 침투 경로)' : '6. 초음파 음향 카메라 (Sonic)');
             const dc = document.getElementById('defect-content');
             if (dc) dc.placeholder = isSummer
                 ? '[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어락(잠금장치) 작동 불량·잠금 뻑뻑함 등'
