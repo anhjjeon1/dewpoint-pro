@@ -980,7 +980,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v35.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v35.1'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1746,14 +1746,27 @@
                 }
             }
 
+            // ★ v35.1: 방화문은 유리 간봉·미서기 레일 구조가 아님 — winType이 방화문이면 문(door) 전용 로직 주입
+            const isFireDoor = (winType === '방화문' || (winType && winType.indexOf('방화문') >= 0));
+
             let spacerLogic = "";
-            if (consideration.includes("TPS") || consideration.includes("TGI")) {
+            if (isFireDoor) {
+                spacerLogic = "대상은 **금속재 방화문**으로 유리 간봉이 없습니다. **간봉 열교는 원인에서 제외**하고, 금속 문짝·문틀 자체의 높은 열전도로 인한 열교(Cold Bridge)를 지적하십시오. ('간봉'이라는 단어는 사용하지 마십시오.)";
+            } else if (consideration.includes("TPS") || consideration.includes("TGI")) {
                 spacerLogic = "현재 '단열 간봉(TPS/TGI)'이 적용되어 있으므로, 간봉으로 인한 열교(Cold Bridge)는 결로의 주된 원인에서 **제외**하십시오.";
             } else {
                 spacerLogic = "알루미늄 간봉이 적용되었으므로, 유리 테두리의 열교 현상을 지적하십시오.";
             }
 
-            let slidingLogic = "미서기(Sliding) 창호의 특성상 레일 틈새로 외풍(Infiltration)이 유입되어 결로를 심화시킬 수 있음을 언급하십시오. 단, **'창호 교체'라는 단어는 절대 사용하지 말고**, 모헤어 교체나 풍지판 설치 등 보수 방법을 제안하십시오.";
+            let slidingLogic = "";
+            if (isFireDoor) {
+                slidingLogic = "대상은 **여닫이(스윙) 방식의 자동닫힘 방화문**입니다. **'미서기', '레일', '창호'라는 표현은 절대 사용하지 마십시오.** 문틈 침기는 **문짝 하부 언더컷 · 문틀 하부 문턱(sill) · 경첩/잠금부 가스켓(기밀 패킹) 틈새**로 설명하고, 보수는 **문 하부 스위퍼(도어 실링 바) 설치, 문틀 가스켓 보강, 도어클로저·경첩 조정으로 문짝 밀착도 개선** 등을 제안하십시오. ('문/방화문 교체'라는 단어는 사용하지 마십시오.)";
+            } else {
+                slidingLogic = "미서기(Sliding) 창호의 특성상 레일 틈새로 외풍(Infiltration)이 유입되어 결로를 심화시킬 수 있음을 언급하십시오. 단, **'창호 교체'라는 단어는 절대 사용하지 말고**, 모헤어 교체나 풍지판 설치 등 보수 방법을 제안하십시오.";
+            }
+
+            // 출력 포맷 ##3 특성 반영 힌트 — 방화문/창호 구분
+            const structureHint = isFireDoor ? "금속 문짝 열교 / 문틀 하부 문턱·가스켓 기밀 / 콘크리트 특성 반영" : "간봉/미서기/콘크리트 특성 반영";
 
             const currentMonth = new Date().getMonth() + 1;
             const isWinter = (currentMonth >= 11 || currentMonth <= 2);
@@ -1894,6 +1907,32 @@
                     ___JSON_END___
                 `;
                 } else {
+                // ★ v35.1: 원인 비율 차트 — TDR(단열)과 VAP/MIX(생활습기)를 함께 반영해 텍스트 개선 우선순위와 정합.
+                //   (기존: TDR만으로 20/80 고정 → 생활습기 초과 시에도 단열 지배로 표시되어 텍스트 '거주환경 1순위'와 상충)
+                let ventPct, insPct, normalPct;
+                const _tdrOver = (tdrVal > 0.28);
+                const _mixOverAmt = (vapVal && mixVal) ? Math.max(0, parseFloat(mixVal) - 7.3) : 0;
+                const _vapOverAmt = (vapVal && mixVal) ? Math.max(0, parseFloat(vapVal) - 1.2) : 0;
+                const _moistureBad = (_mixOverAmt > 0 || _vapOverAmt > 0);
+                if (vapVal && mixVal) {
+                    if (_tdrOver && _moistureBad) {
+                        // 복합: 생활습기(거주환경)를 우선 비중으로, 단열도 상당 — MIX 초과분이 클수록 거주환경 ↑
+                        ventPct = Math.max(45, Math.min(60, 40 + Math.round(_mixOverAmt * 4)));
+                        normalPct = 10;
+                        insPct = 100 - ventPct - normalPct;
+                    } else if (_tdrOver && !_moistureBad) {
+                        ventPct = 20; insPct = 75; normalPct = 5;   // 단열 지배
+                    } else if (!_tdrOver && _moistureBad) {
+                        ventPct = 70; insPct = 20; normalPct = 10;  // 생활습기 지배
+                    } else {
+                        ventPct = 45; insPct = 40; normalPct = 15;  // 둘 다 정상권 — 경미 복합
+                    }
+                } else {
+                    // VAP/MIX 미측정 → TDR만으로 (기존 로직 유지)
+                    ventPct = _tdrOver ? 20 : 75;
+                    insPct = _tdrOver ? 75 : 20;
+                    normalPct = 5;
+                }
                 prompt = `
                     당신은 '건축물리 박사'이자 '결로 진단 최고 전문가'입니다.
                     제공된 현장 데이터와 [표준 데이터베이스]를 바탕으로 정밀 진단 보고서를 작성하십시오.
@@ -1918,7 +1957,7 @@
                     5. **콘크리트 특성**: ${concreteLogic}
                     6. **논리적 판정**: 
                        - 표면온도가 노점온도보다 낮은지 확인하십시오. (T_surf < T_dp 이면 결로 발생)
-                       - TDR 0.28 기준을 적용하되, VAP/MIX 값을 종합하여 **결로 원인 비율(환기 부족 vs 단열 성능 부족)**을 AI 소견으로 추정하십시오.
+                       - TDR 0.28 기준과 VAP/MIX를 종합한 **결로 원인 비율은 [환기·거주환경 관련 ${ventPct}% / 단열 성능 관련 ${insPct}% / 기타 복합 ${normalPct}%]** 입니다. 이 비율에 근거해 원인을 서술하고, 개선 우선순위(##4의 거주 환경 관리 우선 권고)와 **모순되지 않게** 설명하십시오. 차트 JSON도 반드시 이 비율과 동일하게 출력하십시오.
                     7. **금지어**: '기술사', '협회', '창호 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송' (교체 대신 보수/개선 제안, 단정적 판정 대신 AI 분석 소견으로 표현)
                     ※ **매우 중요**: 모든 분석 결과는 반드시 'AI 분석에 의한 추정 소견'임을 명시하십시오. '시공 하자', '시공 불량', '시공사 귀책' 등 법적 분쟁을 유발할 수 있는 표현은 절대 사용하지 마십시오. 대신 '단열 성능 개선 필요 부위(AI 추정)', '설계 기준 대비 성능 미흡 가능성(AI 분석)', '추가 정밀 진단 권고' 등의 중립적 표현을 사용하십시오.
                     ${vapMixDiagnosis}
@@ -1930,7 +1969,7 @@
                     ## 2. 수증기압(VAP)/절대습도(MIX) 원인 판별 (AI 분석)
                     (VAP/MIX 측정값의 기준 초과/미달 여부를 명시하고, 이것이 거주환경 관리 문제인지, 단열 성능 관련인지, 기타 원인인지 AI 소견으로 분석. VAP/MIX 데이터가 없으면 이 섹션 생략)
                     ## 3. 진단 결과 및 발생 메커니즘 (AI 분석)
-                    (데이터에 근거한 원인 추정, 간봉/미서기/콘크리트 특성 반영. 모든 판단은 AI 분석에 의한 추정임을 명시)
+                    (데이터에 근거한 원인 추정, ${structureHint}. 모든 판단은 AI 분석에 의한 추정임을 명시)
                     ## 4. 원인별 맞춤 개선/보수 방법 (AI 권고)
                     (거주환경 개선법, 단열 보강 방법, 기타 개선 방법을 원인별로 구분하여 구체적 수치/방법/우선순위와 함께 제시. 교체 권유 제외. 정밀 현장 조사 후 확정 필요함을 안내.)
                     ## 5. AI 종합 소견
@@ -1938,7 +1977,7 @@
 
                     마지막에 아래 JSON 포함 (차트용):
                     ___JSON_START___
-                    {"ventilation": ${tdrVal > 0.28 ? 20 : 80}, "insulation": ${tdrVal > 0.28 ? 80 : 20}, "normal": 0}
+                    {"ventilation": ${ventPct}, "insulation": ${insPct}, "normal": ${normalPct}}
                     ___JSON_END___
                 `;
                 }
