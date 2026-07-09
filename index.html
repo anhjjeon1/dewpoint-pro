@@ -2,7 +2,7 @@
 <html lang="ko"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>청개구리 결로진단 AI v34.7</title>
+    <title>청개구리 결로진단 AI v34.8</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -464,7 +464,7 @@
 <div class="mobile-container">
     <header class="main-header">
         <h1>청개구리 결로진단 AI</h1>
-        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v34.7</span>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v34.8</span>
     </header>
 
     <div class="content">
@@ -636,44 +636,6 @@
                     </div>
                 </div>
 
-                <div class="upload-wrapper" id="wrap-uv" style="display: none;">
-                    <label class="input-label" style="color:var(--brand-primary);">2. UV (자외선) 형광 촬영</label>
-                    <div class="upload-grid">
-                        <div>
-                            <label for="img-uv" class="upload-box">
-                                <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">UV 사진 1</span>
-                                <img id="view-uv" class="preview-img">
-                            </label>
-                            <input type="file" id="img-uv" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-uv-b" class="upload-box">
-                                <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">UV 사진 2</span>
-                                <img id="view-uv-b" class="preview-img">
-                            </label>
-                            <input type="file" id="img-uv-b" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-uv-c" class="upload-box">
-                                <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">UV 사진 3</span>
-                                <img id="view-uv-c" class="preview-img">
-                            </label>
-                            <input type="file" id="img-uv-c" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-uv-d" class="upload-box">
-                                <i class="fas fa-lightbulb upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">UV 사진 4</span>
-                                <img id="view-uv-d" class="preview-img">
-                            </label>
-                            <input type="file" id="img-uv-d" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                    </div>
-                </div>
-
                 <div class="upload-wrapper" id="wrap-thermal">
                     <label class="input-label" id="lbl-photo-thermal" style="color:var(--brand-primary);">2. 열화상 (방화문 표면온도 · 선택)</label>
                     <div class="upload-grid">
@@ -693,27 +655,11 @@
                             </label>
                             <input type="file" id="img-thermal-b" class="file-input" accept="image/*" onchange="handleImage(this)">
                         </div>
-                        <div id="slot-thermal-c" style="display: none;">
-                            <label for="img-thermal-c" class="upload-box">
-                                <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 3</span>
-                                <img id="view-thermal-c" class="preview-img">
-                            </label>
-                            <input type="file" id="img-thermal-c" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div id="slot-thermal-d" style="display: none;">
-                            <label for="img-thermal-d" class="upload-box">
-                                <i class="fas fa-temperature-high upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">열화상 4</span>
-                                <img id="view-thermal-d" class="preview-img">
-                            </label>
-                            <input type="file" id="img-thermal-d" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
                     </div>
                 </div>
 
                 <div class="upload-wrapper" id="wrap-mr277" style="display: none;">
-                    <label class="input-label" style="color:var(--brand-primary);">4. FLIR MR277 (습도/VAP 계측)</label>
+                    <label class="input-label" style="color:var(--brand-primary);">3. FLIR MR277 (습도/VAP 계측)</label>
                     <div class="upload-grid">
                         <div>
                             <label for="img-mr277" class="upload-box">
@@ -730,22 +676,6 @@
                                 <img id="view-mr277-b" class="preview-img">
                             </label>
                             <input type="file" id="img-mr277-b" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-mr277-c" class="upload-box">
-                                <i class="fas fa-ruler-combined upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">MR277 3</span>
-                                <img id="view-mr277-c" class="preview-img">
-                            </label>
-                            <input type="file" id="img-mr277-c" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-mr277-d" class="upload-box">
-                                <i class="fas fa-ruler-combined upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">MR277 4</span>
-                                <img id="view-mr277-d" class="preview-img">
-                            </label>
-                            <input type="file" id="img-mr277-d" class="file-input" accept="image/*" onchange="handleImage(this)">
                         </div>
                     </div>
                 </div>
@@ -806,22 +736,6 @@
                                 <img id="view-sonic-b" class="preview-img">
                             </label>
                             <input type="file" id="img-sonic-b" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-sonic-c" class="upload-box">
-                                <i class="fas fa-wave-square upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">초음파 3</span>
-                                <img id="view-sonic-c" class="preview-img">
-                            </label>
-                            <input type="file" id="img-sonic-c" class="file-input" accept="image/*" onchange="handleImage(this)">
-                        </div>
-                        <div>
-                            <label for="img-sonic-d" class="upload-box">
-                                <i class="fas fa-wave-square upload-icon" style="color:var(--brand-accent);"></i>
-                                <span style="font-size:0.72rem; color:var(--text-secondary);">초음파 4</span>
-                                <img id="view-sonic-d" class="preview-img">
-                            </label>
-                            <input type="file" id="img-sonic-d" class="file-input" accept="image/*" onchange="handleImage(this)">
                         </div>
                     </div>
                 </div>
@@ -1048,7 +962,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v34.7'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v34.8'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         const ANALYSIS_MODEL = 'gemini-3.5-flash';
@@ -1111,17 +1025,14 @@
             const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
             show('overview-window-row', !isSummer);
             show('measurement-section',  !isSummer);
-            show('wrap-uv',      !isSummer);
             show('wrap-mr277',   !isSummer);
             // ★ v33.8: 여름(방화문) 모드에서도 열화상은 노출하되 2칸만(슬롯 c·d 숨김), OCR 없이 정성 증거용
             show('wrap-thermal', true);
-            show('slot-thermal-c', !isSummer);
-            show('slot-thermal-d', !isSummer);
-            set('lbl-photo-thermal', isSummer ? '2. 열화상 (방화문 표면온도 · 선택)' : '3. 열화상 카메라 (Thermal)');
-            set('cap-thermal-1',     isSummer ? '열화상 1' : '열화상 1 (자동 OCR)'); set('bal-num', isSummer ? '5' : '7');
+            set('lbl-photo-thermal', isSummer ? '2. 열화상 (방화문 표면온도 · 선택)' : '2. 열화상 카메라 (Thermal)');
+            set('cap-thermal-1',     isSummer ? '열화상 1' : '열화상 1 (자동 OCR)'); set('bal-num', isSummer ? '5' : '6');
             set('lbl-photo-main',  isSummer ? '1. 방화문 결로/녹·문틀 메인 (필수)' : '1. 결로/곰팡이 메인 (필수)');
-            set('lbl-photo-mr12',  isSummer ? '3. FLIR MR12 표면 수분 (문틀·하부·힌지)' : '5. FLIR MR12 볼 프로브 (비파괴)');
-            set('lbl-photo-sonic', isSummer ? '4. 초음파 누설 검사 (냉기 침투 경로)' : '6. 초음파 음향 카메라 (Sonic)');
+            set('lbl-photo-mr12',  isSummer ? '3. FLIR MR12 표면 수분 (문틀·하부·힌지)' : '4. FLIR MR12 볼 프로브 (비파괴)');
+            set('lbl-photo-sonic', isSummer ? '4. 초음파 누설 검사 (냉기 침투 경로)' : '5. 초음파 음향 카메라 (Sonic)');
             const dc = document.getElementById('defect-content');
             if (dc) dc.placeholder = isSummer
                 ? '[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어락(잠금장치) 작동 불량·잠금 뻑뻑함 등'
