@@ -962,10 +962,12 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v34.8'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v34.9'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
-        const ANALYSIS_MODEL = 'gemini-3.5-flash';
+        // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
+        //   비-thinking 모델 3.1-flash로 교체(출력 굶김 없음, 품질/비용 균형). 2026-07-10 라이브 검증.
+        const ANALYSIS_MODEL = 'gemini-3.1-flash';
 
         // ★ v32.0: 계절 진단 모드 (겨울용=난방 실내결로 / 여름용=냉방 역결로)
         //  - 물리 원리는 동일(표면온도 < 접촉공기 노점 → 결로)하나, '차가운 면'과 '습한 공기'의
