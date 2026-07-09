@@ -785,8 +785,16 @@
   .blc-status.ok{color:#1c9c54} .blc-status.err{color:#d63b3b}
   .blc-status a{color:#0e8bb0;font-weight:700}
 </style>
-<section class="blc-wrap">
-  <div class="blc-head"><span class="bar"></span><span id="bal-num">5</span>. 발코니 열손실 · 히터용량 산출 (겨울 난방)</div>
+<!-- ★ v35.0: 발코니 열손실 검사 포함 여부 체크박스 (필요한 세대만) -->
+<div class="section no-print" id="blc-enable-wrap" style="margin:14px 0;padding:14px 16px;">
+  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;color:#12233b;font-size:0.95rem;">
+    <input type="checkbox" id="blc-enable" onchange="window.toggleBalcony&&window.toggleBalcony()" style="width:20px;height:20px;accent-color:#0e8bb0;flex:0 0 auto;">
+    <span><span id="bal-num">5</span>. 발코니(방화문) 열손실 검사 포함</span>
+  </label>
+  <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:6px;padding-left:30px;line-height:1.5;">발코니 방화문 결로·히터 용량 산출이 필요한 세대만 체크하세요. 체크하면 아래 입력·계산표가 나타나고 진단서에도 포함됩니다. (체크 안 하면 진단서 상단에 노출되지 않습니다.)</div>
+</div>
+<section class="blc-wrap" id="blc-section" style="display:none;">
+  <div class="blc-head"><span class="bar"></span>발코니 열손실 · 히터용량 산출 (겨울 난방)</div>
   <div class="blc-sub">치수·온습도·구조 U값을 입력하면 노점 판정과 적정 히터 용량이 자동 계산됩니다.</div>
   <div class="blc-box">
     <div class="blc-grp">건물 유형 (자동 설정)</div><div class="blc-row blc-preset-row"><label>건물 단열유형</label><select id="blc_preset" style="flex:1;min-width:0"><option value="normal">일반 (2002~2017 · 표준)</option><option value="old">구축 (2001년 이전 · 단열 취약)</option><option value="new">신축·고단열 (2018년 이후)</option></select></div><div class="blc-note" style="font-size:0.7rem;color:var(--text-secondary);margin:2px 6px 6px">건물 유형만 고르면 U값·활기율·안전할증률이 자동으로 채워집니다. 외벽 면적은 치수에서 자동 계산됩니다. (직접 조정하려면 아래 “고급 설정”)</div><details class="blc-adv" style="margin:0 6px 8px"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer">고급 설정 (자동값 · 필요시 수정)</summary></details><div class="blc-grp">공간 치수</div>
@@ -864,10 +872,11 @@
     $('dewtbl').innerHTML=t;
     LAST={w:g.w,d:g.d,h:g.h,V:+V.toFixed(2),tin:g.tin,rh:g.rh,tbal:g.tbal,tout:g.tout,dew:+dp.toFixed(1),surf:+sf.toFixed(1),verdict:verdict,loss:Math.round(L.tot),net:Math.round(net),heater:heater(net)};
   }
-  $('saveBtn').addEventListener('click', function(){
+  var _saveBtn=$('saveBtn');
+  if(_saveBtn){ _saveBtn.addEventListener('click', function(){
     var st=$('status'), btn=$('saveBtn');
     if(typeof GAS_URL==='undefined' || !GAS_URL){ st.className='blc-status err'; st.textContent='GAS_URL이 설정되지 않았습니다(로컬 미리보기).'; return; }
-    var payload={action:'save_diagnosis', data:Object.assign({}, LAST, {memo:$('memo').value||''})};
+    var payload={action:'save_diagnosis', data:Object.assign({}, LAST, {memo:($('memo')?$('memo').value:'')||''})};
     btn.disabled=true; st.className='blc-status'; st.textContent='저장 중...';
     fetch(GAS_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)})
       .then(function(r){return r.json();})
@@ -877,7 +886,16 @@
         else{ st.className='blc-status err'; st.textContent='저장 실패: '+((j&&(j.message||j.error))||'응답 오류'); }
       })
       .catch(function(e){ btn.disabled=false; st.className='blc-status err'; st.textContent='저장 실패: '+e.message; });
-  });
+  }); }
+  // ★ v35.0: 체크박스로 발코니 섹션 노출 토글 (필요 세대만) — 미체크 시 화면·진단서 모두 숨김
+  window.toggleBalcony=function(){
+    var en=document.getElementById('blc-enable');
+    var sec=document.getElementById('blc-section');
+    var on=!!(en&&en.checked);
+    if(sec) sec.style.display=on?'':'none';
+    if(on) calc();
+  };
+  window.isBalconyEnabled=function(){var en=document.getElementById('blc-enable');return !!(en&&en.checked);};
   calc();
 })();
 </script>
@@ -962,7 +980,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v34.9'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v35.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1747,7 +1765,14 @@
                 if(isWinter) {
                     winterGuide = "현재 진단 시점은 **겨울철**이며, **신축 아파트 기준 적정 공기질은 VAP 1.2kPa 이하, MIX 7.3g/kg 이하**입니다. 이 수치를 초과하면 환기 부족이 원인일 가능성이 높고, 이하라면 단열 미흡이 원인일 가능성이 큽니다.";
                 }
-                airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}`;
+                // ★ v35.0: FLIR MR277 포화수증기량 관점 강화 — 실내온도 기준 포화수증기압 대비 현재 수증기량 비율 산출 + 거주자 생활 패턴 1순위 지목
+                const _Tin = parseFloat(tempIn) || 20;
+                const _satVap = 0.6108 * Math.exp(17.27 * _Tin / (_Tin + 237.3));        // 실내온도 포화수증기압(kPa)
+                const _satMix = 622 * (_satVap / (101.325 - _satVap));                    // 포화절대습도 근사(g/kg, 1atm)
+                const _rhEq = Math.min(100, (parseFloat(vapVal) / _satVap) * 100);        // 포화 대비 현재 수증기량 비율(≈상대습도)
+                const _mixExcess = (parseFloat(mixVal) - 7.3);                            // 기준 대비 절대습도 초과분
+                const saturationLogic = `\n\n[FLIR MR277 포화수증기량 분석 — 반드시 반영]\n- 실내온도 ${_Tin}℃ 기준 **포화수증기압 ${_satVap.toFixed(2)}kPa / 포화절대습도 약 ${_satMix.toFixed(1)}g/kg**\n- 현재 VAP ${vapVal}kPa 는 포화수증기량 대비 약 **${_rhEq.toFixed(0)}%** 수준입니다. 이 비율이 높을수록 찬 표면(창호·열교부)에서 포화에 먼저 도달해 결로가 쉽게 발생합니다.\n- **핵심 해석**: MIX(절대습도)는 외기 조건이 아니라 **거주자의 생활 활동(취사·세탁 실내건조·샤워·호흡·가습기·화분/어항 등)으로 실내에서 생성한 수분량**을 직접 반영합니다. 겨울철 외기 절대습도는 2~4g/kg로 매우 낮으므로, 실내 MIX가 기준(7.3g/kg)을 넘으면 그 초과분(현재 약 ${_mixExcess >= 0 ? '+' : ''}${_mixExcess.toFixed(1)}g/kg)은 **대부분 실내 생활에서 발생한 수분**입니다.\n- 따라서 VAP/MIX가 기준을 초과할 경우 **거주자의 생활 패턴(수분 발생원 + 환기 습관)을 결로의 1순위 원인으로 구체적으로 지목**하고, 어떤 생활 행위가 실내 수증기량을 얼마나 늘리는지 정량적으로 설명하십시오. 단, 표현은 '거주 환경 관리(AI 분석 소견)'로 하되 거주자를 비난하지 않는 중립적 톤을 유지하십시오.`;
+                airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}${saturationLogic}`;
                 
                 // VAP/MIX 기준값 대비 상세 원인 판별 로직
                 const vapNum = parseFloat(vapVal);
@@ -1759,12 +1784,12 @@
                     vapMixDiagnosis = `
                     8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
                        - 측정값: VAP ${vapVal}kPa (기준 1.2kPa 대비 **${(vapNum - 1.2).toFixed(2)}kPa 초과**), MIX ${mixVal}g/kg (기준 7.3g/kg 대비 **${(mixNum - 7.3).toFixed(2)}g/kg 초과**)
-                       - VAP과 MIX 모두 기준 초과이므로, **실내 수증기 과다 상태**입니다.
-                       - 반드시 아래 3가지 원인 가능성을 **구체적으로 분석**하십시오:
-                         (A) **거주자 생활습관 원인**: 빨래 실내건조, 장시간 조리(가스레인지), 가습기 과다 사용, 환기 미실시, 욕실 문 개방, 수족관/어항, 실내 화분 과다 등 → 수증기 발생량 과다
-                         (B) **단열 성능 관련 원인** (AI 분석 소견): 벽체/창호 단열성능이 설계 기준 대비 미흡할 가능성 → 표면온도 저하 → 국부적 상대습도 상승 → 결로 발생 (이 경우 TDR값과 교차 검증)
-                         (C) **기타 복합 원인** (AI 분석 소견): 초기 건축물 습기(콘크리트 잔여 수분), 지하 습기 유입, 배관 누수 가능성, 환기 시스템(전열교환기) 미가동 또는 고장, 기밀성 저하에 의한 외부 습기 침투
-                       - TDR값(${tdrMsg})과 교차 분석하여 **주된 원인이 거주습관인지 단열 성능 부족인지** AI 소견을 제시하십시오.
+                       - VAP과 MIX 모두 기준 초과이므로, **실내 수증기 과다 상태**이며, 포화수증기량 대비 여유가 적어 찬 표면에서 결로가 쉽게 발생합니다.
+                       - 절대습도(MIX) 초과분은 대부분 실내에서 생성된 수분이므로, **(A) 거주자 생활 패턴을 결로의 1순위 원인으로 가장 비중 있게 분석**하고, (B)·(C)는 보조 원인으로 다루십시오:
+                         (A) **[1순위] 거주자 생활 패턴 원인** (반드시 상세 분석): 아래 수분 발생원을 하나씩 짚어 **각 행위가 실내 수증기량을 얼마나 늘리는지**와 **의심 정황**을 구체적으로 설명하십시오 — ① 빨래 실내건조(1회 세탁물 건조 시 2~3L 수분 방출), ② 장시간 조리·국물요리(가스레인지 연소수+증기), ③ 가습기 과다·장시간 가동, ④ 샤워/목욕 후 욕실 문 개방·환풍기 미사용, ⑤ 환기 부족(하루 환기 횟수·시간 부족, 맞통풍 미실시), ⑥ 재실 인원 대비 좁은 공간(호흡·발한), ⑦ 수족관/어항·다육 외 화분 과다. → **거주 생활 패턴이 실내 수증기 과다의 직접적 원인**임을 데이터(MIX 초과분)에 근거해 명확히 지목.
+                         (B) **[보조] 단열 성능 관련 원인** (AI 분석 소견): 벽체/창호 단열성능이 설계 기준 대비 미흡할 가능성 → 표면온도 저하 → 국부적 상대습도 상승 → 결로 발생 (이 경우 TDR값과 교차 검증)
+                         (C) **[보조] 기타 복합 원인** (AI 분석 소견): 초기 건축물 습기(콘크리트 잔여 수분), 지하 습기 유입, 배관 누수 가능성, 환기 시스템(전열교환기) 미가동 또는 고장, 기밀성 저하에 의한 외부 습기 침투
+                       - TDR값(${tdrMsg})과 교차 분석하되, **MIX 초과분이 클수록 거주 생활 패턴(수분 발생+환기 부족)의 기여도가 높다**는 점을 AI 소견으로 분명히 제시하십시오. (거주자를 비난하지 않는 '거주 환경 관리' 중립 표현 유지)
                     9. **[핵심] 원인별 맞춤 수리/개선 방법 (반드시 포함)**:
                        - 각 원인(A/B/C)에 대해 **구체적이고 실행 가능한 수리/개선 방법**을 제시하십시오:
                          (A) 거주습관 개선: 환기 횟수/시간(예: 1일 3회, 1회 10분 이상 맞통풍), 제습기 용량 및 설정습도, 빨래건조 방법 변경, 조리 시 레인지후드 사용법, 가습기 적정 사용량 등 **구체적 수치와 방법** 제시
@@ -1816,7 +1841,7 @@
             const concreteLogic = "- 건물 특성상 콘크리트 및 몰탈의 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'가 결로의 원인이 될 수 있음을 반드시 언급하십시오. (특히 입주 2년 이내 신축인 경우)";
 
             try {
-                let balconyInfo='';if(winType==='방화문'){var _g=function(id){var e=document.getElementById(id);return e?(e.innerText||'').replace(/\s+/g,' ').trim():'';};var _bp=document.getElementById('blc_preset');var _bpt=(_bp&&_bp.selectedIndex>=0)?_bp.options[_bp.selectedIndex].text:'';var _bv=_g('blc_verdict'),_bl=_g('blc_loss'),_bn=_g('blc_net'),_br=_g('blc_rec');if(_bv||_bl||_br){balconyInfo='\n\n[발코니 방화문 열손실·결로 계산 (방화문 전용)]\n- 건물유형: '+_bpt+'\n- 결로판정: '+_bv+'\n- 총열손실: '+_bl+' / 순필요난방: '+_bn+'\n- '+_br+'\n위 발코니 계산 결과를 방화문 결로위험과 난방·기밀 보완 진단에 반영하십시오.';}} const dbContext = JSON.stringify(SEASON_IS_SUMMER ? SUMMER_DB : CONDENSATION_DB);
+                let balconyInfo='';if(window.isBalconyEnabled&&window.isBalconyEnabled()){var _g=function(id){var e=document.getElementById(id);return e?(e.innerText||'').replace(/\s+/g,' ').trim():'';};var _bp=document.getElementById('blc_preset');var _bpt=(_bp&&_bp.selectedIndex>=0)?_bp.options[_bp.selectedIndex].text:'';var _bv=_g('blc_verdict'),_bl=_g('blc_loss'),_bn=_g('blc_net'),_br=_g('blc_rec');if(_bv||_bl||_br){balconyInfo='\n\n[발코니 방화문 열손실·결로 계산 (방화문 전용)]\n- 건물유형: '+_bpt+'\n- 결로판정: '+_bv+'\n- 총열손실: '+_bl+' / 순필요난방: '+_bn+'\n- '+_br+'\n위 발코니 계산 결과를 방화문 결로위험과 난방·기밀 보완 진단에 반영하십시오.';}} const dbContext = JSON.stringify(SEASON_IS_SUMMER ? SUMMER_DB : CONDENSATION_DB);
 
                 let prompt;
                 if (SEASON_IS_SUMMER) {
