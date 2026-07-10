@@ -980,7 +980,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v35.1'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v35.2'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -991,6 +991,16 @@
         //  - 물리 원리는 동일(표면온도 < 접촉공기 노점 → 결로)하나, '차가운 면'과 '습한 공기'의
         //    위치가 계절별로 반대이므로 라벨/판정기준/AI 프롬프트를 모드별로 분기한다.
         let SEASON = 'winter';
+        // ★ v35.2: 계절 판정을 '측정일(#date)' 기준 단일 함수로 통일 (기존 new Date()·이중 경계 오류 제거)
+        //  - 측정일 필드("YYYY.M.D") 우선, 파싱 실패 시에만 오늘 날짜로 폴백
+        //  - 경계 단일화: 겨울(난방·실내결로)=11~3월 / 여름(냉방·방화문 역결로 점검)=4~10월
+        function getMeasurementMonth() {
+            const raw = ((document.getElementById('date') || {}).value || '').trim();
+            const p = raw.split(/[.\-\/]/).map(s => parseInt(s, 10));
+            const mo = (p.length >= 2 && p[1] >= 1 && p[1] <= 12) ? p[1] : (new Date().getMonth() + 1);
+            return mo;
+        }
+        function seasonFromMonth(mo) { return (mo >= 4 && mo <= 10) ? 'summer' : 'winter'; }
         const SEASON_LABELS = {
             winter: {
                 tempIn:  '실내온도(Ti)',
@@ -1063,9 +1073,8 @@
             const badge = document.getElementById('version-badge');
             if (badge) badge.textContent = APP_VERSION;
             document.title = '청개구리 결로진단 AI ' + APP_VERSION;
-            // 현재 월 기준 기본 모드 자동 선택 (4~10월 = 여름/냉방, 그 외 = 겨울/난방)
-            const m = new Date().getMonth() + 1;
-            setSeason((m >= 4 && m <= 10) ? 'summer' : 'winter');
+            // ★ v35.2: 측정일(#date) 기준 기본 모드 자동 선택 (4~10월=여름/냉방, 11~3월=겨울/난방)
+            setSeason(seasonFromMonth(getMeasurementMonth()));
         });
         let ADMIN_TOKEN = localStorage.getItem('dewpoint_admin_token') || '';
         let _fp = localStorage.getItem('dewpoint_fp') || '';
@@ -1768,8 +1777,9 @@
             // 출력 포맷 ##3 특성 반영 힌트 — 방화문/창호 구분
             const structureHint = isFireDoor ? "금속 문짝 열교 / 문틀 하부 문턱·가스켓 기밀 / 콘크리트 특성 반영" : "간봉/미서기/콘크리트 특성 반영";
 
-            const currentMonth = new Date().getMonth() + 1;
-            const isWinter = (currentMonth >= 11 || currentMonth <= 2);
+            // ★ v35.2: 측정일 기준 계절 모드(SEASON)와 100% 일치시킴 (기존 new Date()·3월 누락 경계 오류 제거)
+            const currentMonth = getMeasurementMonth();
+            const isWinter = (SEASON === 'winter');
             
             let airQualityLogic = "";
             let vapMixDiagnosis = "";
