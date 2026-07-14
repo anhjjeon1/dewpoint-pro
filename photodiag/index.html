@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>청개구리 사진진단 AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --brand-primary: #0F172A;
+            --brand-accent:  #06B6D4;
+            --bg-color:      #F8FAFC;
+            --card-bg:       #FFFFFF;
+            --text-primary:  #0F172A;
+            --text-secondary:#475569;
+            --text-muted:    #94A3B8;
+            --border-color:  #E2E8F0;
+            --border-subtle: #F1F5F9;
+            --accent-soft:   #CFFAFE;
+            --accent-tint:   #ECFEFF;
+            --warning-red:   #DC2626;
+            --shadow-card:     0 1px 3px 0 rgba(15,23,42,0.08), 0 1px 2px -1px rgba(15,23,42,0.06);
+            --shadow-elevated: 0 10px 30px -10px rgba(15,23,42,0.18);
+            --container-max-width: 600px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--text-primary);
+            margin: 0; padding: 0; line-height: 1.6; display: flex; justify-content: center;
+            min-height: 100vh; padding-bottom: 80px;
+        }
+        .container { width: 100%; max-width: var(--container-max-width); background: var(--card-bg); min-height: 100vh; box-shadow: var(--shadow-elevated); }
+
+        /* 헤더 */
+        .app-header { background: var(--brand-primary); color: #fff; padding: 22px 20px 20px; position: relative; }
+        .app-header h1 { margin: 0; font-size: 1.28rem; font-weight: 900; letter-spacing: -0.02em; display:flex; align-items:center; gap:9px; }
+        .app-header .sub { margin: 6px 0 0; font-size: 0.82rem; color: #94A3B8; font-weight: 400; }
+        .version-badge { position: absolute; top: 16px; right: 16px; background: rgba(6,182,212,0.18); color: #67E8F9; font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(6,182,212,0.35); cursor: pointer; }
+
+        .content { padding: 20px; }
+        .section-title { font-size: 1.0rem; font-weight: 800; color: var(--brand-primary); margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: var(--brand-accent); }
+        .section-title:first-child { margin-top: 4px; }
+
+        .input-label { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+        .field { margin-bottom: 14px; }
+        .row { display: flex; gap: 10px; }
+        .row > .field { flex: 1; }
+        input[type=text], input[type=date], select, textarea {
+            width: 100%; padding: 12px 13px; border: 1px solid var(--border-color); border-radius: 10px;
+            font-size: 0.95rem; font-family: inherit; color: var(--text-primary); background: #fff; -webkit-appearance: none; appearance: none;
+        }
+        select { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 34px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brand-accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+        textarea { min-height: 74px; resize: vertical; }
+        .hint { font-size: 0.74rem; color: var(--text-muted); margin-top: 5px; }
+
+        .guide-box { background: var(--accent-tint); border: 1px solid var(--accent-soft); border-radius: 10px; padding: 11px 13px; font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px; line-height: 1.55; }
+        .guide-box b { color: var(--brand-primary); }
+
+        /* 사진 업로드 */
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .upload-slot { position: relative; border: 2px dashed var(--border-color); border-radius: 12px; aspect-ratio: 4/3; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--bg-color); overflow: hidden; transition: border-color .15s; }
+        .upload-slot:hover { border-color: var(--brand-accent); }
+        .upload-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .upload-slot .ph { color: var(--text-muted); text-align: center; font-size: 0.78rem; pointer-events: none; }
+        .upload-slot .ph i { font-size: 1.4rem; display: block; margin-bottom: 5px; color: var(--brand-accent); }
+        .upload-slot img.preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .upload-slot .clear-x { position: absolute; top: 5px; right: 5px; z-index: 3; background: rgba(15,23,42,0.72); color: #fff; border: none; width: 24px; height: 24px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        .upload-slot.filled .clear-x { display: flex; }
+        .upload-slot.filled .ph { display: none; }
+
+        .add-photo-btn { width: 100%; margin-top: 10px; background: #fff; color: var(--brand-accent); border: 1.5px dashed var(--brand-accent); padding: 11px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+        .add-photo-btn:active { background: var(--accent-tint); }
+
+        .pdf-save-btn { width: 100%; background: var(--brand-accent); color: #fff; border: none; padding: 15px; border-radius: 12px; font-size: 1.02rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(6,182,212,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .pdf-save-btn:disabled { background: #CBD5E1; box-shadow: none; }
+
+        .analyze-btn { width: 100%; margin-top: 22px; background: var(--brand-accent); color: #fff; border: none; padding: 16px; border-radius: 12px; font-size: 1.05rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(6,182,212,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .analyze-btn:disabled { background: #CBD5E1; box-shadow: none; cursor: not-allowed; }
+
+        /* 리포트 */
+        #result-area { display: none; }
+        .report-badge { background: var(--accent-tint); border: 1px solid var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 0.8rem; color: var(--text-secondary); margin: 4px 0 20px; line-height: 1.5; }
+        .report-badge i { color: var(--brand-accent); margin-right: 5px; }
+        .report-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.88rem; }
+        .report-summary-table th, .report-summary-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
+        .report-summary-table th { color: var(--text-secondary); width: 34%; font-weight: 600; }
+        .report-summary-table td { font-weight: 700; color: var(--brand-primary); }
+        .report-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .report-img-item { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+        .report-img-item img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .report-img-caption { font-size: 0.72rem; color: var(--text-secondary); text-align: center; padding: 5px; background: var(--bg-color); }
+
+        #analysis-content { font-size: 0.95rem; line-height: 1.75; }
+        #analysis-content h2 { font-size: 1.05rem; color: var(--brand-primary); border-bottom: 2px solid var(--accent-soft); padding-bottom: 6px; margin: 26px 0 12px; }
+        #analysis-content h3 { font-size: 0.96rem; color: var(--brand-primary); margin: 18px 0 8px; }
+        #analysis-content ul { padding-left: 20px; }
+        #analysis-content li { margin-bottom: 6px; }
+        #analysis-content strong { color: var(--accent-strong, #0891B2); }
+        #analysis-content p { margin: 8px 0; }
+
+        .chart-container { width: 100%; height: 300px; }
+
+        #loading-spinner { text-align: center; padding: 50px 20px; display: none; background: var(--accent-tint); border-radius: 12px; margin: 20px 0; border: 1px solid var(--accent-soft); }
+        #loading-spinner i { color: var(--brand-accent); }
+
+        .disclaimer { margin-top: 26px; font-size: 0.72rem; color: var(--text-secondary); text-align: center; background: var(--bg-color); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; }
+        .disclaimer strong { color: var(--brand-primary); }
+
+        .footer-btns { display: flex; gap: 10px; margin-top: 24px; }
+        .footer-btn { flex: 1; border: none; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+        .btn-reserve { background: var(--brand-primary); color: #fff; }
+        .btn-pdf { background: var(--brand-accent); color: #fff; }
+        .footer-btns.hidden { display: none; }
+
+        .footer-info { text-align: center; margin-top: 28px; font-size: 0.8rem; color: var(--text-muted); }
+        .footer-info strong { color: var(--brand-primary); }
+
+        @media print {
+            body { padding: 0; background: #fff; }
+            .no-print { display: none !important; }
+            .container { box-shadow: none; max-width: 100%; }
+            .report-summary-table { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="app-header">
+        <h1><i class="fas fa-camera-retro"></i> 청개구리 사진진단 AI</h1>
+        <p class="sub">현장 사진 + 하자유형만으로 진단 소견서 자동 생성</p>
+        <span class="version-badge" id="version-badge" onclick="checkDevMode()">v1.0</span>
+    </div>
+
+    <div class="content">
+        <!-- 입력 (분석 후 숨김) -->
+        <div id="input-area">
+            <div class="section-title"><i class="fas fa-home"></i> 진단 개요</div>
+            <div class="row">
+                <div class="field">
+                    <label class="input-label">동</label>
+                    <input type="text" id="dong" placeholder="예: 101" inputmode="text">
+                </div>
+                <div class="field">
+                    <label class="input-label">호수</label>
+                    <input type="text" id="ho" placeholder="예: 1503" inputmode="text">
+                </div>
+                <div class="field">
+                    <label class="input-label">진단 일자</label>
+                    <input type="text" id="date" readonly>
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fas fa-pen-to-square"></i> 진단 내용 입력</div>
+            <div class="hint" style="margin-bottom:8px;">진단장소 · 하자종류 · 창호종류 · 상세증상을 자유롭게 적어주세요. AI가 <b>항목별로 분리</b>해 보고서에 정리합니다.</div>
+            <div class="field">
+                <textarea id="diag-input" style="min-height:160px;" placeholder="예) &#10;장소: 거실 발코니 미서기창&#10;하자: 여밈대(만남대) 아래로 겨울 외풍, 하부 코너 곰팡이&#10;창호: 미서기 이중창(발코니)&#10;증상: 창을 닫아도 찬바람이 들어오고 유리 하단에 물이 맺힘"></textarea>
+            </div>
+
+            <div class="section-title"><i class="fas fa-images"></i> 현장 사진</div>
+            <div class="hint" style="margin-bottom:10px;">하자 부위가 잘 보이도록 근접 사진을 넣어주세요. 열화상·초음파 없이 일반 사진만으로 진단합니다. 아래 버튼으로 <b>여러 장을 한꺼번에</b> 선택하거나, 각 칸을 눌러 한 장씩 넣을 수 있습니다.</div>
+            <div class="upload-grid" id="upload-grid"></div>
+            <label class="add-photo-btn no-print">
+                <i class="fas fa-images"></i> 여러 장 한꺼번에 추가
+                <input type="file" accept="image/*" multiple style="display:none" onchange="handleMulti(this)">
+            </label>
+
+            <button class="analyze-btn" id="analyze-btn" onclick="startAnalysis()" disabled>
+                <i class="fas fa-wand-magic-sparkles"></i> AI 사진 진단 시작
+            </button>
+        </div>
+
+        <!-- 리포트 -->
+        <div id="result-area">
+            <div class="section-title" style="margin-top:0;"><i class="fas fa-file-signature"></i> 사진 기반 진단 소견서</div>
+
+            <div class="report-badge">
+                <i class="fas fa-check-circle"></i>
+                본 결과는 <strong>현장 사진에 대한 AI Vision 판독</strong>과 <strong>창호 하자 사례 데이터</strong>를 근거로 작성한 <strong>참고용 기술 소견</strong>입니다.
+            </div>
+
+            <div class="input-label" style="margin-bottom:5px;">[진단 개요]</div>
+            <table class="report-summary-table">
+                <tbody>
+                    <tr><th>진단 일자</th><td id="rep-date"></td></tr>
+                    <tr><th>진단 대상</th><td id="rep-loc"></td></tr>
+                    <tr><th>진단 장소</th><td id="rep-place"></td></tr>
+                    <tr><th>하자 종류</th><td id="rep-defecttype"></td></tr>
+                    <tr><th>창호 종류</th><td id="rep-wintype"></td></tr>
+                    <tr><th>상세 증상</th><td id="rep-symptom" style="white-space:pre-line;"></td></tr>
+                </tbody>
+            </table>
+
+            <div class="input-label" style="margin-bottom:5px;">[현장 채증 데이터]</div>
+            <div id="report-photo-gallery" class="report-gallery"></div>
+
+            <div id="loading-spinner">
+                <i class="fas fa-spinner fa-spin fa-3x"></i>
+                <p style="margin-top:20px; font-weight:800; color:var(--brand-primary); font-size:1.05rem;">
+                    <i class="fas fa-brain" style="margin-right:5px; color:var(--brand-accent);"></i> AI 사진 판독 진행 중...
+                </p>
+                <p style="margin-top:8px; font-weight:500; color:var(--text-secondary); font-size:0.85rem;">
+                    현장 사진 분석 및 하자 사례 데이터 대조 중<br>(약 15~30초 소요)
+                </p>
+            </div>
+
+            <div id="analysis-content"></div>
+
+            <div id="chart-section" style="display:none; margin-top:30px; border-top:1px solid var(--border-subtle); padding-top:20px;">
+                <div class="section-title"><i class="fas fa-chart-pie"></i> 원인 비율 분석 (AI 추정)</div>
+                <div id="chart_div" class="chart-container"></div>
+                <div class="disclaimer">
+                    ※ 본 문서는 AI가 사진과 공개 데이터를 종합·분석하여 작성한 <strong>참고용 자료</strong>입니다. 법적 효력이 없으며, 특정 시공사 또는 개인의 책임을 판정하는 문서가 아닙니다. 정확한 원인 규명을 위해서는 별도의 현장 정밀 조사가 필요합니다.
+                </div>
+            </div>
+
+            <!-- AI 진단 아래 PDF 저장 (분석 완료 후 노출) -->
+            <div id="report-save-area" class="no-print" style="display:none; margin-top:24px;">
+                <button class="pdf-save-btn" id="pdf-save-btn" onclick="savePdfAuto()">
+                    <i class="fas fa-file-arrow-down"></i> PDF로 저장 (내 파일에 보관)
+                </button>
+                <p style="text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:8px;">저장한 PDF는 휴대폰 <b>‘내 파일 / 다운로드’</b> 폴더에 보관됩니다.</p>
+            </div>
+        </div>
+
+        <div class="footer-btns hidden" id="footer-action-btns">
+            <button class="footer-btn btn-reserve" onclick="window.location.href='tel:01023220949'">
+                <i class="fas fa-phone-alt"></i> 기술 상담 연결
+            </button>
+        </div>
+
+        <div class="footer-info no-print">
+            <p style="margin:0;"><strong>청개구리샤시</strong> <span style="color:var(--brand-accent);">|</span> 데이터 기반 창호 하자 진단 <span style="color:var(--brand-accent);">|</span> <span id="ai-model-info">AI 분석: —</span></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    google.charts.load("current", { packages: ["corechart"] });
+
+    /* ===== 백엔드 (기존 결로진단앱과 동일한 GAS 프록시 재사용) ===== */
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
+    const APP_VERSION = 'v1.4';
+    const ANALYSIS_MODEL = 'gemini-3.1-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
+    document.getElementById('version-badge').innerText = APP_VERSION;
+    document.title = '청개구리 사진진단 AI ' + APP_VERSION;
+
+    // ANALYSIS_MODEL → 사람이 읽기 좋은 이름으로 변환 (예: gemini-3.1-flash → Gemini 3.1 Flash)
+    function formatModelName(id) {
+        return String(id || '').split('-')
+            .map(w => w === 'gemini' ? 'Gemini' : (w.charAt(0).toUpperCase() + w.slice(1)))
+            .join(' ');
+    }
+    document.getElementById('ai-model-info').innerText = 'AI 분석: ' + formatModelName(ANALYSIS_MODEL);
+
+    /* =====================================================================
+       하자유형 참고 지식 — AI 프롬프트에 주입. 사용자는 자유입력하고,
+       AI가 이 지식으로 하자종류를 판별·서술함. ★ 유형/문구 수정은 여기만 ★
+    ===================================================================== */
+    const REFERENCE_KNOWLEDGE = `
+- 미서기 여밈대(만남대) 기밀불량: 두 창짝이 만나는 여밈대(교차부) 풍지판·모헤어 마모/이탈, 크리센트 밀착 불량으로 수직 틈새 → 겨울 외풍 유입·주변 표면 결로.
+- 미서기 하부 레일 틈새: 하부 레일 틈새로 냉기 유입, 배수 슬롯·레일 홈에 결로수 고여 하부 코너 곰팡이.
+- 창틀-벽체 접합부(코킹) 하자: 창틀 외곽-벽체 실리콘 코킹 노후·이격·들뜸 → 외기·빗물 침투, 접합부 열교로 실내측 결로·누수.
+- 복층유리 간봉부 결로: 복층유리 가장자리 간봉(스페이서) 열교로 유리 하단·테두리 결로. 알루미늄 간봉은 취약, 단열간봉(웜엣지)은 개선.
+- 창틀(프레임) 열교 표면 결로: 프레임 자체 단열 부족(저단열 프로파일·금속 보강재 열교)으로 프레임 실내측 표면 결로.
+- 실내 생활습기 과다(환기 부족): 단열·기밀 정상권이나 생활수분(취사·실내건조·샤워·가습)+환기 부족으로 저온부 결로 집중. 거주환경 관리 요인(중립 표현).
+- 현관 방화문 결로: 방화문 강판 열교로 계단실측 온습도차에서 결로수 → 문틀 하단 녹·디지털 도어록 부식/오작동·인접 도배 곰팡이. 방화문은 여닫이라 미서기·레일·간봉 용어 사용 금지.`;
+
+    // 오늘 날짜
+    const today = new Date();
+    document.getElementById('date').value = `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`;
+
+    /* ===== 사진 업로드 슬롯 (기본 6개 + 사진 칸 추가 가능) ===== */
+    let slotIndex = 0;
+    function createSlot() {
+        slotIndex++;
+        const slot = document.createElement('label');
+        slot.className = 'upload-slot';
+        // multiple 허용 — 한 슬롯에서 여러 장 선택 시 나머지는 빈 칸/새 칸으로 자동 분배
+        slot.innerHTML = `
+            <div class="ph"><i class="fas fa-camera"></i>사진 ${slotIndex}</div>
+            <button type="button" class="clear-x" onclick="clearSlot(event, this)">&times;</button>
+            <input type="file" accept="image/*" multiple onchange="handleImage(this)">`;
+        document.getElementById('upload-grid').appendChild(slot);
+        return slot;
+    }
+    (function initSlots() { for (let i = 0; i < 6; i++) createSlot(); })();
+
+    // 이미지 압축 (모바일 업로드 안정화)
+    function compressDataURL(dataUrl, maxSide, quality) {
+        maxSide = maxSide || 2048; quality = quality || 0.82;
+        return new Promise(function (resolve) {
+            try {
+                if (!/^data:image\//.test(dataUrl)) return resolve(dataUrl);
+                const im = new Image();
+                im.onload = function () {
+                    try {
+                        let w = im.naturalWidth, h = im.naturalHeight;
+                        if (!w || !h) return resolve(dataUrl);
+                        const scale = Math.min(1, maxSide / Math.max(w, h));
+                        const nw = Math.round(w * scale), nh = Math.round(h * scale);
+                        const cv = document.createElement('canvas');
+                        cv.width = nw; cv.height = nh;
+                        cv.getContext('2d').drawImage(im, 0, 0, nw, nh);
+                        resolve(cv.toDataURL('image/jpeg', quality) || dataUrl);
+                    } catch (e) { resolve(dataUrl); }
+                };
+                im.onerror = function () { resolve(dataUrl); };
+                im.src = dataUrl;
+            } catch (e) { resolve(dataUrl); }
+        });
+    }
+
+    // 파일 하나를 특정 슬롯에 채우기 (압축 후 미리보기)
+    function fillSlot(slot, file) {
+        return new Promise(function (resolve) {
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const compressed = await compressDataURL(e.target.result, 2048, 0.82);
+                let img = slot.querySelector('img.preview-img');
+                if (!img) { img = document.createElement('img'); img.className = 'preview-img'; slot.appendChild(img); }
+                img.src = compressed;
+                slot.classList.add('filled');
+                resolve();
+            };
+            reader.onerror = function () { resolve(); };
+            reader.readAsDataURL(file);
+        });
+    }
+    function nextEmptySlot() { return document.querySelector('.upload-slot:not(.filled)'); }
+
+    // 여러 장 한꺼번에 처리 — firstSlot이 비어있으면 첫 장을 거기에, 나머지는 빈 칸/새 칸으로
+    async function addFiles(fileList, firstSlot) {
+        const files = Array.from(fileList || []).filter(f => f && /^image\//.test(f.type));
+        for (let i = 0; i < files.length; i++) {
+            let slot = (i === 0 && firstSlot && !firstSlot.classList.contains('filled')) ? firstSlot : nextEmptySlot();
+            if (!slot) slot = createSlot();
+            await fillSlot(slot, files[i]);
+        }
+        updateAnalyzeBtn();
+    }
+
+    window.handleImage = function (input) {
+        addFiles(input.files, input.closest('.upload-slot'));
+        input.value = '';
+    };
+    // 상단 "여러 장 한꺼번에 추가" 버튼 전용
+    window.handleMulti = function (input) {
+        addFiles(input.files, null);
+        input.value = '';
+    };
+    window.clearSlot = function (ev, btn) {
+        ev.preventDefault(); ev.stopPropagation();
+        const slot = btn.closest('.upload-slot');
+        const img = slot.querySelector('img.preview-img'); if (img) img.remove();
+        const file = slot.querySelector('input[type=file]'); if (file) file.value = '';
+        slot.classList.remove('filled');
+        updateAnalyzeBtn();
+    };
+    function countImages() { return document.querySelectorAll('.upload-slot.filled img.preview-img').length; }
+    function updateAnalyzeBtn() { document.getElementById('analyze-btn').disabled = countImages() === 0; }
+
+    /* ===== 관리자 인증 (기존 백엔드와 동일 HMAC 토큰) ===== */
+    let ADMIN_TOKEN = localStorage.getItem('frogdiag_admin_token') || '';
+    const _fp = (function () {
+        let s = localStorage.getItem('frogdiag_fp');
+        if (!s) { s = 'fp_' + Math.abs(([...(navigator.userAgent + screen.width + screen.height)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7))).toString(36); localStorage.setItem('frogdiag_fp', s); }
+        return s;
+    })();
+
+    // ★ 다수 사용자용: 내장 비번으로 자동 인증(프롬프트 없음). 실패 시에만 수동 입력 폴백.
+    const EMBEDDED_ADMIN_PWD = 'anhjeon100#';
+    async function requestToken(pwd) {
+        const res = await fetch(GAS_URL, {
+            method: 'POST', headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'admin_auth', pwd: pwd, fp: _fp })
+        });
+        return res.json();
+    }
+    async function ensureAdminAuth(forceReauth) {
+        if (ADMIN_TOKEN && !forceReauth) return ADMIN_TOKEN;
+        // 1) 내장 비번으로 자동 인증
+        let data = await requestToken(EMBEDDED_ADMIN_PWD);
+        // 2) 실패(비번 변경 등) 시에만 수동 입력 폴백
+        if (!data || !data.success) {
+            const pwd = window.prompt('🔐 관리자 비밀번호를 입력하세요');
+            if (!pwd) throw new Error('인증 취소');
+            data = await requestToken(pwd);
+            if (!data || !data.success) { alert('비밀번호가 틀렸습니다'); throw new Error('인증 실패'); }
+        }
+        ADMIN_TOKEN = data.token;
+        localStorage.setItem('frogdiag_admin_token', ADMIN_TOKEN);
+        return ADMIN_TOKEN;
+    }
+
+    async function callGemini(prompt, imageParts, options) {
+        options = options || {};
+        const maxAttempts = options.maxAttempts || 3;
+        const timeoutMs = options.timeoutMs || 90000;
+        const images = imageParts.map(p => ({ mimeType: p.inline_data.mime_type, data: p.inline_data.data }));
+        const config = { temperature: options.temperature || 0.2, topP: 0.8, topK: 40 };
+        if (options.maxOutputTokens) config.maxOutputTokens = options.maxOutputTokens;
+
+        let lastErr = null;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                const token = await ensureAdminAuth(attempt > 1 && lastErr && /unauthorized|인증 만료/i.test(String(lastErr.message)));
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+                const res = await fetch(GAS_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'ai', adminToken: token,
+                        prompts: [{ prompt, images, config, model: ANALYSIS_MODEL }]
+                    }),
+                    signal: ctrl.signal
+                });
+                clearTimeout(timer);
+                const data = await res.json();
+                if (data.error === 'unauthorized') {
+                    localStorage.removeItem('frogdiag_admin_token'); ADMIN_TOKEN = '';
+                    throw new Error('unauthorized: 인증 만료');
+                }
+                if (!data.results || !data.results.length) throw new Error(data.message || 'AI 응답 없음');
+                const result = data.results[0];
+                if (result.error === 'safety') throw new Error('safety filter blocked');
+                if (result.error) throw new Error(result.error + (result.message ? ': ' + result.message : ''));
+                return result.text;
+            } catch (e) {
+                lastErr = e;
+                const msg = String(e && e.message || '').toLowerCase();
+                if (msg.includes('인증 취소') || msg.includes('인증 실패') || msg.includes('safety') || msg.includes('permission')) throw e;
+                if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1500 * Math.pow(2, attempt - 1)));
+            }
+        }
+        throw lastErr || new Error('Gemini 호출 실패');
+    }
+
+    function assessQuality(text) {
+        if (!text || text.length < 400) return 'poor';
+        const need = ['## 1.', '## 3.', '## 4.', '## 5.'];
+        const missing = need.filter(h => !text.includes(h)).length;
+        if (missing >= 2) return 'poor';
+        if (missing === 1 || text.length < 800) return 'fair';
+        return 'good';
+    }
+
+    /* ===== 프롬프트 빌더 (자유입력 → 항목분리 + 소견서) ===== */
+    function buildPrompt(ctx) {
+        return `당신은 대한민국 아파트 창호(샤시) 하자 진단 20년 경력의 전문가입니다.
+아래 [진단 내용]은 현장 담당자가 자유롭게 작성한 메모입니다. 이를 분석해 4개 항목으로 분리하고, 첨부된 현장 사진 ${ctx.imgCount}장을 정밀 판독하여 진단 소견서를 작성하십시오.
+열화상·초음파 등 계측 장비 데이터는 없으며, 오직 육안 사진과 아래 하자 사례 지식에 근거합니다.
+
+[진단 대상]
+- 동/호: ${ctx.dongho || '(미입력)'}
+- 진단 일자: ${ctx.date}
+
+[진단 내용 (자유 입력)]
+"""
+${ctx.freeText || '(텍스트 입력 없음 — 사진만으로 판단)'}
+"""
+
+[하자유형 참고 지식]
+${REFERENCE_KNOWLEDGE}
+
+[작업 지시]
+1. [진단 내용]과 사진을 근거로 아래 4개 항목을 추출하십시오. 명시되지 않은 항목은 사진·문맥으로 추정하고, 그래도 불명확하면 "미상"으로 두십시오.
+   - place(진단장소): 예) 거실 발코니 미서기창
+   - defectType(하자종류): 위 참고 지식 중 가장 부합하는 하자 유형명
+   - windowType(창호종류): 예) 미서기 이중창(발코니), 시스템 창호, 현관 방화문
+   - symptom(상세증상): 관찰·호소된 증상 요약(한두 문장)
+2. 반드시 첨부 사진에서 "실제로 관찰되는 것"만 근거로 서술하십시오. 사진에 없는 것을 지어내지 마십시오. 화질이 부족하면 "추가 근접 촬영 권고"로 안내하십시오.
+3. 모든 판단은 'AI 분석에 의한 추정 소견'임을 명시하십시오.
+4. 원인 비율은 [기밀·외풍·틈새 관련 / 단열·열교·결로 관련 / 기타 복합] 3분류로, 사진·내용 근거에 따라 합계 100이 되도록 추정하십시오. 본문 서술과 차트 JSON을 동일한 비율로 맞추십시오.
+5. 금지어: '기술사', '협회', '창호 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송'. 교체 대신 보수·개선을 제안하고, 단정적 판정 대신 'AI 분석 소견'으로 표현하십시오. ('설계 기준 대비 성능 미흡 가능성(AI 분석)', '추가 정밀 진단 권고' 등 중립 표현 사용)
+
+[출력 포맷]
+맨 처음에 아래 메타 JSON을 반드시 출력하십시오(추출한 4개 항목):
+___META_START___
+{"place": "...", "defectType": "...", "windowType": "...", "symptom": "..."}
+___META_END___
+
+이어서 Markdown 형식으로 아래 5개 섹션을 모두 작성하십시오.
+## 1. 현장 사진 판독 (AI Vision)
+(각 사진에서 관찰된 하자 단서를 구체적으로 기술)
+## 2. 하자 유형 진단
+(추출한 하자종류의 발생 구조와 사진 근거를 연결하여 설명)
+## 3. 발생 원인 및 메커니즘 (AI 분석)
+(왜 이 하자가 생겼는지 물리적 메커니즘을 사진 근거로 추정. AI 추정임을 명시)
+## 4. 원인별 맞춤 개선/보수 방법 (AI 권고)
+(구체적 보수 방법·부재·우선순위 제시. 교체 권유 제외. 정밀 현장 조사 후 확정 필요 안내)
+## 5. AI 종합 소견
+(긴급도·향후 관리 방안 요약. 본 소견은 AI 분석 참고자료이며 법적 효력이 없음을 마지막에 명시)
+
+맨 마지막에 아래 차트 JSON을 반드시 포함하십시오:
+___JSON_START___
+{"ventilation": 60, "insulation": 30, "normal": 10}
+___JSON_END___`;
+    }
+
+    /* ===== 진단 실행 ===== */
+    window.startAnalysis = async function () {
+        if (countImages() === 0) { alert('사진을 최소 1장 이상 등록해주세요.'); return; }
+
+        const dong = document.getElementById('dong').value.trim();
+        const ho = document.getElementById('ho').value.trim();
+        const dateStr = document.getElementById('date').value;
+        const freeText = document.getElementById('diag-input').value.trim();
+
+        const donghoText = `${dong ? dong + '동 ' : ''}${ho ? ho + '호' : ''}`.trim() || '(미입력)';
+
+        // 리포트 개요 — 즉시 채울 수 있는 항목
+        document.getElementById('rep-date').innerText = dateStr;
+        document.getElementById('rep-loc').innerText = donghoText;
+        // 분리 항목은 AI 분석 후 채움 (우선 대기 표시)
+        ['rep-place', 'rep-defecttype', 'rep-wintype', 'rep-symptom'].forEach(id => {
+            document.getElementById(id).innerText = '분석 중…';
+        });
+
+        // 사진 수집 + 갤러리
+        const imageParts = [];
+        const gallery = document.getElementById('report-photo-gallery');
+        gallery.innerHTML = '';
+        document.querySelectorAll('.upload-slot.filled img.preview-img').forEach((img, idx) => {
+            if (img.src.startsWith('data:image')) {
+                imageParts.push({ inline_data: { mime_type: 'image/jpeg', data: img.src.split(',')[1] } });
+                const div = document.createElement('div');
+                div.className = 'report-img-item';
+                div.innerHTML = `<img src="${img.src}"><div class="report-img-caption">현장 사진 ${idx + 1}</div>`;
+                gallery.appendChild(div);
+            }
+        });
+
+        // 화면 전환
+        document.getElementById('input-area').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('footer-action-btns').classList.remove('hidden');
+        const loading = document.getElementById('loading-spinner');
+        const contentDiv = document.getElementById('analysis-content');
+        const chartSection = document.getElementById('chart-section');
+        loading.style.display = 'block';
+        contentDiv.style.display = 'none';
+        chartSection.style.display = 'none';
+        setTimeout(() => loading.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+
+        const prompt = buildPrompt({
+            dongho: donghoText, date: dateStr, freeText, imgCount: imageParts.length
+        });
+
+        try {
+            let text = await callGemini(prompt, imageParts, { maxAttempts: 3, timeoutMs: 90000, temperature: 0.2, maxOutputTokens: 8192 });
+
+            if (assessQuality(text) === 'poor') {
+                try {
+                    const retryPrompt = prompt + `\n\n[재작성 지시]\n이전 응답이 부실하거나 섹션이 누락되었습니다. 반드시 ## 1. ~ ## 5. 5개 섹션을 모두 포함하고, 구체적 방법·우선순위를 빠짐없이 작성하십시오.`;
+                    const text2 = await callGemini(retryPrompt, imageParts, { maxAttempts: 2, timeoutMs: 90000, temperature: 0.1, maxOutputTokens: 8192 });
+                    if (assessQuality(text2) !== 'poor') text = text2;
+                } catch (e) { /* 1차 결과 유지 */ }
+            }
+
+            // 메타 JSON → 진단장소/하자종류/창호종류/상세증상 분리 출력
+            const metaMatch = text.match(/___META_START___([\s\S]*?)___META_END___/);
+            const setMeta = (id, val) => { document.getElementById(id).innerText = (val && String(val).trim()) ? String(val).trim() : '미상'; };
+            if (metaMatch) {
+                try {
+                    const meta = JSON.parse(metaMatch[1]);
+                    setMeta('rep-place', meta.place);
+                    setMeta('rep-defecttype', meta.defectType);
+                    setMeta('rep-wintype', meta.windowType);
+                    setMeta('rep-symptom', meta.symptom);
+                } catch (e) {
+                    ['rep-place', 'rep-defecttype', 'rep-wintype', 'rep-symptom'].forEach(id => { document.getElementById(id).innerText = '미상'; });
+                }
+                text = text.replace(metaMatch[0], '');
+            } else {
+                // 메타 미출력 시: 자유입력 원문을 상세증상에 보존, 나머지는 미상
+                document.getElementById('rep-place').innerText = '미상';
+                document.getElementById('rep-defecttype').innerText = '미상';
+                document.getElementById('rep-wintype').innerText = '미상';
+                document.getElementById('rep-symptom').innerText = freeText || '미상';
+            }
+
+            const jsonMatch = text.match(/___JSON_START___([\s\S]*?)___JSON_END___/);
+            if (jsonMatch) {
+                try { drawChart(JSON.parse(jsonMatch[1])); chartSection.style.display = 'block'; } catch (e) {}
+                text = text.replace(jsonMatch[0], '');
+            }
+
+            const md = window.markdownit();
+            contentDiv.innerHTML = md.render(text);
+            loading.style.display = 'none';
+            contentDiv.style.display = 'block';
+            document.getElementById('report-save-area').style.display = 'block';
+        } catch (e) {
+            console.error('Analysis error:', e);
+            loading.style.display = 'none';
+            contentDiv.style.display = 'block';
+            // 개요표가 '분석 중…'에 멈추지 않도록 원문 보존
+            if (document.getElementById('rep-place').innerText === '분석 중…') {
+                document.getElementById('rep-place').innerText = '미상';
+                document.getElementById('rep-defecttype').innerText = '미상';
+                document.getElementById('rep-wintype').innerText = '미상';
+                document.getElementById('rep-symptom').innerText = freeText || '미상';
+            }
+            const safeMsg = String((e && e.message) || '알 수 없는 오류').replace(/</g, '&lt;').replace(/>/g, '&gt;').slice(0, 200);
+            contentDiv.innerHTML = `<div style="color:var(--brand-primary); text-align:center; padding:30px; background:#fff; border:1px solid var(--border-color); border-left:4px solid var(--warning-red); border-radius:12px; margin:20px 0; box-shadow:var(--shadow-card);">
+                <i class="fas fa-exclamation-triangle" style="font-size:2rem; margin-bottom:10px; color:var(--warning-red);"></i>
+                <p style="font-weight:800; font-size:1.1rem;">AI 분석 중 오류가 발생했습니다</p>
+                <p style="font-size:0.85rem; margin-top:10px; color:var(--text-secondary);">오류 내용: ${safeMsg}</p>
+                <button onclick="startAnalysis()" style="margin-top:15px; background:var(--brand-accent); color:#fff; border:none; padding:11px 26px; border-radius:10px; font-weight:700; cursor:pointer;">
+                    <i class="fas fa-redo"></i> 재분석 시도
+                </button>
+            </div>`;
+        }
+    };
+
+    function drawChart(data) {
+        const d = google.visualization.arrayToDataTable([
+            ['원인', '비율'],
+            ['기밀·외풍·틈새 관련 (AI 추정)', Number(data.ventilation) || 0],
+            ['단열·열교·결로 관련 (AI 추정)', Number(data.insulation) || 0],
+            ['기타 복합 요인 (AI 추정)', Number(data.normal) || 0]
+        ]);
+        const options = {
+            title: '창호 하자 원인 비율 (AI 추정)',
+            titleTextStyle: { color: '#0F172A', fontSize: 14, bold: true },
+            is3D: false, pieHole: 0.45,
+            slices: { 0: { color: '#06B6D4' }, 1: { color: '#0F172A', offset: 0.08 }, 2: { color: '#94A3B8' } },
+            backgroundColor: 'transparent',
+            chartArea: { left: 10, top: 30, width: '65%', height: '80%' },
+            legend: { position: 'right', alignment: 'center', textStyle: { color: '#0F172A', fontSize: 12 } },
+            pieSliceTextStyle: { color: '#fff', fontSize: 12, bold: true }
+        };
+        new google.visualization.PieChart(document.getElementById('chart_div')).draw(d, options);
+    }
+
+    /* ===== PDF 저장 (html2pdf → 폰 '내 파일/다운로드'에 실제 파일 저장) ===== */
+    window.savePdfAuto = async function () {
+        const btn = document.getElementById('pdf-save-btn');
+        const el = document.getElementById('result-area');
+        if (!el) return;
+        // 파일명: 청개구리_사진진단_101동1503호_2026-07-15.pdf
+        const dong = (document.getElementById('dong').value || '').trim();
+        const ho = (document.getElementById('ho').value || '').trim();
+        const dho = `${dong ? dong + '동' : ''}${ho ? ho + '호' : ''}` || '진단';
+        const dt = (document.getElementById('date').value || '').replace(/\./g, '-').replace(/-$/, '');
+        const fname = `청개구리_사진진단_${dho}_${dt}.pdf`;
+
+        const origHtml = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PDF 생성 중...'; }
+        // 캡처 중 저장 버튼 영역 숨김(PDF에 안 찍히게) — html2canvas는 @media print 무시
+        const saveArea = document.getElementById('report-save-area');
+        if (saveArea) saveArea.style.display = 'none';
+        try {
+            if (typeof html2pdf === 'undefined') { window.print(); return; }
+            await html2pdf().set({
+                margin: [8, 8, 10, 8],
+                filename: fname,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            }).from(el).save();
+        } catch (e) {
+            console.error('PDF save error:', e);
+            alert('PDF 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+        } finally {
+            if (saveArea) saveArea.style.display = 'block';
+            if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        }
+    };
+
+    /* 개발자 모드(버전 5회 탭) — 자리표시 */
+    let clickCount = 0, clickTimer;
+    window.checkDevMode = function () {
+        clearTimeout(clickTimer); clickCount++;
+        if (clickCount === 5) { alert('🐸 청개구리 사진진단 AI ' + APP_VERSION); clickCount = 0; }
+        clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
+    };
+</script>
+</body></html>
