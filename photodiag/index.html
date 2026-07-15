@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <style>
         :root {
@@ -201,23 +200,94 @@
             margin-top: auto;
         }
 
-        #analysis-content { font-size: 0.95rem; line-height: 1.75; }
-        #analysis-content h2 { font-size: 1.05rem; color: var(--brand-primary); border-bottom: 2px solid var(--accent-soft); padding-bottom: 6px; margin: 26px 0 12px; }
-        #analysis-content h3 { font-size: 0.96rem; color: var(--brand-primary); margin: 18px 0 8px; }
-        #analysis-content ul { padding-left: 20px; }
-        #analysis-content li { margin-bottom: 6px; }
-        #analysis-content strong { color: var(--accent-strong, #0891B2); }
-        #analysis-content p { margin: 8px 0; }
-        /* AI가 출력하는 Markdown 표(현장 정보 · 권고 조치) — 효성동 보고서 스타일 */
-        #analysis-content table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 0.82rem; }
-        #analysis-content th, #analysis-content td { border: 1px solid var(--border-color); padding: 7px 8px; text-align: left; vertical-align: top; word-break: break-word; }
-        #analysis-content th { background: var(--brand-primary); color: #fff; font-weight: 700; }
-        #analysis-content tbody tr:nth-child(even) { background: var(--bg-color); }
-        #analysis-content table strong { color: var(--brand-primary); }
-        /* 핵심 진단의 한 줄 인용 */
-        #analysis-content blockquote { margin: 10px 0; padding: 10px 12px; border-left: 4px solid var(--brand-accent); background: var(--accent-tint); color: var(--brand-primary); font-weight: 700; border-radius: 0 8px 8px 0; }
+        /* ══════ 효성동 결로진단보고서 양식 이식 ══════ */
+        :root { --rep-brand: #0E7490; --rep-brand2: #0891B2; --rep-warn: #B45309; --rep-ok: #047857; }
 
-        .chart-container { width: 100%; height: 300px; }
+        /* 보고서 히어로 헤더 */
+        .rep-hero {
+            background: linear-gradient(135deg, #0E7490, #0891B2 60%, #22D3EE);
+            color: #fff; padding: 18px 16px 15px; margin: -13px -12px 14px; border-radius: 13px 13px 0 0;
+        }
+        .rep-hero .rh-badge {
+            display: inline-block; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.35);
+            border-radius: 999px; padding: 4px 11px; font-size: 0.66rem; font-weight: 700; margin-bottom: 9px;
+        }
+        .rep-hero h1 { margin: 0 0 4px; font-size: 1.12rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; }
+        .rep-hero .rh-sub { font-size: 0.78rem; opacity: .95; }
+        .rep-hero .rh-org {
+            margin-top: 10px; font-size: 0.66rem; opacity: .9;
+            border-top: 1px solid rgba(255,255,255,.25); padding-top: 8px; line-height: 1.6;
+        }
+
+        #analysis-content { font-size: 0.86rem; line-height: 1.7; }
+        /* 섹션 제목 — 번호 사각 배지 + 하단 브랜드 라인 */
+        #analysis-content h2 {
+            margin: 22px 0 12px; font-size: 1rem; font-weight: 800; color: var(--rep-brand);
+            display: flex; align-items: center; gap: 8px; padding-bottom: 8px;
+            border-bottom: 2px solid var(--rep-brand); letter-spacing: -0.02em;
+        }
+        #analysis-content h2:first-child { margin-top: 4px; }
+        #analysis-content h2 .n {
+            background: var(--rep-brand); color: #fff; width: 23px; height: 23px; border-radius: 7px;
+            display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem; flex: none;
+        }
+        #analysis-content h3 { font-size: 0.88rem; margin: 15px 0 7px; color: var(--text-primary); font-weight: 700; }
+        #analysis-content ul { padding-left: 18px; margin: 7px 0; }
+        #analysis-content li { margin: 5px 0; }
+        #analysis-content p { margin: 7px 0; }
+        #analysis-content strong, #analysis-content b { color: var(--text-primary); font-weight: 700; }
+
+        /* 태그 칩 */
+        #analysis-content .tag {
+            display: inline-block; background: var(--chip, #ECFEFF); color: var(--rep-brand);
+            border: 1px solid #A5F3FC; border-radius: 6px; padding: 1px 7px;
+            font-size: 0.72rem; font-weight: 700; margin: 1px 2px;
+        }
+        #analysis-content .tag.ok { background: #ECFDF5; color: var(--rep-ok); border-color: #A7F3D0; }
+        #analysis-content .tag.warn { background: #FFFBEB; color: var(--rep-warn); border-color: #FDE68A; }
+
+        /* 콜아웃 */
+        #analysis-content .callout {
+            background: #ECFEFF; border: 1px solid #A5F3FC; border-left: 5px solid var(--rep-brand);
+            border-radius: 10px; padding: 12px 13px; font-size: 0.84rem; margin: 8px 0; line-height: 1.65;
+        }
+        #analysis-content .callout.warn { background: #FFFBEB; border-color: #FDE68A; border-left-color: var(--rep-warn); }
+        #analysis-content .callout b { color: var(--rep-brand); }
+        #analysis-content .callout.warn b { color: var(--rep-warn); }
+
+        /* 원인 비율 막대 */
+        #analysis-content .cause { margin: 9px 0; }
+        #analysis-content .cause .lab { display: flex; justify-content: space-between; gap: 8px; font-size: 0.76rem; font-weight: 700; margin-bottom: 4px; }
+        #analysis-content .cause .bar { height: 14px; border-radius: 7px; background: #E2E8F0; overflow: hidden; }
+        #analysis-content .cause .fill { height: 100%; border-radius: 7px; }
+        #analysis-content .cause .f1 { background: linear-gradient(90deg,#0891B2,#22D3EE); }
+        #analysis-content .cause .f2 { background: linear-gradient(90deg,#6366F1,#818CF8); }
+        #analysis-content .cause .f3 { background: linear-gradient(90deg,#94A3B8,#CBD5E1); }
+        #analysis-content .cause .f4 { background: linear-gradient(90deg,#0E7490,#67E8F9); }
+
+        /* 번호 원형 배지(상세 원인) */
+        #analysis-content .num { display: flex; gap: 9px; margin: 9px 0; align-items: flex-start; }
+        #analysis-content .num .b {
+            background: var(--rep-brand); color: #fff; width: 21px; height: 21px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;
+            flex: none; margin-top: 2px;
+        }
+        #analysis-content .num .t { font-size: 0.83rem; }
+
+        /* 표 — 현장정보(info) / 권고조치(reco) */
+        #analysis-content table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 0.78rem; }
+        #analysis-content th, #analysis-content td { border: 1px solid var(--border-color); padding: 7px 8px; text-align: left; vertical-align: top; word-break: break-word; }
+        #analysis-content thead th, #analysis-content tr:first-child th { background: var(--rep-brand); color: #fff; font-weight: 700; }
+        #analysis-content tbody tr:nth-child(even) td { background: #F8FAFC; }
+        /* 2열 표(현장 정보) 첫 칸을 라벨처럼 */
+        #analysis-content table.info th { background: #F8FAFC; color: var(--text-secondary); width: 30%; }
+        #analysis-content .pri { background: var(--rep-brand2); color: #fff; border-radius: 6px; padding: 1px 6px; font-size: 0.7rem; font-weight: 800; }
+
+        #analysis-content blockquote {
+            margin: 9px 0; padding: 11px 13px; border-left: 5px solid var(--rep-brand);
+            background: #ECFEFF; border: 1px solid #A5F3FC; color: var(--text-primary);
+            font-weight: 700; border-radius: 0 10px 10px 0; font-size: 0.86rem;
+        }
 
         #loading-spinner { text-align: center; padding: 44px 20px; display: none; background: var(--field-bg); border-radius: 12px; margin: 16px 0; border: 1px solid var(--border-color); }
         #loading-spinner i { color: var(--brand-accent); }
@@ -320,11 +390,21 @@
 
         <!-- 리포트 -->
         <div id="result-area" class="card">
-            <div class="section-title" style="margin-top:0;"><i class="fas fa-file-signature"></i> <span id="rep-report-title">사진 기반 진단 보고서</span></div>
+            <!-- 효성동 보고서 양식의 히어로 헤더 -->
+            <div class="rep-hero">
+                <span class="rh-badge">📷 청개구리샤시 AI 사진진단</span>
+                <h1 id="rep-report-title">사진 기반 창호 하자 진단 보고서</h1>
+                <div class="rh-sub" id="rep-hero-sub">—</div>
+                <div class="rh-org">
+                    진단기관 <b>청개구리샤시</b> (검사·진단·수리 원스톱)
+                    &nbsp;|&nbsp; 진단일 <span id="rep-hero-date">—</span>
+                    &nbsp;|&nbsp; <span id="rep-hero-model">AI 분석</span>
+                </div>
+            </div>
 
             <div class="report-badge">
                 <i class="fas fa-check-circle"></i>
-                본 결과는 <strong>현장 사진에 대한 AI Vision 판독</strong>과 <strong>창호 하자 사례 데이터</strong>를 근거로 작성한 <strong>참고용 기술 소견</strong>입니다.
+                본 결과는 <strong>현장 사진에 대한 AI Vision 판독</strong>과 <strong>창호 하자 사례 데이터</strong>를 근거로 작성한 <strong>참고용 기술 소견</strong>입니다. (계측 장비 미사용)
             </div>
 
             <div class="input-label" style="margin-bottom:5px;">[진단 개요]</div>
@@ -354,11 +434,14 @@
 
             <div id="analysis-content"></div>
 
-            <div id="chart-section" style="display:none; margin-top:30px; border-top:1px solid var(--border-subtle); padding-top:20px;">
-                <div class="section-title"><i class="fas fa-chart-pie"></i> 원인 비율 분석 (AI 추정)</div>
-                <div id="chart_div" class="chart-container"></div>
+            <!-- 원인 비율은 효성동 양식과 동일하게 ## 5 안에 가로 막대로 렌더됨([[CAUSE_BARS]]) -->
+            <div id="chart-section" style="display:none;">
                 <div class="disclaimer">
                     ※ 본 문서는 AI가 사진과 공개 데이터를 종합·분석하여 작성한 <strong>참고용 자료</strong>입니다. 법적 효력이 없으며, 특정 시공사 또는 개인의 책임을 판정하는 문서가 아닙니다. 정확한 원인 규명을 위해서는 별도의 현장 정밀 조사가 필요합니다.
+                </div>
+                <div class="disclaimer" style="margin-top:8px;">
+                    본 보고서는 <strong>현장 사진 육안 판독</strong> 기준이며, 폼충진·틈새 냉교의 완전 판별을 위해 <strong>겨울철 열화상 재검사</strong>를 권장합니다.<br>
+                    <strong>청개구리샤시</strong> · 검사–진단–수리 원스톱 · ☎ 1599-7380 · frogsash.co.kr
                 </div>
             </div>
 
@@ -384,11 +467,9 @@
 </div>
 
 <script>
-    google.charts.load("current", { packages: ["corechart"] });
-
     /* ===== 백엔드 (기존 결로진단앱과 동일한 GAS 프록시 재사용) ===== */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
-    const APP_VERSION = 'v2.0';
+    const APP_VERSION = 'v2.1';
     const ANALYSIS_MODEL = 'gemini-3.1-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
     document.getElementById('version-badge').innerText = APP_VERSION;
     document.title = '청개구리 사진진단 AI ' + APP_VERSION;
@@ -669,12 +750,27 @@ ___META_END___
 - "적절히 관리하십시오", "환기를 자주 하십시오" 같은 **막연한 문장 금지**. 무엇을·얼마나·언제까지를 반드시 명시.
 - [진단 내용]과 사진에서 확보한 구체 사실(예: 27층, 북향, 신축 1년차, LX BF-250DBC)을 본문에 **직접 인용**하십시오.
 
+★★ 서식 도구 (아래 HTML을 본문에 그대로 섞어 쓸 수 있습니다. 반드시 활용하십시오) ★★
+Markdown 안에 아래 HTML 조각을 그대로 넣으면 보고서 서식으로 렌더됩니다. 다른 HTML 태그·class는 쓰지 마십시오.
+1) 태그 칩 — 표나 문장 안에서 상태를 강조할 때
+   <span class="tag">알루미늄 간봉</span>            (기본·중립)
+   <span class="tag ok">내창 결로 없음</span>         (정상·양호)
+   <span class="tag warn">외창에만 결로·결빙</span>   (주의·이상)
+2) 콜아웃 박스 — 핵심 메시지·결론을 강조할 때
+   <div class="callout">본문 <b>강조</b> 내용</div>
+   <div class="callout warn"><b>결론:</b> 주의가 필요한 내용</div>
+3) 번호 원형 항목 — '상세 원인' 목록에 사용 (## 5)
+   <div class="num"><span class="b">1</span><span class="t"><b>제목</b> — 설명 → 결과</span></div>
+4) 순위 칩 — 권고 조치 표의 순위 칸에 사용 (## 8)
+   <span class="pri">1</span>
+
 이어서 Markdown 형식으로 아래 **9개 섹션**을 순서대로 작성하십시오. 섹션 제목은 아래 그대로 쓰십시오.
 
 ## 1. 현장 정보
 (Markdown 표 2열: 항목 | 내용. 아래 10항목 **전부** 포함.)
 위치/세대, 대상 창호, 방향/일조, 조망/풍환경, 하자 양상, 시공 상태, 계측, 마감 상태, 환기 설비, 입주자 의견
 - 각 칸은 단답 금지. **근거·함의를 함께** 쓸 것. 예) 방향/일조 → "북동향 · 겨울 햇빛 거의 없음 → 유리 표면온도 저하 요인"
+- **상태값은 태그 칩으로** 표시할 것. 예) 하자 양상 → \`<span class="tag warn">외창에만 결로·결빙</span> <span class="tag ok">내창 결로 없음</span>\`
 - 알 수 없으면 "미상 — (무엇을 확인하면 되는지)" 형식으로 쓸 것.
 
 ## 2. 현장 사진 판독
@@ -691,28 +787,29 @@ ___META_END___
 - 계측 장비 미사용(육안·사진 판독 기준)임을 밝힐 것.
 
 ## 4. 핵심 진단
-- 이 건의 핵심을 **큰따옴표로 감싼 한 줄**로 먼저. (예: "외창만 얼고 내창은 멀쩡하다")
+- 섹션 제목 뒤에 이 건의 핵심을 **큰따옴표 한 줄**로 붙일 것. (예: \`## 4. 핵심 진단 — "외창만 얼고 내창은 멀쩡하다"\`)
+- 그 아래 **<div class="callout">** 로 핵심 설명을 담을 것.
 - 이어서 **2문단 이상**으로, 왜 그런지를 거주자가 이해할 물리 원리로 설명(온도차·습기 이동·열교 등).
 
 ## 5. 원인 비율 분석
-- 원인을 **3가지 범주 + 비율(합 100%)**. 범주 이름은 이 건에 맞게 구체적으로.
-- 이어서 **상세 원인 (복합 N요인)** — **최소 4개** 번호 목록.
-  각 항목 형식: "**제목** — 구체적 근거(수치·조건 포함) → 결과"
-  예) "**27층 고층 강풍·연돌효과** — 전면이 트인 27층은 바람을 정면으로 받아 외창 유리를 급격히 냉각 → 표면온도 0℃ 이하로 결빙"
+- 맨 처음에 **[[CAUSE_BARS]]** 라고만 한 줄 쓰십시오. (앱이 아래 차트 JSON을 읽어 가로 막대그래프로 자동 렌더합니다. 비율을 직접 표나 글로 쓰지 마십시오.)
+- 그 다음 \`### 상세 원인 (복합 N요인)\` 소제목.
+- 상세 원인은 **최소 4개**를 **번호 원형 항목 HTML**로 작성:
+  \`<div class="num"><span class="b">1</span><span class="t"><b>27층 고층 강풍·연돌효과</b> — 전면이 트인 27층은 바람을 정면으로 받아 외창 유리를 급격히 냉각 → 표면온도 0℃ 이하로 결빙</span></div>\`
 - 마지막에 **거주자가 오해하기 쉬운 점**을 "※ ..." 로 **1개 이상** 짚을 것(예: 하부 결빙 = 배수구 불량 아님).
-- ★ 여기 비율은 아래 차트 JSON과 반드시 동일.
+- ★ 막대에 쓰일 범주명·비율은 아래 차트 JSON에 정확히 넣을 것.
 
 ## 6. 쟁점 검토
-- [진단 내용]에 입주자·시공사 주장이나 다투는 쟁점이 있으면: **"결론: ..."** 으로 시작 → **근거 3가지** → **한계**("무엇을 더 하면 최종 확정되는지").
+- [진단 내용]에 입주자·시공사 주장이나 다투는 쟁점이 있으면: 먼저 \`<div class="callout warn"><b>결론:</b> ...</div>\` → 그 아래 **근거 3가지**를 목록으로 → **한계**("무엇을 더 하면 최종 확정되는지").
 - 쟁점이 없으면 "제기된 쟁점 없음"만 쓸 것.
 
 ## 7. 종합 결론
-- 원인을 **①②③④** 로 묶어 한 문단.
-- **점검 결과 이상 없던 항목을 괄호로 나열**할 것. 예) "(배수구홈·풍지판·걸림·수직수평 등 시공 상태 모두 이상 없음)"
-- 이어서 "**거주 안전·실내측:**" 과 "**잠재 위험:**" 을 각각 한 줄로.
+- \`<div class="callout">\` 안에 원인을 **①②③④** 로 묶어 한 문단으로 담고, **점검 결과 이상 없던 항목을 괄호로 나열**할 것. 예) "(배수구홈·풍지판·걸림·수직수평 등 시공 상태 모두 이상 없음)"
+- 이어서 "**거주 안전·실내측:**" 과 "**잠재 위험:**" 을 각각 한 줄 목록으로.
 
 ## 8. 권고 조치
 (Markdown 표 3열: 순위 | 조치 | 성격 — **5~7행**)
+- 순위 칸에는 순위 칩을 쓸 것: \`<span class="pri">1</span>\`
 - 조치 형식: "**제목** — 구체적 방법(수치·주기·설정값 포함) → 기대효과"
 - 성격: [설비 활용 / 생활 관리 / 정밀 진단 / 부분 보수 / 장기 검토]
 - ★ 세대에 환기 설비(전열교환기 등)가 있으면 **그 설비 상시 가동을 1순위**로.
@@ -722,7 +819,7 @@ ___META_END___
 **가장 상세하게 쓸 섹션입니다.** 위 권고 1~2순위를 골라 ①② 소제목으로 나누고, 각각 **4~6개 실행 항목**을 쓰십시오.
 - **반드시 구체적 수치 포함**: 용량(L급), 목표 습도(%), 주기(개월), 온도(℃), 시간(분), 평형(㎡).
 - 거주자가 흔히 잘못 아는 점을 바로잡을 것.
-- 마지막에 **병행 사용 원칙**을 한 문단으로 정리.
+- 마지막에 **병행 사용 원칙**을 \`<div class="callout warn">\` 로 정리.
 
 맨 마지막에 아래 차트 JSON을 반드시 포함하십시오. label은 ## 5 의 범주 이름과, pct는 그 비율과 정확히 일치해야 합니다:
 ___JSON_START___
@@ -744,6 +841,10 @@ ___JSON_END___`;
         // 리포트 개요 — 즉시 채울 수 있는 항목
         document.getElementById('rep-date').innerText = dateStr;
         document.getElementById('rep-loc').innerText = donghoText;
+        // 히어로 헤더 (효성동 양식)
+        document.getElementById('rep-hero-date').innerText = dateStr;
+        document.getElementById('rep-hero-model').innerText = 'AI 분석 ' + formatModelName(ANALYSIS_MODEL);
+        document.getElementById('rep-hero-sub').innerText = donghoText;   // 장소는 AI 메타 파싱 후 덧붙임
         // 분리 항목은 AI 분석 후 채움 (우선 대기 표시)
         ['rep-place', 'rep-defecttype', 'rep-wintype', 'rep-symptom'].forEach(id => {
             document.getElementById(id).innerText = '분석 중…';
@@ -804,6 +905,10 @@ ___JSON_END___`;
                     if (meta.reportTitle && String(meta.reportTitle).trim()) {
                         document.getElementById('rep-report-title').innerText = String(meta.reportTitle).trim();
                     }
+                    // 히어로 부제: "202동 2401호 · 거실 발코니 이중창"
+                    if (meta.place && String(meta.place).trim() && String(meta.place).trim() !== '미상') {
+                        document.getElementById('rep-hero-sub').innerText = donghoText + ' · ' + String(meta.place).trim();
+                    }
                 } catch (e) {
                     ['rep-place', 'rep-defecttype', 'rep-wintype', 'rep-symptom'].forEach(id => { document.getElementById(id).innerText = '미상'; });
                 }
@@ -816,14 +921,23 @@ ___JSON_END___`;
                 document.getElementById('rep-symptom').innerText = freeText || '미상';
             }
 
+            // 차트 JSON → 효성동 양식의 가로 막대 HTML (본문 [[CAUSE_BARS]] 자리에 삽입)
+            let barsHtml = '';
             const jsonMatch = text.match(/___JSON_START___([\s\S]*?)___JSON_END___/);
             if (jsonMatch) {
-                try { if (drawChart(JSON.parse(jsonMatch[1]))) chartSection.style.display = 'block'; } catch (e) { console.warn('chart parse fail', e); }
+                try { barsHtml = buildCauseBars(JSON.parse(jsonMatch[1])); } catch (e) { console.warn('cause json fail', e); }
                 text = text.replace(jsonMatch[0], '');
             }
 
-            const md = window.markdownit();
-            contentDiv.innerHTML = md.render(text);
+            // HTML 허용(태그 칩·콜아웃) — 렌더 후 살균
+            const md = window.markdownit({ html: true, breaks: false, linkify: false });
+            let html = md.render(text);
+            html = html.replace(/\[\[CAUSE_BARS\]\]/g, barsHtml);
+            contentDiv.innerHTML = sanitizeHtml(html);
+            decorateSectionNumbers(contentDiv);
+            markInfoTables(contentDiv);
+
+            chartSection.style.display = 'block';   // 면책·연락처 푸터
             loading.style.display = 'none';
             contentDiv.style.display = 'block';
             document.getElementById('report-save-area').style.display = 'block';
@@ -850,9 +964,15 @@ ___JSON_END___`;
         }
     };
 
-    // AI가 지정한 원인 범주명 + 비율로 차트 생성 (효성동 보고서 방식)
-    // 기대 형식: {"causes":[{"label":"거주환경 (…)","pct":55}, …]}
-    function drawChart(data) {
+    /* ===== 효성동 양식: 원인 비율 가로 막대 =====
+       기대 형식: {"causes":[{"label":"거주환경 (…)","pct":55}, …]}
+       AI가 본문 ## 5 에 [[CAUSE_BARS]] 를 쓰면 그 자리에 이 HTML이 들어감. */
+    function esc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function buildCauseBars(data) {
         let causes = (data && Array.isArray(data.causes)) ? data.causes : null;
         // 구 형식(ventilation/insulation/normal) 하위호환
         if (!causes && data && (data.ventilation != null || data.insulation != null)) {
@@ -863,29 +983,59 @@ ___JSON_END___`;
             ];
         }
         causes = (causes || []).filter(c => c && c.label && Number(c.pct) > 0);
-        if (!causes.length) return false;
+        if (!causes.length) return '';
+        return causes.map(function (c, i) {
+            const pct = Math.max(0, Math.min(100, Math.round(Number(c.pct) || 0)));
+            const f = 'f' + (i % 4 + 1);
+            return '<div class="cause">' +
+                     '<div class="lab"><span>' + esc(c.label) + '</span><span>' + pct + '%</span></div>' +
+                     '<div class="bar"><div class="fill ' + f + '" style="width:' + pct + '%"></div></div>' +
+                   '</div>';
+        }).join('');
+    }
 
-        const rows = [['원인', '비율']].concat(
-            causes.map(c => [String(c.label) + ' (AI 추정)', Number(c.pct) || 0])
-        );
-        const palette = ['#06B6D4', '#0F172A', '#94A3B8', '#0891B2', '#CBD5E1'];
-        const slices = {};
-        causes.forEach((c, i) => { slices[i] = { color: palette[i % palette.length] }; });
-        if (slices[1]) slices[1].offset = 0.08;
+    /* AI가 낸 HTML 살균 — script/iframe/style 및 on* 핸들러 제거 */
+    function sanitizeHtml(html) {
+        const tpl = document.createElement('div');
+        tpl.innerHTML = html;
+        tpl.querySelectorAll('script,iframe,object,embed,style,link,meta,form,input,button').forEach(function (el) { el.remove(); });
+        tpl.querySelectorAll('*').forEach(function (el) {
+            Array.from(el.attributes).forEach(function (a) {
+                const n = a.name.toLowerCase();
+                if (n.startsWith('on')) el.removeAttribute(a.name);
+                if ((n === 'href' || n === 'src') && /^\s*javascript:/i.test(a.value)) el.removeAttribute(a.name);
+            });
+        });
+        return tpl.innerHTML;
+    }
 
-        const options = {
-            title: '원인 비율 분석 (AI 추정)',
-            titleTextStyle: { color: '#0F172A', fontSize: 14, bold: true },
-            is3D: false, pieHole: 0.45,
-            slices: slices,
-            backgroundColor: 'transparent',
-            chartArea: { left: 10, top: 30, width: '62%', height: '78%' },
-            legend: { position: 'right', alignment: 'center', textStyle: { color: '#0F172A', fontSize: 11 } },
-            pieSliceTextStyle: { color: '#fff', fontSize: 12, bold: true }
-        };
-        new google.visualization.PieChart(document.getElementById('chart_div'))
-            .draw(google.visualization.arrayToDataTable(rows), options);
-        return true;
+    /* "## 1. 현장 정보" → 번호 사각 배지 + 제목 (효성동 h2 양식) */
+    function decorateSectionNumbers(root) {
+        root.querySelectorAll('h2').forEach(function (h) {
+            const m = h.textContent.match(/^\s*(\d+)\s*[.)]\s*(.+)$/);
+            if (!m) return;
+            h.innerHTML = '<span class="n">' + esc(m[1]) + '</span>' + esc(m[2]);
+        });
+    }
+
+    /* 2열 표(현장 정보)는 라벨형으로 — 첫 칸을 th 처리 */
+    function markInfoTables(root) {
+        root.querySelectorAll('table').forEach(function (t) {
+            const rows = t.querySelectorAll('tr');
+            if (!rows.length) return;
+            const cols = rows[0].children.length;
+            if (cols === 2) {
+                t.classList.add('info');
+                t.querySelectorAll('tbody tr').forEach(function (tr) {
+                    const first = tr.children[0];
+                    if (first && first.tagName === 'TD') {
+                        const th = document.createElement('th');
+                        th.innerHTML = first.innerHTML;
+                        first.replaceWith(th);
+                    }
+                });
+            }
+        });
     }
 
     /* ===== PDF 저장 — window.print() 기반 (효성동 결과서와 동일 방식)
