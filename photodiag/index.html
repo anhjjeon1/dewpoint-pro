@@ -8,7 +8,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root {
@@ -93,10 +92,23 @@
         .report-summary-table th, .report-summary-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
         .report-summary-table th { color: var(--text-secondary); width: 34%; font-weight: 600; }
         .report-summary-table td { font-weight: 700; color: var(--brand-primary); }
-        .report-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .report-img-item { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
-        .report-img-item img { width: 100%; height: 150px; object-fit: cover; display: block; }
-        .report-img-caption { font-size: 0.72rem; color: var(--text-secondary); text-align: center; padding: 5px; background: var(--bg-color); }
+        /* 효성동(결로앱) 결과서와 동일 — 사진 비율 보존(contain), 잘라내지 않음 */
+        .report-gallery {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+            padding-bottom: 20px; border-bottom: 1px solid var(--border-subtle);
+        }
+        .report-img-item {
+            border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color);
+            aspect-ratio: 4 / 3;
+            background: var(--brand-primary);
+            display: flex; flex-direction: column;
+        }
+        .report-img-item img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .report-img-caption {
+            font-size: 0.7rem; padding: 5px; text-align: center;
+            background: var(--bg-color); color: var(--text-secondary); font-weight: 600; width: 100%;
+            margin-top: auto;
+        }
 
         #analysis-content { font-size: 0.95rem; line-height: 1.75; }
         #analysis-content h2 { font-size: 1.05rem; color: var(--brand-primary); border-bottom: 2px solid var(--accent-soft); padding-bottom: 6px; margin: 26px 0 12px; }
@@ -124,11 +136,27 @@
         .footer-info p { white-space: nowrap; margin: 0; }
         .footer-info strong { color: var(--brand-primary); }
 
+        /* 효성동(결로앱) 결과서와 동일한 인쇄 규칙 — 진짜 텍스트 PDF + 페이지 분할 */
         @media print {
-            body { padding: 0; background: #fff; }
-            .no-print { display: none !important; }
-            .container { box-shadow: none; max-width: 100%; }
-            .report-summary-table { page-break-inside: avoid; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+            .container { box-shadow: none !important; max-width: 100% !important; margin: 0 !important; }
+            .no-print, .footer-btns, .app-header, #input-area { display: none !important; }
+            #result-area {
+                display: block !important;
+                border: none !important; box-shadow: none !important;
+                margin: 0 !important; padding: 15px !important;
+                page-break-inside: auto !important;
+            }
+            #analysis-content { display: block !important; overflow: visible !important; }
+            #chart-section { display: block !important; overflow: visible !important; }
+            .report-gallery { page-break-inside: avoid !important; }
+            .report-img-item { page-break-inside: avoid !important; }
+            .report-summary-table { page-break-inside: avoid !important; }
+            .chart-container { page-break-inside: avoid !important; height: auto !important; }
+            #loading-spinner { display: none !important; }
+            h1, h2, h3 { page-break-after: avoid !important; }
+            img { max-width: 100% !important; page-break-inside: avoid !important; }
         }
     </style>
 </head>
@@ -223,7 +251,7 @@
                 <button class="pdf-save-btn" id="pdf-save-btn" onclick="savePdfAuto()">
                     <i class="fas fa-file-arrow-down"></i> PDF로 저장 (내 파일에 보관)
                 </button>
-                <p style="text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:8px;">저장한 PDF는 휴대폰 <b>‘내 파일 / 다운로드’</b> 폴더에 보관됩니다.</p>
+                <p style="text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:8px;">인쇄 화면에서 <b>‘PDF로 저장’</b>을 선택하면 휴대폰 <b>‘내 파일 / 다운로드’</b>에 보관됩니다.</p>
             </div>
         </div>
 
@@ -244,7 +272,7 @@
 
     /* ===== 백엔드 (기존 결로진단앱과 동일한 GAS 프록시 재사용) ===== */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
-    const APP_VERSION = 'v1.6';
+    const APP_VERSION = 'v1.7';
     const ANALYSIS_MODEL = 'gemini-3.1-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
     document.getElementById('version-badge').innerText = APP_VERSION;
     document.title = '청개구리 사진진단 AI ' + APP_VERSION;
@@ -638,40 +666,23 @@ ___JSON_END___`;
         new google.visualization.PieChart(document.getElementById('chart_div')).draw(d, options);
     }
 
-    /* ===== PDF 저장 (html2pdf → 폰 '내 파일/다운로드'에 실제 파일 저장) ===== */
-    window.savePdfAuto = async function () {
-        const btn = document.getElementById('pdf-save-btn');
-        const el = document.getElementById('result-area');
-        if (!el) return;
-        // 파일명: 청개구리_사진진단_101동1503호_2026-07-15.pdf
-        const dong = (document.getElementById('dong').value || '').trim();
-        const ho = (document.getElementById('ho').value || '').trim();
-        const dho = `${dong ? dong + '동' : ''}${ho ? ho + '호' : ''}` || '진단';
-        const dt = (document.getElementById('date').value || '').replace(/\./g, '-').replace(/-$/, '');
-        const fname = `청개구리_사진진단_${dho}_${dt}.pdf`;
-
-        const origHtml = btn ? btn.innerHTML : '';
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PDF 생성 중...'; }
-        // 캡처 중 저장 버튼 영역 숨김(PDF에 안 찍히게) — html2canvas는 @media print 무시
-        const saveArea = document.getElementById('report-save-area');
-        if (saveArea) saveArea.style.display = 'none';
-        try {
-            if (typeof html2pdf === 'undefined') { window.print(); return; }
-            await html2pdf().set({
-                margin: [8, 8, 10, 8],
-                filename: fname,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
-            }).from(el).save();
-        } catch (e) {
-            console.error('PDF save error:', e);
-            alert('PDF 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
-        } finally {
-            if (saveArea) saveArea.style.display = 'block';
-            if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+    /* ===== PDF 저장 — window.print() 기반 (효성동 결과서와 동일 방식)
+       html2canvas 래스터(비트맵)는 글자가 흐리고 페이지가 과도하게 늘어나므로 사용하지 않음.
+       인쇄 화면에서 'PDF로 저장' 선택 → 폰 '내 파일/다운로드'에 저장됨. ===== */
+    function generatePdfFilename() {
+        const dong = (document.getElementById('dong').value || '000').trim();
+        const ho = (document.getElementById('ho').value || '0000').trim();
+        const dateClean = (document.getElementById('date').value || '').replace(/\./g, '');
+        return `${dong}동${ho}호_사진진단보고서_${dateClean}.pdf`;
+    }
+    window.savePdfAuto = function () {
+        const resultArea = document.getElementById('result-area');
+        if (!resultArea || resultArea.style.display === 'none' || resultArea.style.display === '') {
+            alert('먼저 분석을 실행해주세요.');
+            return;
         }
+        // 인쇄 스타일(@media print)이 result-area만 남기도록 처리함
+        setTimeout(function () { window.print(); }, 300);
     };
 
     /* 개발자 모드(버전 5회 탭) — 자리표시 */
