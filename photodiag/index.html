@@ -37,19 +37,18 @@
         .container { width: 100%; max-width: var(--container-max-width); background: var(--card-bg); min-height: 100vh; box-shadow: var(--shadow-elevated); }
 
         /* 헤더 */
-        .app-header { background: var(--brand-primary); color: #fff; padding: 22px 20px 20px; position: relative; }
-        .app-header h1 { margin: 0; font-size: 1.28rem; font-weight: 900; letter-spacing: -0.02em; display:flex; align-items:center; gap:9px; }
-        .app-header .sub { margin: 6px 0 0; font-size: 0.82rem; color: #94A3B8; font-weight: 400; }
-        .version-badge { position: absolute; top: 16px; right: 16px; background: rgba(6,182,212,0.18); color: #67E8F9; font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(6,182,212,0.35); cursor: pointer; }
+        .app-header { background: var(--brand-primary); color: #fff; padding: 14px 12px; position: relative; }
+        .app-header h1 { margin: 0; font-size: 1.2rem; font-weight: 900; letter-spacing: -0.02em; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .version-badge { position: absolute; top: 50%; transform: translateY(-50%); right: 12px; background: rgba(6,182,212,0.18); color: #67E8F9; font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(6,182,212,0.35); cursor: pointer; }
 
-        .content { padding: 20px; }
-        .section-title { font-size: 1.0rem; font-weight: 800; color: var(--brand-primary); margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+        .content { padding: 12px 8px; }
+        .section-title { font-size: 1.0rem; font-weight: 800; color: var(--brand-primary); margin: 14px 0 7px; display: flex; align-items: center; gap: 8px; }
         .section-title i { color: var(--brand-accent); }
-        .section-title:first-child { margin-top: 4px; }
+        .section-title:first-child { margin-top: 2px; }
 
-        .input-label { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; }
-        .field { margin-bottom: 14px; }
-        .row { display: flex; gap: 10px; }
+        .input-label { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+        .field { margin-bottom: 8px; }
+        .row { display: flex; gap: 8px; }
         .row > .field { flex: 1; }
         input[type=text], input[type=date], select, textarea {
             width: 100%; padding: 12px 13px; border: 1px solid var(--border-color); border-radius: 10px;
@@ -119,7 +118,8 @@
         .btn-pdf { background: var(--brand-accent); color: #fff; }
         .footer-btns.hidden { display: none; }
 
-        .footer-info { text-align: center; margin-top: 28px; font-size: 0.8rem; color: var(--text-muted); }
+        .footer-info { text-align: center; margin-top: 16px; font-size: 0.57rem; color: var(--text-muted); }
+        .footer-info p { white-space: nowrap; margin: 0; }
         .footer-info strong { color: var(--brand-primary); }
 
         @media print {
@@ -134,7 +134,6 @@
 <div class="container">
     <div class="app-header">
         <h1><i class="fas fa-camera-retro"></i> 청개구리 사진진단 AI</h1>
-        <p class="sub">현장 사진 + 하자유형만으로 진단 소견서 자동 생성</p>
         <span class="version-badge" id="version-badge" onclick="checkDevMode()">v1.0</span>
     </div>
 
@@ -246,7 +245,7 @@
 
     /* ===== 백엔드 (기존 결로진단앱과 동일한 GAS 프록시 재사용) ===== */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
-    const APP_VERSION = 'v1.4';
+    const APP_VERSION = 'v1.5';
     const ANALYSIS_MODEL = 'gemini-3.1-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
     document.getElementById('version-badge').innerText = APP_VERSION;
     document.title = '청개구리 사진진단 AI ' + APP_VERSION;
