@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>청개구리 사진진단 AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
@@ -13,7 +13,12 @@
         :root {
             --brand-primary: #0F172A;
             --brand-accent:  #06B6D4;
-            --bg-color:      #F8FAFC;
+            --navy-950:      #080D18;
+            --navy-900:      #0F172A;
+            --navy-700:      #1E293B;
+            --cyan-400:      #22D3EE;
+            --cyan-600:      #0891B2;
+            --bg-color:      #EEF2F7;
             --card-bg:       #FFFFFF;
             --text-primary:  #0F172A;
             --text-secondary:#475569;
@@ -22,76 +27,162 @@
             --border-subtle: #F1F5F9;
             --accent-soft:   #CFFAFE;
             --accent-tint:   #ECFEFF;
+            --field-bg:      #F8FAFC;
             --warning-red:   #DC2626;
-            --shadow-card:     0 1px 3px 0 rgba(15,23,42,0.08), 0 1px 2px -1px rgba(15,23,42,0.06);
+            --shadow-card:     0 1px 2px rgba(15,23,42,0.04), 0 4px 16px -6px rgba(15,23,42,0.10);
             --shadow-elevated: 0 10px 30px -10px rgba(15,23,42,0.18);
+            --shadow-cta:      0 8px 20px -6px rgba(6,182,212,0.45);
             --container-max-width: 600px;
         }
         * { box-sizing: border-box; }
         body {
-            font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--text-primary);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--bg-color); color: var(--text-primary);
             margin: 0; padding: 0; line-height: 1.6; display: flex; justify-content: center;
-            min-height: 100vh; padding-bottom: 80px;
+            min-height: 100vh; padding-bottom: 40px;
+            -webkit-font-smoothing: antialiased;
         }
-        .container { width: 100%; max-width: var(--container-max-width); background: var(--card-bg); min-height: 100vh; box-shadow: var(--shadow-elevated); }
+        .container { width: 100%; max-width: var(--container-max-width); background: var(--bg-color); min-height: 100vh; box-shadow: var(--shadow-elevated); }
 
-        /* 헤더 */
-        .app-header { background: var(--brand-primary); color: #fff; padding: 14px 12px; position: relative; }
-        .app-header h1 { margin: 0; font-size: 1.2rem; font-weight: 900; letter-spacing: -0.02em; display:flex; align-items:center; justify-content:center; gap:8px; }
-        .version-badge { position: absolute; top: 50%; transform: translateY(-50%); right: 12px; background: rgba(6,182,212,0.18); color: #67E8F9; font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(6,182,212,0.35); cursor: pointer; }
+        /* 헤더 — 전문 진단기관 톤 */
+        .app-header {
+            background: linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+            color: #fff; padding: 15px 12px 14px; position: relative;
+            border-bottom: 2px solid var(--brand-accent);
+        }
+        .app-header h1 {
+            margin: 0; font-size: 1.16rem; font-weight: 700; letter-spacing: -0.03em;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .app-header h1 i { color: var(--cyan-400); font-size: 1.02rem; }
+        .app-header .tagline {
+            margin: 3px 0 0; text-align: center; font-size: 0.63rem; font-weight: 500;
+            color: #7C8DA6; letter-spacing: 0.06em;
+        }
+        .version-badge {
+            position: absolute; top: 50%; transform: translateY(-50%); right: 12px;
+            background: rgba(34,211,238,0.12); color: var(--cyan-400); font-size: 0.64rem; font-weight: 600;
+            padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(34,211,238,0.3); cursor: pointer;
+            letter-spacing: 0.02em;
+        }
 
-        .content { padding: 12px 8px; }
-        .section-title { font-size: 1.0rem; font-weight: 800; color: var(--brand-primary); margin: 14px 0 7px; display: flex; align-items: center; gap: 8px; }
-        .section-title i { color: var(--brand-accent); }
-        .section-title:first-child { margin-top: 2px; }
+        /* 진행 단계 표시 */
+        .steps { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px 2px; }
+        .step { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); }
+        .step .dot {
+            width: 17px; height: 17px; border-radius: 50%; background: var(--border-color); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 0.58rem; font-weight: 700;
+        }
+        .step.on { color: var(--brand-primary); }
+        .step.on .dot { background: var(--brand-accent); }
+        .step-line { width: 12px; height: 1.5px; background: var(--border-color); border-radius: 2px; }
 
-        .input-label { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+        .content { padding: 8px 10px 14px; }
+
+        /* 카드형 섹션 */
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 13px 12px; margin-bottom: 10px; box-shadow: var(--shadow-card);
+        }
+        .section-title {
+            font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); margin: 0 0 9px;
+            display: flex; align-items: center; gap: 8px; letter-spacing: -0.02em;
+        }
+        .section-title i {
+            color: var(--brand-accent); background: var(--accent-tint); border-radius: 7px;
+            width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; flex: 0 0 26px;
+        }
+        .section-title .sec-num {
+            margin-left: auto; font-size: 0.6rem; font-weight: 600; color: var(--text-muted);
+            background: var(--field-bg); border: 1px solid var(--border-color);
+            padding: 2px 7px; border-radius: 20px; letter-spacing: 0.02em;
+        }
+
+        .input-label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block; letter-spacing: -0.01em; }
         .field { margin-bottom: 8px; }
-        .row { display: flex; gap: 8px; }
+        .field:last-child { margin-bottom: 0; }
+        .row { display: flex; gap: 7px; }
         .row > .field { flex: 1; }
         input[type=text], input[type=date], select, textarea {
-            width: 100%; padding: 12px 13px; border: 1px solid var(--border-color); border-radius: 10px;
-            font-size: 0.95rem; font-family: inherit; color: var(--text-primary); background: #fff; -webkit-appearance: none; appearance: none;
+            width: 100%; padding: 11px 12px; border: 1px solid var(--border-color); border-radius: 10px;
+            font-size: 0.92rem; font-family: inherit; color: var(--text-primary); background: var(--field-bg);
+            -webkit-appearance: none; appearance: none; transition: border-color .15s, box-shadow .15s, background .15s;
         }
+        input::placeholder, textarea::placeholder { color: #B6C2D2; }
         select { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 34px; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brand-accent); box-shadow: 0 0 0 3px var(--accent-tint); }
-        textarea { min-height: 74px; resize: vertical; }
-        /* 진단개요 동/호/일자 — 라벨 삭제 + 높이 약 30% 축소 (특이도 위해 input.ov-input) */
-        input.ov-input { padding: 6px 10px; line-height: 1.2; font-size: 0.9rem; }
-        .hint { font-size: 0.74rem; color: var(--text-muted); margin-top: 5px; }
-
-        .guide-box { background: var(--accent-tint); border: 1px solid var(--accent-soft); border-radius: 10px; padding: 11px 13px; font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px; line-height: 1.55; }
-        .guide-box b { color: var(--brand-primary); }
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--brand-accent); background: #fff;
+            box-shadow: 0 0 0 3px rgba(6,182,212,0.14);
+        }
+        textarea { min-height: 74px; resize: vertical; line-height: 1.65; }
+        /* 진단개요 동/호/일자 — 라벨 없이 콤팩트 */
+        input.ov-input { padding: 7px 10px; line-height: 1.2; font-size: 0.88rem; font-weight: 600; text-align: center; }
+        input.ov-input[readonly] { color: var(--text-secondary); background: var(--border-subtle); }
+        .hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 5px; line-height: 1.55; }
+        .hint b { color: var(--text-secondary); font-weight: 600; }
 
         /* 사진 업로드 */
-        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .upload-slot { position: relative; border: 2px dashed var(--border-color); border-radius: 12px; aspect-ratio: 4/3; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--bg-color); overflow: hidden; transition: border-color .15s; }
-        .upload-slot:hover { border-color: var(--brand-accent); }
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .upload-slot {
+            position: relative; border: 1.5px dashed #CBD5E1; border-radius: 11px; aspect-ratio: 4/3;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; background: var(--field-bg); overflow: hidden;
+            transition: border-color .15s, background .15s;
+        }
+        .upload-slot:hover { border-color: var(--brand-accent); background: var(--accent-tint); }
+        .upload-slot.filled { border-style: solid; border-color: var(--brand-accent); background: var(--navy-900); }
         .upload-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-        .upload-slot .ph { color: var(--text-muted); text-align: center; font-size: 0.78rem; pointer-events: none; }
-        .upload-slot .ph i { font-size: 1.4rem; display: block; margin-bottom: 5px; color: var(--brand-accent); }
+        .upload-slot .ph { color: #9FB0C4; text-align: center; font-size: 0.72rem; font-weight: 500; pointer-events: none; }
+        .upload-slot .ph i { font-size: 1.15rem; display: block; margin-bottom: 4px; color: #B6C7DA; }
         .upload-slot img.preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-        .upload-slot .clear-x { position: absolute; top: 5px; right: 5px; z-index: 3; background: rgba(15,23,42,0.72); color: #fff; border: none; width: 24px; height: 24px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        .upload-slot .clear-x {
+            position: absolute; top: 4px; right: 4px; z-index: 3; background: rgba(8,13,24,0.78); color: #fff;
+            border: none; width: 22px; height: 22px; border-radius: 6px; font-size: 0.78rem; cursor: pointer;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+        }
         .upload-slot.filled .clear-x { display: flex; }
         .upload-slot.filled .ph { display: none; }
 
-        .add-photo-btn { width: 100%; margin-top: 10px; background: #fff; color: var(--brand-accent); border: 1.5px dashed var(--brand-accent); padding: 11px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
-        .add-photo-btn:active { background: var(--accent-tint); }
+        .add-photo-btn {
+            width: 100%; margin-top: 8px; background: var(--accent-tint); color: var(--cyan-600);
+            border: 1px solid var(--accent-soft); padding: 11px; border-radius: 10px;
+            font-size: 0.86rem; font-weight: 600; font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 7px; transition: background .15s;
+        }
+        .add-photo-btn:active { background: var(--accent-soft); }
 
-        .pdf-save-btn { width: 100%; background: var(--brand-accent); color: #fff; border: none; padding: 15px; border-radius: 12px; font-size: 1.02rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(6,182,212,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .photo-count { font-size: 0.7rem; font-weight: 600; color: var(--brand-accent); }
+
+        .pdf-save-btn {
+            width: 100%; background: var(--brand-accent); color: #fff; border: none; padding: 15px;
+            border-radius: 12px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer;
+            box-shadow: var(--shadow-cta); display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
         .pdf-save-btn:disabled { background: #CBD5E1; box-shadow: none; }
 
-        .analyze-btn { width: 100%; margin-top: 22px; background: var(--brand-accent); color: #fff; border: none; padding: 16px; border-radius: 12px; font-size: 1.05rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(6,182,212,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .analyze-btn {
+            width: 100%; margin-top: 4px; background: linear-gradient(135deg, var(--brand-accent) 0%, var(--cyan-600) 100%);
+            color: #fff; border: none; padding: 16px; border-radius: 13px; font-size: 1.02rem; font-weight: 700;
+            font-family: inherit; cursor: pointer; box-shadow: var(--shadow-cta);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            letter-spacing: -0.01em; transition: transform .1s, box-shadow .15s;
+        }
+        .analyze-btn:active:not(:disabled) { transform: translateY(1px); }
         .analyze-btn:disabled { background: #CBD5E1; box-shadow: none; cursor: not-allowed; }
 
         /* 리포트 */
         #result-area { display: none; }
-        .report-badge { background: var(--accent-tint); border: 1px solid var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 0.8rem; color: var(--text-secondary); margin: 4px 0 20px; line-height: 1.5; }
+        .report-badge {
+            background: var(--accent-tint); border: 1px solid var(--accent-soft); border-left: 3px solid var(--brand-accent);
+            border-radius: 0 10px 10px 0; padding: 11px 13px; font-size: 0.76rem; color: var(--text-secondary);
+            margin: 0 0 16px; line-height: 1.55;
+        }
         .report-badge i { color: var(--brand-accent); margin-right: 5px; }
-        .report-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.88rem; }
-        .report-summary-table th, .report-summary-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
-        .report-summary-table th { color: var(--text-secondary); width: 34%; font-weight: 600; }
-        .report-summary-table td { font-weight: 700; color: var(--brand-primary); }
+        .report-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 0.84rem; }
+        .report-summary-table th, .report-summary-table td { padding: 9px 8px; border-bottom: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
+        .report-summary-table th { color: var(--text-secondary); width: 30%; font-weight: 500; background: var(--field-bg); }
+        .report-summary-table td { font-weight: 600; color: var(--brand-primary); }
         /* 효성동(결로앱) 결과서와 동일 — 사진 비율 보존(contain), 잘라내지 않음 */
         .report-gallery {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
@@ -128,21 +219,21 @@
 
         .chart-container { width: 100%; height: 300px; }
 
-        #loading-spinner { text-align: center; padding: 50px 20px; display: none; background: var(--accent-tint); border-radius: 12px; margin: 20px 0; border: 1px solid var(--accent-soft); }
+        #loading-spinner { text-align: center; padding: 44px 20px; display: none; background: var(--field-bg); border-radius: 12px; margin: 16px 0; border: 1px solid var(--border-color); }
         #loading-spinner i { color: var(--brand-accent); }
 
-        .disclaimer { margin-top: 26px; font-size: 0.72rem; color: var(--text-secondary); text-align: center; background: var(--bg-color); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; }
+        .disclaimer { margin-top: 22px; font-size: 0.7rem; color: var(--text-secondary); text-align: center; background: var(--field-bg); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 11px; line-height: 1.6; }
         .disclaimer strong { color: var(--brand-primary); }
 
-        .footer-btns { display: flex; gap: 10px; margin-top: 24px; }
-        .footer-btn { flex: 1; border: none; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
-        .btn-reserve { background: var(--brand-primary); color: #fff; }
+        .footer-btns { display: flex; gap: 8px; margin-top: 10px; }
+        .footer-btn { flex: 1; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+        .btn-reserve { background: var(--navy-900); color: #fff; }
         .btn-pdf { background: var(--brand-accent); color: #fff; }
         .footer-btns.hidden { display: none; }
 
-        .footer-info { text-align: center; margin-top: 16px; font-size: 0.57rem; color: var(--text-muted); }
+        .footer-info { text-align: center; margin-top: 14px; font-size: 0.57rem; color: var(--text-muted); }
         .footer-info p { white-space: nowrap; margin: 0; }
-        .footer-info strong { color: var(--brand-primary); }
+        .footer-info strong { color: var(--text-secondary); font-weight: 600; }
 
         /* 효성동(결로앱) 결과서와 동일한 인쇄 규칙 — 진짜 텍스트 PDF + 페이지 분할 */
         @media print {
@@ -172,38 +263,55 @@
 <div class="container">
     <div class="app-header">
         <h1><i class="fas fa-camera-retro"></i> 청개구리 사진진단 AI</h1>
+        <p class="tagline">창호 하자 진단 · 검사–진단–수리 원스톱</p>
         <span class="version-badge" id="version-badge" onclick="checkDevMode()">v1.0</span>
     </div>
 
     <div class="content">
         <!-- 입력 (분석 후 숨김) -->
         <div id="input-area">
-            <div class="section-title"><i class="fas fa-home"></i> 진단 개요</div>
-            <div class="row">
-                <div class="field">
-                    <input type="text" id="dong" class="ov-input" placeholder="101동" inputmode="text">
-                </div>
-                <div class="field">
-                    <input type="text" id="ho" class="ov-input" placeholder="1503호" inputmode="text">
-                </div>
-                <div class="field">
-                    <input type="text" id="date" class="ov-input" readonly>
+            <div class="steps no-print">
+                <div class="step on"><span class="dot">1</span>세대 정보</div>
+                <div class="step-line"></div>
+                <div class="step on"><span class="dot">2</span>증상 입력</div>
+                <div class="step-line"></div>
+                <div class="step on"><span class="dot">3</span>사진 등록</div>
+                <div class="step-line"></div>
+                <div class="step"><span class="dot"><i class="fas fa-check" style="font-size:0.5rem"></i></span>진단</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title"><i class="fas fa-building"></i> 진단 개요 <span class="sec-num">STEP 1</span></div>
+                <div class="row">
+                    <div class="field">
+                        <input type="text" id="dong" class="ov-input" placeholder="101동" inputmode="text">
+                    </div>
+                    <div class="field">
+                        <input type="text" id="ho" class="ov-input" placeholder="1503호" inputmode="text">
+                    </div>
+                    <div class="field">
+                        <input type="text" id="date" class="ov-input" readonly>
+                    </div>
                 </div>
             </div>
 
-            <div class="section-title"><i class="fas fa-pen-to-square"></i> 진단 내용 입력</div>
-            <div class="hint" style="margin-bottom:8px;">진단장소 · 하자종류 · 창호종류 · 상세증상을 자유롭게 적어주세요. AI가 <b>항목별로 분리</b>해 보고서에 정리합니다.</div>
-            <div class="field">
-                <textarea id="diag-input" style="min-height:80px;" placeholder=""></textarea>
+            <div class="card">
+                <div class="section-title"><i class="fas fa-pen-to-square"></i> 진단 내용 입력 <span class="sec-num">STEP 2</span></div>
+                <div class="field">
+                    <textarea id="diag-input" style="min-height:80px;" placeholder="예) 27층 북향 · 신축 1년차 · 전열교환기 있음&#10;거실 발코니 이중창 외창 유리에 겨울 결로수, 하부 결빙"></textarea>
+                </div>
+                <div class="hint">진단장소 · 하자종류 · 창호종류 · 상세증상을 자유롭게 적어주세요. AI가 <b>항목별로 분리</b>해 보고서에 정리합니다. <b>층수 · 향 · 준공 연차 · 환기설비</b>를 적으면 진단이 훨씬 정확해집니다.</div>
             </div>
 
-            <div class="section-title"><i class="fas fa-images"></i> 현장 사진</div>
-            <div class="hint" style="margin-bottom:10px;">하자 부위가 잘 보이도록 근접 사진을 넣어주세요. 열화상·초음파 없이 일반 사진만으로 진단합니다. 아래 버튼으로 <b>여러 장을 한꺼번에</b> 선택하거나, 각 칸을 눌러 한 장씩 넣을 수 있습니다.</div>
-            <div class="upload-grid" id="upload-grid"></div>
-            <label class="add-photo-btn no-print">
-                <i class="fas fa-images"></i> 여러 장 한꺼번에 추가
-                <input type="file" accept="image/*" multiple style="display:none" onchange="handleMulti(this)">
-            </label>
+            <div class="card">
+                <div class="section-title"><i class="fas fa-images"></i> 현장 사진 <span class="sec-num" id="photo-count">STEP 3</span></div>
+                <div class="upload-grid" id="upload-grid"></div>
+                <label class="add-photo-btn no-print">
+                    <i class="fas fa-layer-group"></i> 여러 장 한꺼번에 추가
+                    <input type="file" accept="image/*" multiple style="display:none" onchange="handleMulti(this)">
+                </label>
+                <div class="hint">하자 부위가 잘 보이도록 <b>근접 사진</b>을 넣어주세요. 열화상·초음파 없이 일반 사진만으로 진단합니다.</div>
+            </div>
 
             <button class="analyze-btn" id="analyze-btn" onclick="startAnalysis()" disabled>
                 <i class="fas fa-wand-magic-sparkles"></i> AI 사진 진단 시작
@@ -211,7 +319,7 @@
         </div>
 
         <!-- 리포트 -->
-        <div id="result-area">
+        <div id="result-area" class="card">
             <div class="section-title" style="margin-top:0;"><i class="fas fa-file-signature"></i> <span id="rep-report-title">사진 기반 진단 보고서</span></div>
 
             <div class="report-badge">
@@ -280,7 +388,7 @@
 
     /* ===== 백엔드 (기존 결로진단앱과 동일한 GAS 프록시 재사용) ===== */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
-    const APP_VERSION = 'v1.9';
+    const APP_VERSION = 'v2.0';
     const ANALYSIS_MODEL = 'gemini-3.1-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
     document.getElementById('version-badge').innerText = APP_VERSION;
     document.title = '청개구리 사진진단 AI ' + APP_VERSION;
@@ -418,7 +526,17 @@
         updateAnalyzeBtn();
     };
     function countImages() { return document.querySelectorAll('.upload-slot.filled img.preview-img').length; }
-    function updateAnalyzeBtn() { document.getElementById('analyze-btn').disabled = countImages() === 0; }
+    function updateAnalyzeBtn() {
+        const n = countImages();
+        document.getElementById('analyze-btn').disabled = n === 0;
+        const badge = document.getElementById('photo-count');
+        if (badge) {
+            badge.innerText = n > 0 ? n + '장 등록됨' : 'STEP 3';
+            badge.style.color = n > 0 ? 'var(--brand-accent)' : '';
+            badge.style.borderColor = n > 0 ? 'var(--accent-soft)' : '';
+            badge.style.background = n > 0 ? 'var(--accent-tint)' : '';
+        }
+    }
 
     /* ===== 관리자 인증 (기존 백엔드와 동일 HMAC 토큰) ===== */
     let ADMIN_TOKEN = localStorage.getItem('frogdiag_admin_token') || '';
