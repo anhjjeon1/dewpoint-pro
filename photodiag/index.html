@@ -476,8 +476,11 @@
 <script>
     /* ===== 백엔드 (기존 결로진단앱과 동일한 GAS 프록시 재사용) ===== */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
-    const APP_VERSION = 'v2.4';
-    const ANALYSIS_MODEL = 'gemini-3.1-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
+    const APP_VERSION = 'v2.5';
+    // ★ v2.5(2026-09-28): gemini-3.1-flash가 모델목록에서 사라져 서버가 lite로 폴백 중이었음 → 3.7-flash + thinking low.
+    //   (결로진단 Backend v1.3 ALLOWED_MODELS 등록 완료. 3.7-flash는 thinking 모델이라 ANALYSIS_THINKING 필수)
+    const ANALYSIS_MODEL = 'gemini-3.7-flash';   // ★ 이 값만 바꾸면 하단 AI 버전 표기도 자동 갱신
+    const ANALYSIS_THINKING = 'low';
     document.getElementById('version-badge').innerText = APP_VERSION;
     document.title = '청개구리 사진진단 AI ' + APP_VERSION;
 
@@ -797,6 +800,7 @@
         const images = imageParts.map(p => ({ mimeType: p.inline_data.mime_type, data: p.inline_data.data }));
         const config = { temperature: options.temperature || 0.2, topP: 0.8, topK: 40 };
         if (options.maxOutputTokens) config.maxOutputTokens = options.maxOutputTokens;
+        config.thinkingConfig = { thinkingLevel: ANALYSIS_THINKING }; // 추론이 출력 한도를 먹어 소견서 잘림 방지
 
         let lastErr = null;
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
