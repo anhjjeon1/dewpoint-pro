@@ -428,6 +428,35 @@
         .season-banner.summer { background: #FFF7ED; color: #9A3412; border-left-color: #C2410C; }
         .season-banner b { font-weight: 800; }
 
+        /* === v36.0 [확장 입력: 세대위치·관찰상태·결로흔적·생활문진·이웃세대] === */
+        .v36-lbl { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-align: left !important; }
+        .v36-hint { font-weight: 400; color: var(--text-muted); font-size: 0.7rem; }
+        .v36-row { margin-bottom: 10px; }
+        .v36-row:last-child { margin-bottom: 0; }
+        .v36-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+        .v36-grid2 select { padding: 7px 24px 7px 6px; font-size: 0.8rem; letter-spacing: -0.4px; }
+        input[type="date"] { width: 100%; padding: 6px 8px; border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; font-weight: 600; box-sizing: border-box; background: #fff; color: var(--text-primary); font-family: inherit; }
+        .v36-note { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; line-height: 1.45; }
+        .v36-derived { font-size: 0.72rem; color: var(--accent-strong); margin: 2px 0 6px; font-weight: 600; }
+        .v36-btn { flex: 0 0 40px; border: 1.5px solid var(--brand-accent); background: var(--accent-tint); color: var(--accent-strong); border-radius: 8px; cursor: pointer; font-size: 0.95rem; }
+        .v36-auto { background: var(--accent-tint); border: 1px dashed var(--brand-accent); border-radius: 10px; padding: 8px 10px; font-size: 0.78rem; }
+        .v36-auto b { color: var(--accent-strong); }
+        .v36-kv { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; text-align: center; }
+        .v36-kv div { background: #fff; border-radius: 6px; padding: 5px 2px; font-weight: 800; font-size: 0.85rem; }
+        .v36-kv small { display: block; font-size: 0.62rem; color: var(--text-muted); font-weight: 500; }
+        .chk-group { display: flex; flex-wrap: wrap; gap: 5px; }
+        .chk { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 8px; border-radius: 18px; border: 1px solid var(--border-color); background: var(--border-subtle); font-size: 0.8rem; cursor: pointer; user-select: none; -webkit-user-select: none; line-height: 1.2; }
+        .chk::before { content: ''; width: 15px; height: 15px; flex: none; border: 1.5px solid #94A3B8; border-radius: 3px; background: #fff; }
+        .chk.on { background: var(--accent-tint); border-color: var(--brand-accent); font-weight: 700; }
+        .chk.on::before { border-color: var(--brand-accent); background: var(--brand-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat; }
+        .v36-stepper { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .v36-stepper button { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border-color); background: #fff; font-size: 1.05rem; cursor: pointer; }
+        .v36-stepper input { width: 52px; }
+        .v36-fold .v36-caret { margin-left: auto; color: var(--text-muted); padding-right: 6px; }
+        .v36-fold .v36-caret::after { content: '▾'; }
+        .v36-fold.closed .v36-caret::after { content: '▸'; }
+        .v36-fold.closed .v36-body { display: none; }
+
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
             body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
@@ -478,8 +507,16 @@
         </div>
         <div class="season-banner no-print summer" id="season-banner">☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어락(잠금장치) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·온습도(MR277)·창호 검사는 생략됩니다(<b>열화상은 선택 입력</b> — 표면 저온부·열교 정성 참고용).</div>
 
+        <!-- ★ v36.0: 진단 개요 재구성 — 주소(기상 자동조회)·측정일·입주년도 -->
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
+            <div class="input-group" style="margin-bottom:6px;">
+                <label class="input-label v36-lbl">단지 주소 <span class="v36-hint">— 기상 자동조회용 (시·구·동까지만 입력해도 됨)</span></label>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="addr" placeholder="예: 경기 의왕시 내손동 ○○아파트" style="flex:1;" onchange="fetchSiteWeather()">
+                    <button type="button" class="v36-btn" onclick="fetchSiteWeather()" aria-label="기상 조회"><i class="fas fa-cloud-sun"></i></button>
+                </div>
+            </div>
             <div class="info-grid-row">
                 <div class="input-group">
                     <div class="mic-input-wrap with-suffix">
@@ -503,44 +540,135 @@
                         <button type="button" class="mic-btn" id="mic-location" onclick="voiceInput('location')" aria-label="장소 음성입력"><i class="fas fa-microphone"></i></button>
                     </div>
                 </div>
-                <input type="hidden" id="date" value="2026.7.9">
+                <input type="hidden" id="date" value="">
             </div>
-            
-            <div class="info-triple-row" id="overview-window-row" style="display: none;">
+            <div class="v36-grid2">
                 <div class="input-group">
+                    <label class="input-label v36-lbl">측정일자</label>
+                    <input type="date" id="date-picker" onchange="onDatePicked()">
+                </div>
+                <div class="input-group">
+                    <label class="input-label v36-lbl">입주(준공)년도</label>
+                    <input type="number" id="built-year" placeholder="예: 2024" min="1970" max="2035" oninput="updateV36Derived()">
+                </div>
+            </div>
+            <div class="v36-derived" id="year-note"></div>
+            <div class="v36-auto" id="weather-card">
+                <b><i class="fas fa-cloud-sun"></i> 기상 자동조회</b> <span id="weather-status" class="v36-hint">주소 입력 후 ☁ 버튼</span>
+                <div class="v36-kv">
+                    <div><span id="wx-today">-</span><small>측정 당일 외기</small></div>
+                    <div><span id="wx-min7">-</span><small>측정 전 7일 최저</small></div>
+                    <div><span id="wx-wind">-</span><small>당일 최대풍속·풍향</small></div>
+                </div>
+                <div class="v36-note">※ 여러 해 평균 대신 <b>측정 전 7일</b> 사용 — 결로·외풍에 직접 작용하는 구간</div>
+            </div>
+        </div>
+
+        <!-- ★ v36.0: 세대 위치 — 기존 house-type 단일선택을 4개 축으로 분리 -->
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-building"></i> 세대 위치</div>
+            <div class="v36-row"><div class="v36-lbl">주거형태</div>
+                <div class="chk-group" data-name="house" data-mode="single"><span class="chk">아파트</span><span class="chk">주상복합</span><span class="chk">빌라·연립</span><span class="chk">단독주택</span></div></div>
+            <div class="v36-row"><div class="v36-lbl">발코니</div>
+                <div class="chk-group" data-name="ext" data-mode="single"><span class="chk" data-v="ext">확장</span><span class="chk" data-v="part">부분확장</span><span class="chk" data-v="non">비확장</span></div></div>
+            <div class="v36-grid2 v36-row">
+                <div><div class="v36-lbl">해당 층</div><input type="number" id="floor-no" placeholder="예: 3" min="-5" max="150" oninput="updateV36Derived()"></div>
+                <div><div class="v36-lbl">건물 최고층</div><input type="number" id="floor-top" placeholder="예: 25" min="1" max="150" oninput="updateV36Derived()"></div>
+            </div>
+            <div class="v36-row"><div class="chk-group" data-name="floorx" data-mode="multi"><span class="chk" data-v="pilotis">아래층이 필로티</span><span class="chk" data-v="roof">바로 위가 옥상</span></div>
+                <div class="v36-derived" id="floor-note"></div></div>
+            <div class="v36-row"><div class="v36-lbl">세대 배치</div>
+                <div class="chk-group" data-name="side" data-mode="single"><span class="chk" data-v="mid">중간 세대</span><span class="chk" data-v="end">측벽(끝) 세대</span></div></div>
+            <div class="v36-row"><div class="v36-lbl">거실 방향</div>
+                <div class="chk-group" data-name="dir" data-mode="single"><span class="chk">북</span><span class="chk">북동</span><span class="chk">동</span><span class="chk">남동</span><span class="chk">남</span><span class="chk">남서</span><span class="chk">서</span><span class="chk">북서</span></div></div>
+        </div>
+
+        <!-- ★ v36.0: 창호 / 관찰된 상태 (여름·방화문 모드에서는 숨김) -->
+        <div class="section no-print" id="overview-window-row">
+            <div class="section-title"><i class="fas fa-border-all"></i> 창호 / 관찰된 상태</div>
+            <div class="v36-grid2 v36-row">
+                <div class="input-group">
+                    <label class="input-label v36-lbl">창호 종류</label>
                     <select id="window-type">
-                        <option value="방화문">방화문</option><option value="PVC 이중창">PVC 이중창 (일반)</option>
+                        <option value="PVC 이중창">PVC 이중창 (일반)</option>
                         <option value="입면분할창">입면분할창 (고급형)</option>
                         <option value="PVC 시스템창호">PVC 시스템창호 (TT/LS)</option>
                         <option value="알루미늄 단창">알루미늄 단창 (노후)</option>
+                        <option value="알루미늄·금속 이중창">알루미늄·금속 이중창</option>
                         <option value="커튼월(Curtain Wall)">커튼월 (주상복합)</option>
+                        <option value="방화문">방화문</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <select id="house-type">
-                        <option value="확장형(Extension)">발코니 확장형</option>
-                        <option value="비확장(Non-Ext)">비확장 (기본형)</option>
-                        <option value="필로티/최상층">필로티/최상층</option>
-                        <option value="측벽세대">측벽 세대 (End)</option>
-                    </select>
-                </div>
-                <div class="input-group">
+                    <label class="input-label v36-lbl">간봉 / 문짝</label>
                     <select id="consideration">
-                        <option value="PVC터닝도어">PVC터닝도어</option><option value="금속재 방화문">금속재 방화문</option><option value="목문">목문</option><option value="알루미늄 간봉">알루미늄 간봉</option>
+                        <option value="알루미늄 간봉">알루미늄 간봉</option>
                         <option value="TPS 단열간봉">TPS 단열간봉</option>
                         <option value="TGI 단열간봉">TGI 단열간봉</option>
+                        <option value="PVC터닝도어">PVC터닝도어</option>
+                        <option value="금속재 방화문">금속재 방화문</option>
+                        <option value="목문">목문</option>
+                        <option value="모름">모름</option>
                     </select>
                 </div>
             </div>
-
-            <div class="input-group">
-                <label class="input-label" style="text-align:left;">상세 증상 <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">(음성 최대 20초 자동 종료)</span></label>
-                <div class="mic-input-wrap textarea-wrap">
-                    <textarea id="defect-content" placeholder="[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어락(잠금장치) 작동 불량·잠금 뻑뻑함 등"></textarea>
-                    <button type="button" class="mic-btn" id="mic-defect-content" onclick="voiceInput('defect-content')" aria-label="상세증상 음성입력"><i class="fas fa-microphone"></i></button>
+            <div class="v36-row"><div class="v36-lbl">현장에서 관찰된 상태 <span class="v36-hint">— 불량 판정 대신 사실 체크</span></div>
+                <div class="chk-group" data-name="obs" data-mode="multi">
+                    <span class="chk" data-v="air">여밈대 틈·어긋남</span><span class="chk" data-v="air">풍지판 누락·파손</span><span class="chk" data-v="air">물구멍 반대타공</span>
+                    <span class="chk" data-v="air">모헤어 마모·탈락</span><span class="chk" data-v="air">크리센트 헐거움</span><span class="chk" data-v="frame">창짝 처짐·흔들림</span>
+                    <span class="chk" data-v="frame">레일 변형</span><span class="chk" data-v="frame">창틀 주위 사춤·실리콘 들뜸</span><span class="chk" data-v="none">특이사항 없음</span>
                 </div>
-                <div class="mic-status" id="mic-status"></div>
+                <div class="v36-note">※ "시공·설치·제작불량"은 입력받지 않음 → 관찰 조합으로 AI가 <b>가능성(AI 추정)</b>만 서술</div></div>
+        </div>
+
+        <!-- ★ v36.0: 평소 결로 흔적 -->
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-tint"></i> 평소 결로 흔적</div>
+            <div class="chk-group" data-name="trace" data-mode="multi">
+                <span class="chk" data-v="w">창틀 바닥 물고임</span><span class="chk" data-v="w">유리 실리콘 곰팡이</span><span class="chk" data-v="w">아침마다 유리 김서림·물흐름</span>
+                <span class="chk" data-v="wall">벽 모서리·천장 곰팡이</span><span class="chk" data-v="wall">붙박이장·가구 뒤 곰팡이</span><span class="chk" data-v="w">커튼·블라인드 곰팡이</span>
+                <span class="chk" data-v="draft">외풍 체감(손 대면 찬바람)</span><span class="chk" data-v="draft">바람 소리·휘파람음</span>
             </div>
+            <div class="v36-note">측정 당일 조건이 좋아도 수개월 누적 결로를 증명하는 증거. 사진은 현장 채증란에.</div>
+        </div>
+
+        <!-- ★ v36.0: 생활환경 문진 (접이식) -->
+        <div class="section no-print v36-fold" id="life-section">
+            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('life-section').classList.toggle('closed')"><i class="fas fa-user-friends"></i> 생활환경 문진 <span class="v36-hint" style="margin-left:6px;">— 탭만, 30초</span><span class="v36-caret"></span></div>
+            <div class="v36-body">
+                <div class="v36-row"><div class="v36-lbl">거주 인원</div>
+                    <div class="v36-stepper">
+                        <button type="button" onclick="stepPeople(-1)">−</button>
+                        <input type="number" id="people" placeholder="-" min="1" max="15" readonly>
+                        <button type="button" onclick="stepPeople(1)">+</button>
+                        <span style="font-size:0.78rem;">명</span>
+                        <div class="chk-group" data-name="home" data-mode="multi" style="margin-left:6px;"><span class="chk" data-v="y">낮에도 재실</span></div>
+                    </div></div>
+                <div class="v36-row"><div class="v36-lbl">겨울철 창문 환기 (횟수)</div>
+                    <div class="chk-group" data-name="vent" data-mode="single"><span class="chk" data-v="0">거의 안 함</span><span class="chk" data-v="1">하루 1회</span><span class="chk" data-v="2">하루 2회+</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">1회 환기 시간</div>
+                    <div class="chk-group" data-name="ventmin" data-mode="single"><span class="chk" data-v="0">5분 미만</span><span class="chk" data-v="1">10분 내외</span><span class="chk" data-v="2">30분 이상</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">빨래 건조</div>
+                    <div class="chk-group" data-name="dry" data-mode="single"><span class="chk" data-v="indoor">세탁기만 → 실내 건조</span><span class="chk" data-v="hp">건조기 (히트펌프·응축식)</span><span class="chk" data-v="exhaust">건조기 (가스·배기식)</span><span class="chk" data-v="balc">발코니·외부 건조</span></div>
+                    <div class="v36-note">히트펌프·응축식=수분이 배수로 빠져 실내 가습 거의 없음 / 실내건조=1회 약 1~2L 수분 방출</div></div>
+                <div class="v36-row"><div class="v36-lbl">열회수환기장치(전열교환기)</div>
+                    <div class="chk-group" data-name="erv" data-mode="single"><span class="chk" data-v="none">없음</span><span class="chk" data-v="on">있음·상시 가동</span><span class="chk" data-v="some">있음·가끔</span><span class="chk" data-v="off">있음·거의 안 켬</span><span class="chk" data-v="unk">모름</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">겨울철 습도 기기·수분원</div>
+                    <div class="chk-group" data-name="moist" data-mode="multi">
+                        <span class="chk" data-v="+">가습기 사용</span><span class="chk" data-v="-">제습기 사용</span><span class="chk" data-v="+">화분 다수</span><span class="chk" data-v="+">수족관</span>
+                        <span class="chk" data-v="+">매일 조리(국·찜 등)</span><span class="chk" data-v="+">샤워 후 욕실문 개방</span><span class="chk" data-v="-">레인지후드 매번 가동</span><span class="chk" data-v="-">욕실 팬 가동</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">난방 방식</div>
+                    <div class="chk-group" data-name="heat" data-mode="single"><span class="chk" data-v="cont">상시 난방</span><span class="chk" data-v="int">외출 시 끔(간헐)</span><span class="chk" data-v="room">일부 방 난방 안 함</span></div>
+                    <div class="v36-note">안 쓰는 방·간헐난방 = 벽체가 식어 결로 급증 요인</div></div>
+            </div>
+        </div>
+
+        <!-- ★ v36.0: 같은 건물 다른 세대 -->
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-city"></i> 같은 건물 다른 세대</div>
+            <div class="chk-group" data-name="nbr" data-mode="single">
+                <span class="chk" data-v="unk">모름</span><span class="chk" data-v="only">우리 집만</span><span class="chk" data-v="some">같은 라인 일부</span><span class="chk" data-v="many">같은 라인 다수</span><span class="chk" data-v="all">단지 전반</span></div>
+            <div class="v36-note">같은 라인 다수 = 설계·시공 공통 요인 쪽 / 우리 집만 = 생활·개별 하자 쪽</div>
         </div>
 
         <div class="section no-print" id="measurement-section" style="display: none;">
@@ -742,6 +870,19 @@
             </div>
         </div>
 
+        <!-- ★ v36.0: 상세 증상 (기존과 동일, 위치만 사진 아래로) -->
+        <div class="section no-print">
+            <div class="section-title"><i class="fas fa-notes-medical"></i> 상세 증상</div>
+            <div class="input-group">
+                <label class="input-label" style="text-align:left;"><span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">자유 입력 · 🎤 음성 (최대 20초 자동 종료)</span></label>
+                <div class="mic-input-wrap textarea-wrap">
+                    <textarea id="defect-content" placeholder="[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어락(잠금장치) 작동 불량·잠금 뻑뻑함 등"></textarea>
+                    <button type="button" class="mic-btn" id="mic-defect-content" onclick="voiceInput('defect-content')" aria-label="상세증상 음성입력"><i class="fas fa-microphone"></i></button>
+                </div>
+                <div class="mic-status" id="mic-status"></div>
+            </div>
+        </div>
+
         <!-- ▼ 발코니 열손실 + 시트저장 섹션 시작 -->
 <style>
   .blc-wrap{background:#fff;border:1px solid #e0e7ef;border-radius:16px;padding:4px 0 8px;margin:14px 0;font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#2b3644}
@@ -927,6 +1068,9 @@
                 <tbody><tr><th>진단 일자</th><td id="rep-date"></td></tr>
                 <tr><th>진단 대상</th><td id="rep-loc"></td></tr>
                 <tr><th>구조/사양</th><td id="rep-type"></td></tr>
+                <tr style="display:none;"><th>세대 위치</th><td id="rep-house"></td></tr>
+                <tr style="display:none;"><th>생활환경·관찰</th><td id="rep-life" style="white-space:pre-line; font-weight:500; font-size:0.82rem;"></td></tr>
+                <tr style="display:none;"><th>기상(측정 전 7일)</th><td id="rep-weather"></td></tr>
                 <tr><th>상세 증상</th><td id="rep-defect" style="white-space:pre-line;"></td></tr>
             </tbody></table>
 
@@ -980,7 +1124,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v35.2'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v36.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1105,6 +1249,188 @@
         const today = new Date();
         const dateStr = `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`;
         document.getElementById('date').value = dateStr;
+
+        // ================= ★ v36.0 확장 입력 (세대위치·관찰상태·결로흔적·생활문진·이웃세대·기상) =================
+        //  - 체크박스형 칩: data-mode="single"(하나만) / "multi"(여러 개). 같은 칩 재탭 시 해제(미입력 허용).
+        //  - 미입력 항목은 AI 프롬프트·원인비율에서 제외 → 입력 없으면 v35 동작과 동일.
+        (function initDatePicker() {
+            const dp = document.getElementById('date-picker');
+            if (dp) dp.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        })();
+        window.onDatePicked = function() {
+            const v = (document.getElementById('date-picker').value || '').split('-');
+            if (v.length === 3) {
+                document.getElementById('date').value = `${+v[0]}.${+v[1]}.${+v[2]}`;
+                setSeason(seasonFromMonth(getMeasurementMonth()));
+                updateV36Derived();
+                if ((document.getElementById('addr').value || '').trim()) fetchSiteWeather();
+            }
+        };
+        document.querySelectorAll('.chk-group').forEach(g => {
+            g.addEventListener('click', e => {
+                const c = e.target.closest('.chk'); if (!c) return;
+                const wasOn = c.classList.contains('on');
+                if (g.dataset.mode === 'single') g.querySelectorAll('.chk').forEach(x => x.classList.remove('on'));
+                // '특이사항 없음'(data-v="none")은 다른 항목과 배타
+                else if (!wasOn) g.querySelectorAll('.chk').forEach(x => { if ((c.dataset.v === 'none') !== (x.dataset.v === 'none')) x.classList.remove('on'); });
+                c.classList.toggle('on', !wasOn);
+                updateV36Derived();
+            });
+        });
+        const chkOn = name => [...document.querySelectorAll(`.chk-group[data-name="${name}"] .chk.on`)];
+        const chkVal = name => { const c = chkOn(name)[0]; return c ? (c.dataset.v || c.textContent.trim()) : null; };
+        const chkVals = name => chkOn(name).map(c => c.dataset.v || c.textContent.trim());
+        const chkText = name => chkOn(name).map(c => c.textContent.trim()).join(', ');
+        window.stepPeople = function(d) {
+            const el = document.getElementById('people');
+            const cur = parseInt(el.value, 10);
+            el.value = isNaN(cur) ? (d > 0 ? 2 : 1) : Math.min(15, Math.max(1, cur + d));
+        };
+
+        function measurementYear() {
+            const p = (document.getElementById('date').value || '').split('.');
+            return parseInt(p[0], 10) || today.getFullYear();
+        }
+        function floorInfo() {
+            const f = parseInt(document.getElementById('floor-no').value, 10);
+            const t = parseInt(document.getElementById('floor-top').value, 10);
+            const fx = chkVals('floorx');
+            if (isNaN(f) && !fx.length) return null;
+            let pos = isNaN(f) ? '' : (f <= 1 ? '1층' : (!isNaN(t) && f >= t ? '최상층'
+                    : (!isNaN(t) && t > 1 ? (f / t < 0.35 ? '저층부' : (f / t > 0.65 ? '고층부' : '중간층')) : '')));
+            const extra = [];
+            if (fx.includes('pilotis')) extra.push('필로티 상부');
+            if (fx.includes('roof')) extra.push('옥상 직하');
+            let stack = '';
+            if (!isNaN(f) && !isNaN(t) && t > 1) {
+                const r = f / t;
+                stack = r < 0.35 ? '겨울 연돌효과: 저층 → 틈으로 냉기 유입(외풍 강)'
+                      : (r > 0.65 ? '겨울 연돌효과: 고층 → 실내공기 유출(외풍 약, 습한 공기가 틈으로 빠지며 틈 주변 결로)'
+                      : '겨울 연돌효과: 중립대 부근(압력차 작음)');
+            }
+            return { f, t, pos, extra, stack, label: [isNaN(f) ? '' : `${f}층${isNaN(t) ? '' : '/' + t + '층'}`, pos, ...extra].filter(Boolean).join(' · ') };
+        }
+        window.updateV36Derived = function() {
+            const y = parseInt(document.getElementById('built-year').value, 10);
+            const yn = document.getElementById('year-note');
+            if (yn) {
+                if (!isNaN(y) && y > 1900) {
+                    const age = measurementYear() - y + 1;
+                    yn.textContent = age <= 2 ? `입주 ${age}년차 → 콘크리트 초기 함수율 방출 구간 (초기 결로 가중)` : `입주 ${age}년차`;
+                } else yn.textContent = '';
+            }
+            const fi = floorInfo(), fn = document.getElementById('floor-note');
+            if (fn) fn.textContent = fi ? `자동 판정: ${fi.label}${fi.stack ? ' · ' + fi.stack : ''}` : '';
+        };
+
+        // ── 기상 자동조회: 주소 → 좌표(OSM Nominatim, 실패 시 뒤 단어부터 줄여 재시도) → Open-Meteo 측정 전 7일
+        let SITE_WEATHER = null;
+        async function geocodeKR(addr) {
+            let words = addr.replace(/[○◯]+/g, '').split(/\s+/).filter(Boolean);
+            while (words.length) {
+                const q = words.join(' ');
+                try {
+                    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q=${encodeURIComponent(q)}`);
+                    if (r.ok) { const j = await r.json(); if (j && j[0]) return { lat: +j[0].lat, lon: +j[0].lon, matched: q }; }
+                } catch (e) {}
+                words.pop();
+            }
+            return null;
+        }
+        const DIR16 = ['북', '북북동', '북동', '동북동', '동', '동남동', '남동', '남남동', '남', '남남서', '남서', '서남서', '서', '서북서', '북서', '북북서'];
+        window.fetchSiteWeather = async function() {
+            const addr = (document.getElementById('addr').value || '').trim();
+            const st = document.getElementById('weather-status');
+            if (!addr) { st.textContent = '주소를 입력하세요'; return; }
+            st.textContent = '조회 중…';
+            const geo = await geocodeKR(addr);
+            if (!geo) { st.textContent = '⚠ 주소 위치를 찾지 못함 (시·구 이름으로 다시 입력)'; SITE_WEATHER = null; return; }
+            const v = (document.getElementById('date-picker').value || '');
+            const end = v ? new Date(v + 'T00:00:00') : new Date();
+            const start = new Date(end); start.setDate(start.getDate() - 7);
+            const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            const q = `latitude=${geo.lat}&longitude=${geo.lon}&daily=temperature_2m_min,temperature_2m_mean,wind_speed_10m_max,wind_direction_10m_dominant&wind_speed_unit=ms&timezone=Asia%2FSeoul&start_date=${ymd(start)}&end_date=${ymd(end)}`;
+            let data = null;
+            // 측정일이 약 80일 이전이면 과거자료(archive) API 우선, 최근이면 forecast(past 포함) 우선
+            const hosts = ['https://api.open-meteo.com/v1/forecast', 'https://archive-api.open-meteo.com/v1/archive'];
+            if ((Date.now() - end.getTime()) / 86400000 > 80) hosts.reverse();
+            for (const host of hosts) {
+                try { const r = await fetch(`${host}?${q}`); if (r.ok) { const j = await r.json(); if (j.daily && j.daily.time && j.daily.time.length) { data = j; break; } } } catch (e) {}
+            }
+            if (!data) { st.textContent = '⚠ 기상자료 조회 실패 (측정일이 너무 오래됐거나 네트워크 문제)'; SITE_WEATHER = null; return; }
+            const D = data.daily, n = D.time.length - 1;
+            const mins = D.temperature_2m_min.slice(0, n).filter(x => x != null);
+            SITE_WEATHER = {
+                place: geo.matched,
+                todayMean: D.temperature_2m_mean[n], todayMin: D.temperature_2m_min[n],
+                min7: mins.length ? Math.min(...mins) : null,
+                wind: D.wind_speed_10m_max[n], windDir: D.wind_direction_10m_dominant[n] != null ? DIR16[Math.round(D.wind_direction_10m_dominant[n] / 22.5) % 16] : ''
+            };
+            const f1 = x => (x == null || isNaN(x)) ? '-' : (+x).toFixed(1);
+            document.getElementById('wx-today').textContent = `${f1(SITE_WEATHER.todayMean)}℃`;
+            document.getElementById('wx-min7').textContent = `${f1(SITE_WEATHER.min7)}℃`;
+            document.getElementById('wx-wind').textContent = `${f1(SITE_WEATHER.wind)}m/s ${SITE_WEATHER.windDir}`;
+            st.textContent = `✔ ${geo.matched} 기준 (당일=일평균, 당일 최저 ${f1(SITE_WEATHER.todayMin)}℃)`;
+        };
+
+        // ── 문진 수집: AI 프롬프트용 텍스트 + 원인비율 보정값(adj: +면 거주환경, −면 단열·기밀 쪽)
+        window.collectV36 = function() {
+            const lines = [];
+            const add = (k, v) => { if (v) lines.push(`- ${k}: ${v}`); };
+            const y = parseInt(document.getElementById('built-year').value, 10);
+            const age = (!isNaN(y) && y > 1900) ? measurementYear() - y + 1 : null;
+            add('단지 주소(지역)', (document.getElementById('addr').value || '').trim());
+            add('입주(준공)년도', age ? `${y}년 (입주 ${age}년차${age <= 2 ? ' — 콘크리트 초기 함수율 방출 구간' : ''})` : '');
+            if (SITE_WEATHER) {
+                const f1 = x => (x == null || isNaN(x)) ? '-' : (+x).toFixed(1);
+                add('기상(측정일 기준, 기상자료 자동조회)', `당일 일평균 ${f1(SITE_WEATHER.todayMean)}℃ / 당일 최저 ${f1(SITE_WEATHER.todayMin)}℃ / 측정 전 7일 최저 ${f1(SITE_WEATHER.min7)}℃ / 당일 최대풍속 ${f1(SITE_WEATHER.wind)}m/s(${SITE_WEATHER.windDir}풍)`);
+            }
+            add('주거형태', chkText('house'));
+            add('발코니', chkText('ext'));
+            const fi = floorInfo();
+            if (fi) add('층 위치', fi.label + (fi.stack ? ` (${fi.stack})` : ''));
+            add('세대 배치', chkText('side'));
+            add('거실 방향', chkText('dir'));
+            const obs = chkVals('obs').filter(v => v !== 'none');
+            add('현장 관찰 상태(사실 체크)', chkText('obs'));
+            add('평소 결로 흔적', chkText('trace'));
+            const ppl = parseInt(document.getElementById('people').value, 10);
+            add('거주 인원', isNaN(ppl) ? '' : `${ppl}명${chkVals('home').length ? ' (낮에도 재실)' : ''}`);
+            const vent = chkText('vent'), ventmin = chkText('ventmin');
+            add('겨울철 창문 환기', [vent, ventmin ? '1회 ' + ventmin : ''].filter(Boolean).join(', '));
+            add('빨래 건조', chkText('dry'));
+            add('열회수환기장치', chkText('erv'));
+            add('습도 기기·수분원', chkText('moist'));
+            add('난방 방식', chkText('heat'));
+            add('같은 건물 다른 세대', chkText('nbr'));
+
+            // 원인비율 보정 (시안 가중치). 입력 없으면 0 → v35.1 비율 그대로.
+            let adj = 0;
+            if (!isNaN(ppl)) adj += (ppl - 2) * 2;
+            if (chkVals('home').length) adj += 3;
+            adj += ({ '0': 8, '1': 2, '2': -4 })[chkVal('vent')] || 0;
+            adj += ({ '0': 4, '1': 0, '2': -4 })[chkVal('ventmin')] || 0;
+            adj += ({ indoor: 8, hp: 0, exhaust: 0, balc: -2 })[chkVal('dry')] || 0;
+            adj += ({ none: 1, on: -5, some: 0, off: 3, unk: 0 })[chkVal('erv')] || 0;
+            chkVals('moist').forEach(m => adj += (m === '+' ? 3 : -2));
+            if (age && age <= 2) adj += 4;
+            let ins = 0;
+            if (chkVal('heat') && chkVal('heat') !== 'cont') ins += 4;
+            if (chkVal('ext') === 'ext') ins += 3;
+            if (chkVal('side') === 'end') ins += 5;
+            if (fi && (/1층|최상층/.test(fi.pos) || fi.extra.length)) ins += 4;
+            ins += obs.length * 3;
+            const tr = chkVals('trace');
+            if (tr.includes('wall')) ins += 3;
+            if (tr.includes('draft')) ins += 3;
+            if (tr.includes('w')) adj += 2;
+            const nb = chkVal('nbr');
+            if (nb === 'only') adj += 6;
+            ins += ({ some: 3, many: 8, all: 10 })[nb] || 0;
+            let net = Math.max(-20, Math.min(20, adj - ins));
+            return { text: lines.join('\n'), net, age, floor: fi, obsCount: obs.length, nbr: nb };
+        };
+        // ================= ▲ v36.0 =================
 
         let clickCount = 0; let clickTimer;
 
@@ -1676,16 +2002,27 @@
             const defect = document.getElementById('defect-content').value;
             
             const winType = document.getElementById('window-type').value;
-            const houseType = document.getElementById('house-type').value;
             const consideration = document.getElementById('consideration').value;
             const vapVal = document.getElementById('vap-val').value;
             const mixVal = document.getElementById('mix-val').value;
-            
+            // ★ v36.0: 세대위치·생활문진 수집 (기존 house-type 단일선택 대체)
+            const V36 = collectV36();
+            const _fi = V36.floor;
+            const houseType = [chkText('house'), chkText('ext'), _fi ? _fi.label : '', chkText('side'), chkText('dir') ? '거실 ' + chkText('dir') + '향' : ''].filter(Boolean).join(' / ') || '세대 위치 미입력';
+            const v36Block = V36.text
+                ? `\n\n[세대 위치·생활환경 문진 (v36 현장 입력 — 반드시 반영)]\n${V36.text}\n\n[문진 해석 지침]\n- 입력된 항목만 근거로 삼고, 미입력 항목은 추정하지 마십시오.\n- **같은 건물 다른 세대**: '같은 라인 다수/단지 전반'이면 설계·구조 공통 요인(열교·단열 설계·기밀 사양) 비중을 높이고, '우리 집만'이면 해당 세대 생활환경·개별 부위 요인을 우선 검토하십시오.\n- **층 위치·연돌효과**: 겨울철 저층은 틈으로 냉기가 유입(외풍 체감↑), 고층은 실내 습한 공기가 틈으로 유출(틈 주변 결로·외풍 체감↓)되는 경향을 외풍·결로 해석에 반영하십시오. 1층·필로티 상부·옥상 직하·측벽 세대는 외기 접촉면 증가로 표면온도 저하 요인입니다.\n- **입주 2년차 이내**면 콘크리트 초기 함수율 방출을 원인에 포함하고, 그 이후면 비중을 낮추십시오.\n- **생활 수분원**(거주 인원·실내 건조·가습기·조리·환기 횟수/시간·전열교환기 미가동·간헐난방)은 MR277 VAP/MIX 수치와 교차 검증해 거주 환경 관리 원인으로 구체적으로 연결하십시오. 히트펌프·응축식 건조기는 실내 가습 요인이 아닙니다.\n- **현장 관찰 상태**(여밈대 틈·풍지판 누락·물구멍 반대타공·모헤어 마모·창짝 처짐 등)는 외풍·기밀 저하 경로로 해석하되, 원인을 '시공/설치/제작 불량'으로 단정하지 말고 '기밀 보강 필요 부위(AI 추정)'로 표현하십시오.\n- **평소 결로 흔적**은 측정 당일 조건과 무관한 누적 결로 증거로 활용하십시오.\n- 기상자료(측정 전 7일 최저기온·풍속)가 있으면 측정 당일 수치만으로 판단하지 말고 최근 한파·강풍 영향을 함께 고려하십시오.`
+                : '';
+
             document.getElementById('rep-date').innerText = document.getElementById('date').value;
             document.getElementById('rep-loc').innerText = `${document.getElementById('dong').value}동 ${document.getElementById('ho').value}호 (${document.getElementById('location').value})`;
             document.getElementById('rep-type').innerText = (SEASON === 'summer')
                 ? '세대 현관 방화문 (여름 점검 · MR12 표면수분 + 초음파 누설)'
-                : `${winType} / ${houseType} / ${consideration}`;
+                : `${winType} / ${consideration}`;
+            // ★ v36.0: 소견서 진단개요 표에 세대위치·생활환경·기상 행 추가 (미입력 시 행 숨김)
+            const _setRow = (id, val) => { const td = document.getElementById(id); if (!td) return; td.innerText = val || ''; td.parentElement.style.display = val ? '' : 'none'; };
+            _setRow('rep-house', houseType === '세대 위치 미입력' ? '' : houseType);
+            _setRow('rep-life', V36.text ? V36.text.split('\n').filter(l => !/단지 주소|기상\(|주거형태|발코니|층 위치|세대 배치|거실 방향/.test(l)).map(l => l.replace(/^- /, '')).join('\n') : '');
+            _setRow('rep-weather', SITE_WEATHER ? `${SITE_WEATHER.place} · 당일 평균 ${(+SITE_WEATHER.todayMean).toFixed(1)}℃ · 7일 최저 ${SITE_WEATHER.min7 == null ? '-' : (+SITE_WEATHER.min7).toFixed(1)}℃ · 풍속 ${(+SITE_WEATHER.wind).toFixed(1)}m/s ${SITE_WEATHER.windDir}` : '');
             document.getElementById('rep-defect').innerText = (defect && defect.trim()) ? defect.trim() : '-';
 
             let imageParts = [];
@@ -1861,7 +2198,12 @@
                 windowSpecifics = `- **매우 중요**: 사용자가 선택한 창호는 '${winType}'입니다. 분석 시 반드시 이 창호 종류를 기준으로 삼고, 선택하지 않은 다른 창호(예: 입면분할창 등)에 대한 언급은 절대 하지 마십시오.`;
             }
 
-            const concreteLogic = "- 건물 특성상 콘크리트 및 몰탈의 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'가 결로의 원인이 될 수 있음을 반드시 언급하십시오. (특히 입주 2년 이내 신축인 경우)";
+            // ★ v36.0: 입주년차를 알면 초기 건축물 습기 언급 강도를 분기
+            const concreteLogic = (V36.age && V36.age > 2)
+                ? `- 입주 ${V36.age}년차로 콘크리트 초기 함수율 방출기는 지난 것으로 보이므로, '초기 건축물 습기'는 보조 요인으로만 짧게 언급하십시오.`
+                : (V36.age
+                    ? `- **입주 ${V36.age}년차 신축**입니다. 콘크리트·몰탈 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'를 결로의 주요 원인 중 하나로 반드시 설명하십시오.`
+                    : "- 건물 특성상 콘크리트 및 몰탈의 양생 과정에서 방출되는 '초기 건축물 습기(Construction Moisture)'가 결로의 원인이 될 수 있음을 반드시 언급하십시오. (특히 입주 2년 이내 신축인 경우)");
 
             try {
                 let balconyInfo='';if(window.isBalconyEnabled&&window.isBalconyEnabled()){var _g=function(id){var e=document.getElementById(id);return e?(e.innerText||'').replace(/\s+/g,' ').trim():'';};var _bp=document.getElementById('blc_preset');var _bpt=(_bp&&_bp.selectedIndex>=0)?_bp.options[_bp.selectedIndex].text:'';var _bv=_g('blc_verdict'),_bl=_g('blc_loss'),_bn=_g('blc_net'),_br=_g('blc_rec');if(_bv||_bl||_br){balconyInfo='\n\n[발코니 방화문 열손실·결로 계산 (방화문 전용)]\n- 건물유형: '+_bpt+'\n- 결로판정: '+_bv+'\n- 총열손실: '+_bl+' / 순필요난방: '+_bn+'\n- '+_br+'\n위 발코니 계산 결과를 방화문 결로위험과 난방·기밀 보완 진단에 반영하십시오.';}} const dbContext = JSON.stringify(SEASON_IS_SUMMER ? SUMMER_DB : CONDENSATION_DB);
@@ -1885,7 +2227,7 @@
 
                     [현장 데이터]
                     - 대상: 세대 현관 방화문
-                    - 증상: ${defect}${balconyInfo}
+                    - 증상: ${defect}${balconyInfo}${v36Block}
                     - 사용 장비: FLIR MR12(표면 수분), 초음파 음향 카메라(누설), 열화상(선택). ※ 본 점검에서 UV·온습도(MR277)·창호 사양 검사는 생략됨 — 온습도·노점·TDR 등 온도 기반 수치를 추정하거나 요구하지 마십시오. 단, **열화상 이미지가 첨부된 경우** 표면 저온부·열교(열 손실) 위치를 정성적으로(수치 산출 없이) 해석해 누설·결로 발생부와 연결하십시오.
                     - 첨부 사진: 방화문 현황 + MR12 표면수분 + 초음파 누설 이미지 (+ 열화상은 첨부 시)
 
@@ -1943,6 +2285,12 @@
                     insPct = _tdrOver ? 75 : 20;
                     normalPct = 5;
                 }
+                // ★ v36.0: 생활문진·세대위치·이웃세대로 비율 보정 (±20%p 상한, 문진 미입력 시 0 → v35.1과 동일)
+                if (V36.net) {
+                    ventPct = Math.max(5, Math.min(90, ventPct + V36.net));
+                    insPct = Math.max(5, 100 - normalPct - ventPct);
+                    ventPct = 100 - normalPct - insPct;
+                }
                 prompt = `
                     당신은 '건축물리 박사'이자 '결로 진단 최고 전문가'입니다.
                     제공된 현장 데이터와 [표준 데이터베이스]를 바탕으로 정밀 진단 보고서를 작성하십시오.
@@ -1956,7 +2304,7 @@
                     - 실내: ${tempIn}°C / ${humid}% (노점: ${dew})
                     - 실외: ${tempOut}°C / 표면온도: ${tempSurf}°C
                     - 공기질(선택): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'}
-                    - 증상: ${defect}${balconyInfo}
+                    - 증상: ${defect}${balconyInfo}${v36Block}
                     - **핵심 TDR 분석값**: ${tdrMsg}
 
                     [특별 지시사항 (반드시 준수)]
@@ -1967,7 +2315,7 @@
                     5. **콘크리트 특성**: ${concreteLogic}
                     6. **논리적 판정**: 
                        - 표면온도가 노점온도보다 낮은지 확인하십시오. (T_surf < T_dp 이면 결로 발생)
-                       - TDR 0.28 기준과 VAP/MIX를 종합한 **결로 원인 비율은 [환기·거주환경 관련 ${ventPct}% / 단열 성능 관련 ${insPct}% / 기타 복합 ${normalPct}%]** 입니다. 이 비율에 근거해 원인을 서술하고, 개선 우선순위(##4의 거주 환경 관리 우선 권고)와 **모순되지 않게** 설명하십시오. 차트 JSON도 반드시 이 비율과 동일하게 출력하십시오.
+                       - TDR 0.28 기준과 VAP/MIX${V36.net ? ", 생활환경 문진·세대 위치" : ""}를 종합한 **결로 원인 비율은 [환기·거주환경 관련 ${ventPct}% / 단열 성능 관련 ${insPct}% / 기타 복합 ${normalPct}%]** 입니다. 이 비율에 근거해 원인을 서술하고, 개선 우선순위(##4의 거주 환경 관리 우선 권고)와 **모순되지 않게** 설명하십시오. 차트 JSON도 반드시 이 비율과 동일하게 출력하십시오.
                     7. **금지어**: '기술사', '협회', '창호 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송' (교체 대신 보수/개선 제안, 단정적 판정 대신 AI 분석 소견으로 표현)
                     ※ **매우 중요**: 모든 분석 결과는 반드시 'AI 분석에 의한 추정 소견'임을 명시하십시오. '시공 하자', '시공 불량', '시공사 귀책' 등 법적 분쟁을 유발할 수 있는 표현은 절대 사용하지 마십시오. 대신 '단열 성능 개선 필요 부위(AI 추정)', '설계 기준 대비 성능 미흡 가능성(AI 분석)', '추가 정밀 진단 권고' 등의 중립적 표현을 사용하십시오.
                     ${vapMixDiagnosis}
