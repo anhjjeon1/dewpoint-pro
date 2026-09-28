@@ -26,10 +26,11 @@
  */
 
 // ───── 상수 ─────
-const VERSION = 'v1.1';
+const VERSION = 'v1.3';
 const GEMINI_MODEL = 'gemini-3.1-flash-lite';   // 기본/OCR/폴백용 (저비용)
 // v1.1: 본분석은 클라이언트가 prompts[].model로 상위 모델 요청 가능. 화이트리스트만 허용.
-const ALLOWED_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.1-flash', 'gemini-3.5-flash'];
+// v1.3(2026-09-28): 'gemini-3.7-flash' 추가 — 클라 v36.1 본분석 모델 (3.1-flash는 모델목록에서 사라짐)
+const ALLOWED_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.1-flash', 'gemini-3.5-flash', 'gemini-3.7-flash'];
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 const SERVICE_NAME = '청개구리-결로진단-Backend';
 

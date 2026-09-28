@@ -1124,12 +1124,16 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v36.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v36.1'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
         //   비-thinking 모델 3.1-flash로 교체(출력 굶김 없음, 품질/비용 균형). 2026-07-10 라이브 검증.
-        const ANALYSIS_MODEL = 'gemini-3.1-flash';
+        // ★ v36.1: gemini-3.1-flash가 모델목록에서 사라져(not found) 서버가 lite로 폴백 중이던 문제 → 3.7-flash로 교체.
+        //   3.7-flash는 thinking 모델 → thinkingLevel 'low' 필수(2026-09-28 실측: 추론 0토큰·7~10천자·5섹션·16~21초 완결).
+        //   thinking 무제한 시 3.8-flash는 8192토큰에서 보고서 잘림(MAX_TOKENS) 확인. 백엔드 ALLOWED_MODELS에 등록돼야 적용.
+        const ANALYSIS_MODEL = 'gemini-3.7-flash';
+        const ANALYSIS_THINKING = 'low';
 
         // ★ v32.0: 계절 진단 모드 (겨울용=난방 실내결로 / 여름용=냉방 역결로)
         //  - 물리 원리는 동일(표면온도 < 접촉공기 노점 → 결로)하나, '차가운 면'과 '습한 공기'의
@@ -1707,9 +1711,9 @@
 
         // ★ v31.0: Gemini 호출 — GAS 프록시 경유 (Gemini 키 서버 보관, 관리자 토큰 필수)
         // modelName 인자는 호환성 유지용. 실제 모델은 options.model로 GAS에 전달(미지정 시 서버 기본 lite).
-        // v33.1: 본분석은 options.model = ANALYSIS_MODEL(3.5-flash), OCR은 미지정 → lite.
+        // v33.1: 본분석은 options.model = ANALYSIS_MODEL(v36.1: 3.7-flash+thinking low), OCR은 미지정 → lite.
         async function callGeminiWithRetry(modelName, request, options = {}) {
-            const { maxAttempts = 3, timeoutMs = 60000, temperature = 0.2, model = null, maxOutputTokens = null } = options;
+            const { maxAttempts = 3, timeoutMs = 60000, temperature = 0.2, model = null, maxOutputTokens = null, thinkingLevel = null } = options;
             // request → GAS payload 변환 (contents[0].parts → prompt + images)
             const allParts = (request && request.contents && request.contents[0] && request.contents[0].parts) || [];
             const prompt = allParts.filter(p => p.text).map(p => p.text).join('\n');
@@ -1719,6 +1723,7 @@
             }));
             const config = { temperature: temperature, topP: 0.8, topK: 40 };
             if (maxOutputTokens) config.maxOutputTokens = maxOutputTokens;
+            if (thinkingLevel) config.thinkingConfig = { thinkingLevel: thinkingLevel }; // v36.1: thinking 모델 출력 굶김 방지
 
             let lastErr = null;
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -2344,7 +2349,7 @@
                 let text = await callGeminiWithRetry(
                     ANALYSIS_MODEL,
                     { contents: [{ parts: [{ text: prompt }, ...imageParts] }] },
-                    { maxAttempts: 3, timeoutMs: 90000, temperature: 0.2, model: ANALYSIS_MODEL, maxOutputTokens: 8192 }
+                    { maxAttempts: 3, timeoutMs: 90000, temperature: 0.2, model: ANALYSIS_MODEL, maxOutputTokens: 8192, thinkingLevel: ANALYSIS_THINKING }
                 );
 
                 // ★ v29.0: 품질 평가 → 부실한 경우 2차 검증 자동 재분석
@@ -2355,7 +2360,7 @@
                         const text2 = await callGeminiWithRetry(
                             ANALYSIS_MODEL,
                             { contents: [{ parts: [{ text: verifyPrompt }, ...imageParts] }] },
-                            { maxAttempts: 2, timeoutMs: 90000, temperature: 0.1, model: ANALYSIS_MODEL, maxOutputTokens: 8192 }
+                            { maxAttempts: 2, timeoutMs: 90000, temperature: 0.1, model: ANALYSIS_MODEL, maxOutputTokens: 8192, thinkingLevel: ANALYSIS_THINKING }
                         );
                         if (assessAnalysisQuality(text2) !== 'poor') text = text2;
                     } catch (e) { /* 1차 결과 유지 */ }
