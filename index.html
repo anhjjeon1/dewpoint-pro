@@ -702,7 +702,8 @@
                     <input type="number" id="erv-outT" placeholder="평균℃" inputmode="decimal"><span>℃</span><input type="number" id="erv-outRH" placeholder="습도" inputmode="decimal"><span>%</span></div>
                     <div class="v36-note" id="erv-climate-status">주소를 넣고 누르면 Open-Meteo 과거 기상으로 채웁니다. 직접 넣어도 됩니다.</div></div>
                 <div class="v36-row" id="erv-product-row"><div class="v36-lbl">설치된 제품 <span class="v36-hint">— 본체 명판·설명서</span></div>
-                    <div class="erv-inline"><input type="text" id="erv-model" placeholder="모델명 (예: AP-B0150PM)" style="flex:1 1 160px;width:auto;text-align:left;"></div>
+                    <div class="erv-inline"><input type="text" id="erv-model" placeholder="모델명 (예: AP-B0150PM)" style="flex:1 1 160px;width:auto;text-align:left;"><label class="erv-btn" style="display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-camera"></i> 명판 사진으로 채우기<input type="file" id="erv-plate" accept="image/*" style="display:none" onchange="ervReadPlate(this)"></label></div>
+                    <div class="v36-note" id="erv-model-status">모델명을 넣으면 확인된 모델 목록에서 풍량을 찾아 채웁니다. 목록에 없으면 명판 사진을 올리십시오(사진에 적힌 값만 읽습니다).</div>
                     <div class="erv-inline" style="margin-top:4px;"><span>풍량 약</span><input type="number" id="erv-low" placeholder="CMH" inputmode="numeric"><span>중</span><input type="number" id="erv-mid" placeholder="CMH" inputmode="numeric"><span>강</span><input type="number" id="erv-high" placeholder="CMH" inputmode="numeric"></div>
                     <div class="chk-group" data-name="ervtype" data-mode="single" style="margin-top:4px;"><span class="chk" data-v="erv">전열형(습기도 교환)</span><span class="chk" data-v="hrv">현열형(열만 교환)</span><span class="chk" data-v="unk">모름</span></div>
                     <div class="erv-inline" style="margin-top:4px;"><span>난방 습도교환효율</span><input type="number" id="erv-latent" placeholder="%" inputmode="numeric"><span>% (사양서, 전열형만)</span></div>
@@ -1185,7 +1186,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v37.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v37.1'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1921,6 +1922,8 @@
             }
             throw lastErr || new Error('Gemini 호출 실패');
         }
+
+        window.__callGemini = callGeminiWithRetry; // v37.1: 환기장치 명판 판독용
 
         // ★ v29.0: 분석 결과 품질 평가
         function assessAnalysisQuality(text) {
@@ -2741,8 +2744,63 @@
     else if(r.recommendRated)s+=' · 권장 제품: 중 단계 '+r.recommendRated+'CMH 이상';
     return s;
   };
+  // ── v37.1 모델 목록 조회 + 명판 사진 판독
+  var LOCAL_KEY='erv_models_local';
+  function localModels(){try{return JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');}catch(e){return [];}}
+  function saveLocalModel(m){try{var L=localModels().filter(function(x){return ERV.normModel(x.model)!==ERV.normModel(m.model);});L.push(m);localStorage.setItem(LOCAL_KEY,JSON.stringify(L));}catch(e){}}
+  function findModel(name){
+    var m=ERV.lookupModel(name); if(m)return {m:m,from:'확인된 모델 목록'};
+    var k=ERV.normModel(name); if(k.length<4)return null;
+    var L=localModels(); for(var i=0;i<L.length;i++){if(ERV.normModel(L[i].model)===k)return {m:L[i],from:'이 기기에 저장한 명판 판독값'};}
+    return null;
+  }
+  function fillStages(m,force){
+    [['erv-low','low'],['erv-mid','mid'],['erv-high','high']].forEach(function(p){var el=$(p[0]);if(m[p[1]]!=null&&(force||!el.value))el.value=m[p[1]];});
+    if(m.type){var c=document.querySelector('.chk-group[data-name="ervtype"] .chk[data-v="'+m.type+'"]');if(c&&!c.classList.contains('on'))c.click();}
+    if(m.latent!=null&&(force||!$('erv-latent').value))$('erv-latent').value=m.latent;
+  }
+  function onModelInput(){
+    var s=$('erv-model-status'), v=$('erv-model').value.trim(); if(!s)return;
+    if(!v){s.textContent='모델명을 넣으면 확인된 모델 목록에서 풍량을 찾아 채웁니다. 목록에 없으면 명판 사진을 올리십시오(사진에 적힌 값만 읽습니다).';return;}
+    var f=findModel(v);
+    if(f){var key=ERV.normModel(f.m.model);if(onModelInput._last!==key){onModelInput._last=key;['erv-low','erv-mid','erv-high'].forEach(function(id){$(id).value='';});fillStages(f.m,true);}else fillStages(f.m,false);s.innerHTML='✔ <b>'+(f.m.maker?f.m.maker+' ':'')+f.m.model+'</b> — '+f.from+': '+[f.m.low,f.m.mid,f.m.high].filter(function(x){return x!=null;}).join('/')+'CMH'+(f.m.watt?', '+f.m.watt+'W':'')+'<br><span style="color:#6b7280">출처: '+(f.m.src||'-')+'</span>';later();}
+    else s.textContent='목록에 없는 모델입니다. 명판 사진을 올리거나 풍량을 직접 넣어 주십시오.';
+  }
+  window.ervReadPlate=async function(input){
+    var s=$('erv-model-status'); if(!input.files||!input.files[0])return;
+    if(typeof window.__callGemini!=='function'){s.textContent='⚠ 사진 판독 기능을 불러오지 못했습니다. 풍량을 직접 넣어 주십시오.';return;}
+    s.textContent='명판 읽는 중… (관리자 인증이 필요할 수 있습니다)';
+    try{
+      var file=input.files[0];
+      var b64=await new Promise(function(res){var rd=new FileReader();rd.onload=function(e){var u=e.target.result;(window.__compressDataURL?window.__compressDataURL(u,2048,0.85):Promise.resolve(u)).then(function(x){res((x||u).split(',')[1]);});};rd.readAsDataURL(file);});
+      var prompt='This is a photo of the rating plate / spec label (명판) of a residential heat recovery ventilator (전열교환기/환기장치) or its manual page. '+
+        'Read ONLY values that are actually printed in the image. Never guess or use outside knowledge; use null for anything not visible. '+
+        'Airflow may be written as CMH, ㎥/h, m3/h; if several airflow steps are printed (e.g. 약/중/강, Low/Mid/High, 1/2/3단), list them from low to high. '+
+        'Return ONLY JSON: {"maker":string|null,"model":string|null,"airflows":[number],"rated_airflow":number|null,"power_w":number|null,'+
+        '"type":"erv"|"hrv"|null,"heating_temp_eff":number|null,"heating_latent_eff":number|null,"note":string|null}. '+
+        'type: "erv" if it says 전열/엔탈피/total heat, "hrv" if 현열/sensible only, else null. heating_latent_eff = 난방 습도(잠열) 교환효율 % if printed.';
+      var text=await window.__callGemini('gemini-lite',{contents:[{parts:[{text:prompt},{inline_data:{mime_type:'image/jpeg',data:b64}}]}]},{maxAttempts:2,timeoutMs:40000,temperature:0.1});
+      var j=JSON.parse((text.match(/\{[\s\S]*\}/)||['{}'])[0]);
+      var flows=(j.airflows||[]).map(Number).filter(function(x){return x>0&&x<3000;}).sort(function(a,b){return a-b;});
+      if(!flows.length&&j.rated_airflow>0)flows=[+j.rated_airflow];
+      var m={model:j.model||'',maker:j.maker||'',low:null,mid:null,high:null,watt:j.power_w||null,type:(j.type==='erv'||j.type==='hrv')?j.type:'',latent:(j.heating_latent_eff>0&&j.heating_latent_eff<100)?+j.heating_latent_eff:null,src:'명판 사진 판독('+new Date().toISOString().slice(0,10)+')'};
+      if(flows.length>=3){m.low=flows[0];m.mid=flows[1];m.high=flows[flows.length-1];}else if(flows.length===2){m.low=flows[0];m.high=flows[1];}else if(flows.length===1){m.high=flows[0];}
+      if(m.model)$('erv-model').value=m.model;
+      var known=m.model?ERV.lookupModel(m.model):null;
+      fillStages(m,true);
+      var parts=[]; if(m.maker)parts.push(m.maker); if(m.model)parts.push(m.model);
+      var msg='📷 사진에서 읽은 값: '+(parts.join(' ')||'모델명 안 보임')+' · 풍량 '+(flows.length?flows.join('/')+'CMH':'안 보임')+(m.watt?' · '+m.watt+'W':'')+(m.type?' · '+(m.type==='erv'?'전열형':'현열형'):'')+(m.latent!=null?' · 습도교환효율 '+m.latent+'%':'');
+      if(known){var same=(known.high==null||known.high===m.high);msg+='<br>'+(same?'✔ 확인된 모델 목록과 일치합니다.':'⚠ 확인된 목록('+[known.low,known.mid,known.high].filter(function(x){return x!=null;}).join('/')+'CMH)과 다릅니다. 사진을 다시 확인해 주십시오.');}
+      else if(m.model&&flows.length){saveLocalModel(m);msg+='<br>목록에 없던 모델이라 이 기기에 저장했습니다. 다음부터 모델명만 넣어도 채워집니다.';}
+      if(!flows.length)msg+='<br>⚠ 풍량이 사진에서 보이지 않습니다. 설명서의 사양표를 찍거나 직접 넣어 주십시오.';
+      s.innerHTML=msg+'<br><span style="color:#6b7280">사진에 적힌 값만 읽었습니다. 칸의 숫자를 한 번 확인해 주십시오.</span>';
+      later();
+    }catch(e){s.textContent='⚠ 명판을 읽지 못했습니다('+(e&&e.message||'오류')+'). 풍량을 직접 넣어 주십시오.';}
+    finally{input.value='';}
+  };
   function init(){
     var sec=$('erv-section'); if(!sec)return;
+    var mi=$('erv-model'); if(mi){mi.addEventListener('change',onModelInput);mi.addEventListener('input',function(){clearTimeout(mi._t);mi._t=setTimeout(onModelInput,400);});}
     sec.addEventListener('input',later); sec.addEventListener('click',later);
     var life=$('life-section'); if(life){life.addEventListener('click',later);life.addEventListener('input',later);}
     ['temp-in','temp-surf','window-type','people'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',later);e.addEventListener('change',later);}});
