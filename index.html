@@ -772,7 +772,8 @@
         </div>
 
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-images"></i> 현장 채증 (Evidence)</div>
+            <div class="section-title" style="flex-wrap:wrap;gap:6px;"><i class="fas fa-images"></i> 현장 채증 (Evidence)<span class="insp-wrap"><label for="insp-target">검사 대상<b style="color:#c0392b">*</b></label><select id="insp-target" onchange="inspTargetChanged()"><option value="">선택</option><option value="거실">거실</option><option value="안방">안방</option><option value="드레스룸">드레스룸</option><option value="침실1">침실1</option><option value="침실2">침실2</option><option value="다용도실">다용도실</option><option value="발코니">발코니</option><option value="중문">중문</option><option value="__etc">기타(장소 칸 입력)</option></select></span></div>
+            <div id="insp-banner" class="insp-banner empty">📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.</div>
             <div class="photo-stack" id="photo-container">
                 
                 <div class="upload-wrapper" id="wrap-1">
@@ -1164,6 +1165,9 @@
 
         <!-- ★ 하단 버튼: no-print 대신 별도 ID로 관리, 분석 후에도 항상 표시 -->
         <div class="footer-btns" id="footer-action-btns">
+            <button class="footer-btn btn-next-place" onclick="nextInspPlace()">
+                <i class="fas fa-door-open"></i> 같은 세대 다른 장소 검사 (사진만 새로)
+            </button>
             <button class="footer-btn btn-reserve" onclick="window.location.href='tel:01023220949'">
                 <i class="fas fa-phone-alt"></i> 기술 상담 연결
             </button>
@@ -1186,7 +1190,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v37.2'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v37.3'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2101,7 +2105,8 @@
             const ho = document.getElementById('ho').value || '0000';
             const dateVal = document.getElementById('date').value || '';
             const dateClean = dateVal.replace(/\./g, '');
-            return `${dong}동${ho}호_결로진단보고서_${dateClean}.pdf`;
+            const _loc = (document.getElementById('location').value || '').trim().replace(/[\/:*?"<>|\s]+/g, '');
+            return `${dong}동${ho}호${_loc ? '_' + _loc : ''}_결로진단보고서_${dateClean}.pdf`;
         }
 
         // ★ PDF 생성 - window.print() 기반 (모바일 안정적)
@@ -2145,6 +2150,7 @@
         }
 
         window.startAnalysis = async function() {
+            if (typeof window.inspValidate === 'function' && !window.inspValidate()) return;
             const loading = document.getElementById('loading-spinner');
             const resultArea = document.getElementById('result-area');
             const contentDiv = document.getElementById('analysis-content');
@@ -2809,6 +2815,71 @@
     ['temp-in','temp-surf','window-type','people'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',later);e.addEventListener('change',later);}});
     document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('.v36-stepper'))later();});
     run();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<style id="insp-style">
+.insp-wrap{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:700;color:var(--brand-primary)}
+.insp-wrap label{white-space:nowrap}
+#insp-target{padding:6px 8px;border-radius:8px;border:1.5px solid var(--brand-accent);font-size:0.85rem;font-weight:700;background:#fff;color:var(--brand-primary)}
+#insp-target.invalid{border-color:#c0392b;background:#fdecea;animation:inspShake .3s}
+@keyframes inspShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.insp-banner{margin:2px 0 10px;padding:8px 10px;border-radius:10px;background:var(--accent-tint);border:1px solid var(--brand-accent);font-size:0.85rem;color:var(--brand-primary)}
+.insp-banner.empty{background:#fff7e6;border-color:#f0c36d;color:#8a5a00}
+.insp-banner .done{display:block;font-size:0.74rem;color:var(--text-secondary);margin-top:3px;font-weight:500}
+#footer-action-btns{flex-wrap:wrap}
+.btn-next-place{background:#eef6fc!important;color:#0f4c75!important;border:1.5px solid #bcd9ef!important;flex:1 1 100%!important;order:3}
+</style>
+<script>
+/* ★ v37.3 검사 대상 선택(필수) + 같은 세대 다른 장소 연속 검사 — 공통 입력은 그대로, 사진·분석 결과만 비움 */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var DONE=[];
+  function cur(){var s=$('insp-target');if(!s)return '';if(s.value&&s.value!=='__etc')return s.value;return ($('location').value||'').trim();}
+  function banner(){
+    var b=$('insp-banner'),s=$('insp-target');if(!b||!s)return;
+    var c=cur();
+    if(c){b.className='insp-banner';b.innerHTML='📍 지금 검사하는 곳: <b>'+c.replace(/[<>&]/g,'')+'</b> — 아래 사진은 모두 이 장소 사진으로 소견서에 들어갑니다.'+(DONE.length?'<span class="done">이 세대에서 검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}
+    else{b.className='insp-banner empty';b.innerHTML='📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.'+(DONE.length?'<span class="done">검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}
+    Array.prototype.forEach.call(s.options,function(o){if(!o.value||o.value==='__etc')return;o.textContent=o.value+(DONE.indexOf(o.value)>=0?' ✓':'');});
+  }
+  window.inspTargetChanged=function(){
+    var s=$('insp-target');s.classList.remove('invalid');
+    if(s.value&&s.value!=='__etc')$('location').value=s.value;
+    else if(s.value==='__etc'){var l=$('location');if(!l.value||Array.prototype.some.call(s.options,function(o){return o.value===l.value;}))l.value='';l.focus();}
+    banner();
+  };
+  window.inspValidate=function(){
+    var s=$('insp-target');if(!s)return true;
+    if(!cur()){s.classList.remove('invalid');void s.offsetWidth;s.classList.add('invalid');s.scrollIntoView({behavior:'smooth',block:'center'});
+      alert('검사 대상(거실·안방 등)을 먼저 고르십시오.\n소견서에 어느 곳을 검사했는지 표시됩니다.');return false;}
+    return true;
+  };
+  window.nextInspPlace=function(){
+    var c=cur();
+    if(!confirm((c?'"'+c+'" 검사를 마치고 ':'')+'같은 세대의 다른 장소를 검사할까요?\n\n동·호·주소·문진·계측 같은 공통 입력은 그대로 두고, 사진과 분석 결과만 비웁니다.\n(PDF가 필요하면 먼저 저장하십시오.)'))return;
+    if(c&&DONE.indexOf(c)<0)DONE.push(c);
+    document.querySelectorAll('#photo-container .upload-box').forEach(function(box){
+      var img=box.querySelector('.preview-img');if(img){img.removeAttribute('src');img.style.display='';}
+      box.querySelectorAll('i, span').forEach(function(el){el.style.display='';});
+      var inp=box.nextElementSibling;if(inp&&inp.type==='file')inp.value='';
+    });
+    document.querySelectorAll('#photo-container .upload-wrapper.filled').forEach(function(w){w.classList.remove('filled');});
+    var ra=$('result-area');if(ra)ra.style.display='none';
+    var ac=$('analysis-content');if(ac)ac.innerHTML='';
+    var g=$('report-photo-gallery');if(g)g.innerHTML='';
+    var fb=$('footer-action-btns');if(fb)fb.style.display='';
+    var s=$('insp-target');s.value='';$('location').value='';
+    banner();
+    var sec=s.closest('.section');if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
+    setTimeout(function(){s.focus();},400);
+  };
+  function init(){
+    var l=$('location'),s=$('insp-target');if(!l||!s)return;
+    l.addEventListener('input',function(){var v=l.value.trim();var hit=Array.prototype.some.call(s.options,function(o){return o.value===v;});s.value=hit?v:(v?'__etc':'');s.classList.remove('invalid');banner();});
+    if(l.value){l.dispatchEvent(new Event('input'));}
+    banner();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
