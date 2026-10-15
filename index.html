@@ -671,6 +671,46 @@
             </div>
         </div>
 
+        <!-- ★ v37.0: 환기장치(전열교환기) 적정성 — erv-engine.js 공식 계산(AI는 설명만) -->
+        <div class="section no-print v36-fold closed" id="erv-section">
+            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치 적정성 <span class="v36-hint" style="margin-left:6px;">— 전열교환기가 이 집에 맞는지</span><span class="v36-caret"></span></div>
+            <div class="v36-body">
+                <div class="v36-note" style="margin-bottom:6px;">거주 인원·빨래 건조·가습기·수족관·전열교환기 유무는 위 <b>생활환경 문진</b> 값을 그대로 씁니다. 실내온도·유리 표면온도는 정밀 계측 값을 씁니다.</div>
+                <div class="v36-row"><div class="v36-lbl">집 크기</div>
+                    <div class="erv-inline"><input type="number" id="erv-area" placeholder="전용 84" inputmode="decimal"><span>㎡</span>
+                    <input type="number" id="erv-height" placeholder="2.3" inputmode="decimal"><span>m 천장</span></div>
+                    <div class="v36-note">발코니를 확장했으면 확장 면적까지 넣으십시오.</div></div>
+                <div class="v36-row"><div class="v36-lbl">평일 집에 있는 시간 <span class="v36-hint">— 잠자는 시간 포함</span></div>
+                    <div class="chk-group" data-name="ervhome" data-mode="single"><span class="chk" data-v="24">종일 재실</span><span class="chk" data-v="14">저녁·밤만(맞벌이·통학)</span><span class="chk" data-v="10">밤에만</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">조리</div>
+                    <div class="chk-group" data-name="ervcook" data-mode="single"><span class="chk" data-v="gas">가스레인지</span><span class="chk" data-v="elec">인덕션·전기</span><span class="chk" data-v="none">거의 안 함</span></div>
+                    <div class="chk-group" data-name="ervcookdays" data-mode="single" style="margin-top:4px;"><span class="chk" data-v="7">매일</span><span class="chk" data-v="5">주 5일</span><span class="chk" data-v="3">주 3일</span><span class="chk" data-v="1">주 1일</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">샤워·세탁·화분</div>
+                    <div class="erv-inline"><span>샤워 하루</span><input type="number" id="erv-shower" placeholder="인원수" inputmode="numeric"><span>회</span>
+                    <span>세탁 주</span><input type="number" id="erv-laundry" placeholder="0" inputmode="numeric"><span>일</span>
+                    <span>화분</span><input type="number" id="erv-plants" placeholder="0" inputmode="numeric"><span>개</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">가습기 <span class="v36-hint">— 제품 표시 가습량</span></div>
+                    <div class="erv-inline"><input type="number" id="erv-humid" placeholder="ml/h" inputmode="numeric"><span>ml/h ×</span><input type="number" id="erv-humidh" placeholder="시간" inputmode="numeric"><span>시간/일</span></div></div>
+                <div class="v36-row"><div class="v36-lbl">생활 조건</div>
+                    <div class="chk-group" data-name="ervcond" data-mode="multi"><span class="chk" data-v="newborn">신생아·영아 있음</span><span class="chk" data-v="cantopen">창문 환기 어려움(맞벌이·미세먼지·소음)</span><span class="chk" data-v="passive">패시브하우스 수준 기밀</span></div>
+                    <div class="v36-note">창호 기밀은 위 '창호 종류'로 판단합니다(시스템창호·입면분할=기밀형, 이중창=일반, 알루미늄 단창=노후).</div></div>
+                <div class="v36-row"><div class="v36-lbl">실내 목표 습도 상한</div>
+                    <div class="erv-inline"><input type="number" id="erv-target" placeholder="50" inputmode="numeric"><span>%</span></div>
+                    <div class="v36-note">정밀 계측에 유리 표면온도가 있으면 그 표면의 결로 한계 습도와 비교해 낮은 값을 씁니다.</div></div>
+                <div class="v36-row"><div class="v36-lbl">겨울 바깥 공기 <span class="v36-hint">— 위 단지 주소로 지난겨울(12~2월) 실측 기상</span></div>
+                    <div class="erv-inline"><button type="button" class="erv-btn" onclick="ervLoadClimate()">지난겨울 기상 불러오기</button>
+                    <input type="number" id="erv-outT" placeholder="평균℃" inputmode="decimal"><span>℃</span><input type="number" id="erv-outRH" placeholder="습도" inputmode="decimal"><span>%</span></div>
+                    <div class="v36-note" id="erv-climate-status">주소를 넣고 누르면 Open-Meteo 과거 기상으로 채웁니다. 직접 넣어도 됩니다.</div></div>
+                <div class="v36-row" id="erv-product-row"><div class="v36-lbl">설치된 제품 <span class="v36-hint">— 본체 명판·설명서</span></div>
+                    <div class="erv-inline"><input type="text" id="erv-model" placeholder="모델명 (예: AP-B0150PM)" style="flex:1 1 160px;width:auto;text-align:left;"></div>
+                    <div class="erv-inline" style="margin-top:4px;"><span>풍량 약</span><input type="number" id="erv-low" placeholder="CMH" inputmode="numeric"><span>중</span><input type="number" id="erv-mid" placeholder="CMH" inputmode="numeric"><span>강</span><input type="number" id="erv-high" placeholder="CMH" inputmode="numeric"></div>
+                    <div class="chk-group" data-name="ervtype" data-mode="single" style="margin-top:4px;"><span class="chk" data-v="erv">전열형(습기도 교환)</span><span class="chk" data-v="hrv">현열형(열만 교환)</span><span class="chk" data-v="unk">모름</span></div>
+                    <div class="erv-inline" style="margin-top:4px;"><span>난방 습도교환효율</span><input type="number" id="erv-latent" placeholder="%" inputmode="numeric"><span>% (사양서, 전열형만)</span></div>
+                    <div class="chk-group" data-name="ervstate" data-mode="multi" style="margin-top:4px;"><span class="chk" data-v="due">필터 교체 표시</span><span class="chk" data-v="clog">필터 막힘·오래됨</span><span class="chk" data-v="error">조작기 에러 표시</span></div></div>
+                <div id="erv-result" class="erv-result"></div>
+            </div>
+        </div>
+
         <!-- ★ v36.0: 같은 건물 다른 세대 -->
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-city"></i> 같은 건물 다른 세대</div>
@@ -1091,6 +1131,7 @@
                 <tr style="display:none;"><th>세대 위치</th><td id="rep-house"></td></tr>
                 <tr style="display:none;"><th>생활환경·관찰</th><td id="rep-life" style="white-space:pre-line; font-weight:500; font-size:0.82rem;"></td></tr>
                 <tr style="display:none;"><th>기상(측정 전 7일)</th><td id="rep-weather"></td></tr>
+                <tr style="display:none;"><th>환기 적정성</th><td id="rep-erv" style="white-space:pre-line; font-weight:500; font-size:0.82rem;"></td></tr>
                 <tr><th>상세 증상</th><td id="rep-defect" style="white-space:pre-line;"></td></tr>
             </tbody></table>
 
@@ -1144,7 +1185,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v36.5'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v37.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2123,9 +2164,10 @@
             const V36 = collectV36();
             const _fi = V36.floor;
             const houseType = [chkText('house'), chkText('ext'), _fi ? _fi.label : '', chkText('side'), chkText('dir') ? '거실 ' + chkText('dir') + '향' : ''].filter(Boolean).join(' / ') || '세대 위치 미입력';
-            const v36Block = V36.text
+            const ervBlock = (SEASON !== 'summer' && typeof window.ervPromptBlock === 'function') ? window.ervPromptBlock() : '';
+            const v36Block = ervBlock + (V36.text
                 ? `\n\n[세대 위치·생활환경 문진 (v36 현장 입력 — 반드시 반영)]\n${V36.text}\n\n[문진 해석 지침]\n- 입력된 항목만 근거로 삼고, 미입력 항목은 추정하지 마십시오.\n- **같은 건물 다른 세대**: '같은 라인 다수/단지 전반'이면 설계·구조 공통 요인(열교·단열 설계·기밀 사양) 비중을 높이고, '우리 집만'이면 해당 세대 생활환경·개별 부위 요인을 우선 검토하십시오.\n- **층 위치·연돌효과**: 겨울철 저층은 틈으로 냉기가 유입(외풍 체감↑), 고층은 실내 습한 공기가 틈으로 유출(틈 주변 결로·외풍 체감↓)되는 경향을 외풍·결로 해석에 반영하십시오. 1층·필로티 상부·옥상 직하·측벽 세대는 외기 접촉면 증가로 표면온도 저하 요인입니다.\n- **입주 2년차 이내**면 콘크리트 초기 함수율 방출을 원인에 포함하고, 그 이후면 비중을 낮추십시오.\n- **생활 수분원**(거주 인원·실내 건조·가습기·조리·환기 횟수/시간·전열교환기 미가동·간헐난방)은 MR277 VAP/MIX 수치와 교차 검증해 거주 환경 관리 원인으로 구체적으로 연결하십시오. 히트펌프·응축식 건조기는 실내 가습 요인이 아닙니다.\n- **현장 관찰 상태**(여밈대 틈·풍지판 누락·물구멍 반대타공·모헤어 마모·창짝 처짐 등)는 외풍·기밀 저하 경로로 해석하되, 원인을 '시공/설치/제작 불량'으로 단정하지 말고 '기밀 보강 필요 부위(AI 추정)'로 표현하십시오.\n- **평소 결로 흔적**은 측정 당일 조건과 무관한 누적 결로 증거로 활용하십시오.\n- 기상자료(측정 전 7일 최저기온·풍속)가 있으면 측정 당일 수치만으로 판단하지 말고 최근 한파·강풍 영향을 함께 고려하십시오.`
-                : '';
+                : '');
 
             document.getElementById('rep-date').innerText = document.getElementById('date').value;
             document.getElementById('rep-loc').innerText = `${document.getElementById('dong').value}동 ${document.getElementById('ho').value}호 (${document.getElementById('location').value})`;
@@ -2140,6 +2182,7 @@
             const _setRow = (id, val) => { const td = document.getElementById(id); if (!td) return; td.innerText = val || ''; td.parentElement.style.display = val ? '' : 'none'; };
             _setRow('rep-house', houseType === '세대 위치 미입력' ? '' : houseType);
             _setRow('rep-life', V36.text ? V36.text.split('\n').filter(l => !/단지 주소|기상\(|주거형태|발코니|층 위치|세대 배치|거실 방향/.test(l)).map(l => l.replace(/^- /, '')).join('\n') : '');
+            _setRow('rep-erv', (typeof window.ervReportText === 'function') ? window.ervReportText() : '');
             _setRow('rep-weather', SITE_WEATHER ? `${SITE_WEATHER.place} · 당일 평균 ${(+SITE_WEATHER.todayMean).toFixed(1)}℃ · 7일 최저 ${SITE_WEATHER.min7 == null ? '-' : (+SITE_WEATHER.min7).toFixed(1)}℃ · 풍속 ${(+SITE_WEATHER.wind).toFixed(1)}m/s ${SITE_WEATHER.windDir}` : '');
             document.getElementById('rep-defect').innerText = (defect && defect.trim()) ? defect.trim() : '-';
 
@@ -2594,4 +2637,119 @@
     </script>
 <script>(function(){var P={normal:{ulv:3.0,uwall:1.06,udoor:4.7,ach:1.5,achopen:10,sf:10},old:{ulv:3.5,uwall:1.20,udoor:5.5,ach:2.0,achopen:12,sf:20},nw:{ulv:2.4,uwall:0.30,udoor:2.7,ach:1.0,achopen:8,sf:10}};function g(i){return document.getElementById(i);}function sv(i,v){var e=g(i);if(e){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}));}}function n(i){var e=g(i);return e?(parseFloat(e.value)||0):0;}function autoWall(){var a=n("blc_w")*n("blc_h")-n("blc_alv")-n("blc_adoor");if(!(a>0.3))a=0.3;sv("blc_awall",Math.round(a*10)/10);}function apply(){var s=g("blc_preset");if(!s)return;var k=s.value==="old"?"old":(s.value==="new"?"nw":"normal");var p=P[k];sv("blc_ulv",p.ulv);sv("blc_uwall",p.uwall);sv("blc_udoor",p.udoor);sv("blc_ach",p.ach);sv("blc_achopen",p.achopen);sv("blc_sf",p.sf);autoWall();}function init(){var s=g("blc_preset");if(!s)return;s.addEventListener("change",apply);["blc_w","blc_h","blc_alv","blc_adoor"].forEach(function(i){var e=g(i);if(e)e.addEventListener("input",autoWall);});var d=document.querySelector(".blc-adv");var box=s.closest(".blc-box");if(d&&box){d.addEventListener("toggle",function(){box.classList.toggle("show-adv",d.open);});}apply();}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();})();</script>
 
+<style id="erv-style">
+.erv-inline{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem}
+.erv-inline input{width:72px;padding:6px 6px;border:1px solid #d0d7de;border-radius:8px;font-size:0.9rem;text-align:center;background:#fff}
+.erv-btn{border:1px solid var(--brand-accent);background:var(--accent-tint);color:var(--brand-primary);border-radius:8px;padding:6px 10px;font-weight:700;font-size:0.8rem;cursor:pointer}
+.erv-result{margin-top:10px}
+.erv-card{border:1.5px solid var(--accent-soft);border-radius:12px;padding:10px 12px;background:#fff}
+.erv-verdict{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.erv-badge{font-weight:900;font-size:0.95rem;padding:4px 10px;border-radius:999px;color:#fff;background:var(--brand-primary)}
+.erv-badge.ample,.erv-badge.ok{background:#1f8a4c}.erv-badge.tight{background:#c98a00}.erv-badge.short{background:#c0392b}.erv-badge.hold{background:#6b7280}
+.erv-why{font-size:0.82rem;line-height:1.45}
+.erv-bars{margin:8px 0 4px}
+.erv-bar{display:grid;grid-template-columns:86px 1fr 62px;align-items:center;gap:6px;font-size:0.76rem;margin:3px 0}
+.erv-bar .t{height:10px;background:#eef2f5;border-radius:6px;overflow:hidden}.erv-bar .t i{display:block;height:100%;background:var(--brand-accent)}
+.erv-bar.max .t i{background:var(--brand-primary)}.erv-bar .v{text-align:right;font-weight:800}
+.erv-tbl{width:100%;border-collapse:collapse;font-size:0.74rem;margin-top:6px}
+.erv-tbl th,.erv-tbl td{border-top:1px solid #e5e7eb;padding:4px 3px;text-align:left;vertical-align:top}
+.erv-tbl td.n{text-align:right;white-space:nowrap;font-weight:700}
+.erv-notes{margin:6px 0 0;padding-left:16px;font-size:0.74rem;line-height:1.45;color:#374151}
+.erv-src{font-size:0.68rem;color:#6b7280;margin-top:6px;line-height:1.4}
+</style>
+<script src="erv-engine.js"></script>
+<script>
+/* ★ v37.0 환기장치 적정성 UI — 계산은 erv-engine.js(ERV.compute)만 사용 */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var on=function(name){return Array.prototype.slice.call(document.querySelectorAll('.chk-group[data-name="'+name+'"] .chk.on'));};
+  var val=function(name){var c=on(name)[0];return c?c.dataset.v:null;};
+  var hasTxt=function(name,t){return on(name).some(function(c){return c.textContent.indexOf(t)>=0;});};
+  var CLIMATE=null; window.ERV_LAST=null;
+  function winClass(){
+    if(on('ervcond').some(function(c){return c.dataset.v==='passive';}))return 'passive';
+    var w=($('window-type')||{}).value||'';
+    if(/시스템|입면분할|커튼월/.test(w))return 'system';
+    if(/단창/.test(w))return 'old';
+    if(/이중창/.test(w))return 'double';
+    return '';
+  }
+  function gather(){
+    var people=parseFloat(($('people')||{}).value);
+    var home=val('ervhome'); if(!home && on('home').length) home='24';
+    var st=on('ervstate').map(function(c){return c.dataset.v;});
+    var ervHas=val('erv');
+    return {
+      area:$('erv-area').value, height:$('erv-height').value||2.3, people:isNaN(people)?null:people,
+      homeHours:home, sleepHours:8,
+      cook:val('ervcook')||(hasTxt('moist','조리')?'gas':null), cookDays:val('ervcookdays'),
+      showersPerDay:$('erv-shower').value, laundryDays:$('erv-laundry').value, dry:val('dry'),
+      plants:$('erv-plants').value, humidMlh:$('erv-humid').value, humidHours:$('erv-humidh').value,
+      humidifier:hasTxt('moist','가습기'), aquarium:hasTxt('moist','수족관'),
+      newborn:on('ervcond').some(function(c){return c.dataset.v==='newborn';}),
+      cantOpen:on('ervcond').some(function(c){return c.dataset.v==='cantopen';}) || val('vent')==='0',
+      window:winClass(),
+      Ti:($('temp-in')||{}).value||null, targetRH:$('erv-target').value, Ts:($('temp-surf')||{}).value||null,
+      outT:$('erv-outT').value, outRH:$('erv-outRH').value,
+      product:(ervHas==='none')?{}:{low:$('erv-low').value,mid:$('erv-mid').value,high:$('erv-high').value,
+        type:(val('ervtype')==='unk'?'':val('ervtype')),latentEff:$('erv-latent').value,
+        filter:st.indexOf('clog')>=0?'clog':(st.indexOf('due')>=0?'due':''),error:st.indexOf('error')>=0}
+    };
+  }
+  var f0=function(x){return (x==null||!isFinite(x))?'-':Math.round(x);};
+  function render(r){
+    var box=$('erv-result'); if(!box)return;
+    if(r.qReq==null){box.innerHTML='<div class="v36-note">계산하려면 '+r.missing.join(', ')+'을(를) 넣어 주십시오.</div>';return;}
+    var max=Math.max(r.qLaw||0,r.qPerson||0,(isFinite(r.qMoist)?r.qMoist:0),1);
+    var bar=function(k,v,isMax){return '<div class="erv-bar'+(isMax?' max':'')+'"><span>'+k+'</span><span class="t"><i style="width:'+(v&&isFinite(v)?Math.min(100,v/max*100):0)+'%"></i></span><span class="v">'+f0(v)+' CMH</span></div>';};
+    var h='<div class="erv-card"><div class="erv-verdict"><span class="erv-badge '+(r.verdict||'')+'">'+(r.verdictText||'-')+'</span><b style="font-size:0.85rem;">필요 풍량 '+f0(r.qReq)+' CMH</b><span style="font-size:0.72rem;color:#6b7280;">('+(r.qReqBy||'')+' 기준)</span></div>';
+    if(r.verdictWhy)h+='<div class="erv-why">'+r.verdictWhy+'</div>';
+    h+='<div class="erv-bars">'+bar('법정 0.5회',r.qLaw,r.qReqBy==='법정 0.5회')+bar('사람 수(비교)',r.qPerson,r.qReqBy==='사람 수')+bar('습기 배출',r.qMoist,r.qReqBy==='습기 배출')+'</div>';
+    if(r.hasProduct&&r.stages&&r.stages.length){var hm=r.stages[0].moistEff!=null;h+='<table class="erv-tbl"><tr><th>단계</th><th>표시</th><th>실제(90%)</th><th>환기 횟수</th>'+(hm?'<th>습기 배출분</th>':'')+'</tr>';
+      r.stages.forEach(function(s){h+='<tr'+(s.name===r.recommendStage?' style="background:#eefaf2;font-weight:700"':'')+'><td>'+s.name+'</td><td class="n">'+s.rated+'</td><td class="n">'+f0(s.eff)+'</td><td class="n">'+(s.ach?s.ach.toFixed(2)+'회':'-')+'</td>'+(hm?'<td class="n">'+f0(s.moistEff)+'</td>':'')+'</tr>';});h+='</table>';}
+    if(r.sources.length){h+='<table class="erv-tbl"><tr><th>수분 발생원</th><th>하루</th><th>근거</th></tr>';
+      r.sources.slice().sort(function(a,b){return b.g-a.g;}).forEach(function(s){h+='<tr><td>'+s.name+'</td><td class="n">'+(s.g/1000).toFixed(2)+'kg</td><td style="color:#6b7280">'+s.basis+'</td></tr>';});
+      h+='<tr><td><b>합계</b></td><td class="n">'+(r.moistureGday/1000).toFixed(1)+'kg</td><td>실내 '+r.Ti+'℃·습도 상한 '+r.targetRH+'% ('+r.rhBasis+')'+(r.xOut!=null?', 바깥 '+r.xOut.toFixed(1)+'g/kg':'')+'</td></tr></table>';}
+    if(r.notes.length)h+='<ul class="erv-notes">'+r.notes.map(function(n){return '<li>'+n+'</li>';}).join('')+'</ul>';
+    if(r.missing.length)h+='<div class="v36-note">빠진 입력: '+r.missing.join(', ')+'</div>';
+    h+='<div class="erv-src">근거: 건축물의 설비기준 등에 관한 규칙 제11조(시간당 0.5회)·별표 1의5(유효환기량 90%) / 수분 발생량 BS 5250:2011 Table D.6 / 바깥 공기 Open-Meteo 과거 기상'+(CLIMATE?' ('+CLIMATE.period+')':'')+'. 계산값이며 실제 풍량은 현장 측정으로 확인합니다.</div></div>';
+    box.innerHTML=h;
+  }
+  function run(){ if(!window.ERV)return; var r=ERV.compute(gather()); window.ERV_LAST=r; render(r); }
+  var t=null; function later(){clearTimeout(t);t=setTimeout(run,150);}
+  window.ervLoadClimate=async function(){
+    var s=$('erv-climate-status'); var addr=(($('addr')||{}).value||'').trim();
+    if(!addr){s.textContent='위 진단 개요의 단지 주소를 먼저 넣어 주십시오.';return;}
+    s.textContent='조회 중…';
+    try{var g=await ERV.geocode(addr); if(!g)throw new Error('주소 위치를 찾지 못함');
+      CLIMATE=await ERV.fetchWinterClimate(g.lat,g.lon);
+      $('erv-outT').value=CLIMATE.meanT.toFixed(1); $('erv-outRH').value=Math.round(CLIMATE.meanRH);
+      s.textContent='✔ '+g.matched+' · '+CLIMATE.period+' 일평균 '+CLIMATE.days+'일: 평균 '+CLIMATE.meanT.toFixed(1)+'℃, 절대습도 '+CLIMATE.meanX.toFixed(1)+'g/kg, 가장 추운 날 일평균 '+CLIMATE.minDailyT.toFixed(1)+'℃';
+      run();
+    }catch(e){s.textContent='⚠ '+e.message+' — 직접 넣어 주십시오.';}
+  };
+  window.ervPromptBlock=function(){
+    run(); var r=window.ERV_LAST; if(!r||r.qReq==null)return '';
+    return '\n\n[환기장치 적정성 — 앱 공식 계산값(그대로 인용, 숫자 변경·추정 금지)]\n'+ERV.summaryText(r)+
+      '\n[해석 지침]\n- 위 판정은 법정 기준·BS 5250 수분 발생량·지난겨울 실측 기상으로 앱이 계산한 값입니다. 새 숫자를 만들지 말고 이 값으로 설명하십시오.\n- 특정 제조사·모델을 깎아내리지 말고 "계산상 여유가 적음, 현장 풍량 측정 권장"처럼 표현하십시오.\n- 판정 보류(필터·에러)면 환기장치 정상화가 먼저임을 ##4 첫 항목에 넣으십시오.';
+  };
+  window.ervReportText=function(){
+    var r=window.ERV_LAST; if(!r||r.qReq==null)return '';
+    var s='필요 '+f0(r.qReq)+'CMH('+r.qReqBy+' 기준) · 수분 '+(r.moistureGday/1000).toFixed(1)+'kg/일';
+    var m=($('erv-model')||{}).value; if(m)s+=' · '+m;
+    if(r.hasProduct)s+=' · 설치 제품 '+r.stages.map(function(x){return x.name+' '+x.rated;}).join('/')+'CMH → '+r.verdictText+(r.recommendStage?'(권장 '+r.recommendStage+' 단계)':'');
+    else if(r.recommendRated)s+=' · 권장 제품: 중 단계 '+r.recommendRated+'CMH 이상';
+    return s;
+  };
+  function init(){
+    var sec=$('erv-section'); if(!sec)return;
+    sec.addEventListener('input',later); sec.addEventListener('click',later);
+    var life=$('life-section'); if(life){life.addEventListener('click',later);life.addEventListener('input',later);}
+    ['temp-in','temp-surf','window-type','people'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',later);e.addEventListener('change',later);}});
+    document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('.v36-stepper'))later();});
+    run();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>
