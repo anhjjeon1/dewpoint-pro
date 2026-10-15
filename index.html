@@ -1206,7 +1206,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v38.4'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v38.5'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2689,7 +2689,7 @@
 .erv-notes{margin:6px 0 0;padding-left:16px;font-size:0.74rem;line-height:1.45;color:#374151}
 .erv-src{font-size:0.68rem;color:#6b7280;margin-top:6px;line-height:1.4}
 </style>
-<script src="erv-engine.js?v=1.3"></script>
+<script src="erv-engine.js?v=1.4"></script>
 <script>
 /* ★ v37.0 환기장치 적정성 UI — 계산은 erv-engine.js(ERV.compute)만 사용 */
 (function(){
@@ -2721,7 +2721,7 @@
       newborn:on('ervcond').some(function(c){return c.dataset.v==='newborn';}),
       cantOpen:on('ervcond').some(function(c){return c.dataset.v==='cantopen';}) || val('vent')==='0',
       window:winClass(),
-      Ti:($('temp-in')||{}).value||null, targetRH:$('erv-target').value, Ts:($('temp-surf')||{}).value||null,
+      Ti:($('temp-in')||{}).value||null, targetRH:$('erv-target').value, Ts:($('temp-surf')||{}).value||null, rhNow:($('humid-in')||{}).value||null,
       outT:$('erv-outT').value, outRH:$('erv-outRH').value,
       product:(ervHas==='none')?{}:{low:$('erv-low').value,mid:$('erv-mid').value,high:$('erv-high').value,
         type:(val('ervtype')==='unk'?'':val('ervtype')),latentEff:$('erv-latent').value,
@@ -2736,6 +2736,7 @@
     var bar=function(k,v,isMax){return '<div class="erv-bar'+(isMax?' max':'')+'"><span>'+k+'</span><span class="t"><i style="width:'+(v&&isFinite(v)?Math.min(100,v/max*100):0)+'%"></i></span><span class="v">'+f0(v)+' CMH</span></div>';};
     var h='<div class="erv-card"><div class="erv-verdict"><span class="erv-badge '+(r.verdict||'')+'">'+(r.verdictText||'-')+'</span><b style="font-size:0.85rem;">필요 풍량 '+f0(r.qReq)+' CMH</b><span style="font-size:0.72rem;color:#6b7280;">('+(r.qReqBy||'')+' 기준)</span></div>';
     if(r.verdictWhy)h+='<div class="erv-why">'+r.verdictWhy+'</div>';
+    if(r.dewCheck&&r.dewCheck.limit!=null){var dc=r.dewCheck;h+='<div class="erv-why" style="margin-top:6px;padding:6px 8px;border-radius:8px;'+(dc.margin<0?'background:#fdecea;border:1px solid #f3b4b4':'background:#eaf7ef;border:1px solid #a7e9c2')+'"><b>'+(dc.margin<0?'⚠ 지금 결로 조건':'✔ 결로 여유')+'</b> — 현재 실내 습도 '+dc.rhNow+'% / 유리 결로 한계 '+dc.limit+'% ('+(dc.margin<0?'한계보다 '+(-dc.margin)+'%p 높음':'여유 '+dc.margin+'%p')+')</div>';}
     h+='<div class="erv-bars">'+bar('법정 0.5회',r.qLaw,r.qReqBy==='법정 0.5회')+bar('사람 수(비교)',r.qPerson,r.qReqBy==='사람 수')+bar('습기 배출',r.qMoist,r.qReqBy==='습기 배출')+'</div>';
     if(r.hasProduct&&r.stages&&r.stages.length){var hm=r.stages[0].moistEff!=null;h+='<table class="erv-tbl"><tr><th>단계</th><th>표시</th><th>실제(90%)</th><th>환기 횟수</th>'+(hm?'<th>습기 배출분</th>':'')+'</tr>';
       r.stages.forEach(function(s){h+='<tr'+(s.name===r.recommendStage?' style="background:#eefaf2;font-weight:700"':'')+'><td>'+s.name+'</td><td class="n">'+s.rated+'</td><td class="n">'+f0(s.eff)+'</td><td class="n">'+(s.ach?s.ach.toFixed(2)+'회':'-')+'</td>'+(hm?'<td class="n">'+f0(s.moistEff)+'</td>':'')+'</tr>';});h+='</table>';}
