@@ -1165,15 +1165,31 @@
 
         <!-- ★ 하단 버튼: no-print 대신 별도 ID로 관리, 분석 후에도 항상 표시 -->
         <div class="footer-btns" id="footer-action-btns">
-            <button class="footer-btn btn-next-place" onclick="nextInspPlace()">
-                <i class="fas fa-door-open"></i> 같은 세대 다른 장소 검사 (사진만 새로)
-            </button>
+            <div class="place-actions">
+                <button class="pa-btn pa-re" type="button" onclick="plReanalyze()"><i class="fas fa-robot"></i> AI 재분석</button>
+                <button class="pa-btn pa-next" type="button" onclick="plNext()"><i class="fas fa-arrow-right"></i> 다음입력</button>
+                <button class="pa-btn pa-reset" type="button" onclick="plReset()"><i class="fas fa-sync-alt"></i> 초기화</button>
+            </div>
             <button class="footer-btn btn-reserve" onclick="window.location.href='tel:01023220949'">
                 <i class="fas fa-phone-alt"></i> 기술 상담 연결
             </button>
             <button class="footer-btn btn-pdf" onclick="savePdfAuto()">
                 <i class="fas fa-file-download"></i> PDF 보고서 저장
             </button>
+        </div>
+
+        <!-- ★ v38.0 점검 리스트 (장소별 결과 누적 → 세대 종합·전체 저장) -->
+        <div id="plist-section">
+            <div class="pl-head"><span class="pl-num">✓</span><span class="pl-title">점검 리스트 <b id="pl-count">0</b>건</span><span id="pl-hh" style="font-size:0.78rem;color:var(--text-muted)"></span><button class="pl-del" type="button" onclick="plClearAll()"><i class="fas fa-trash"></i> 전체삭제</button></div>
+            <div id="pl-restored" style="display:none;font-size:0.76rem;color:#8a5a00;background:#fff7e6;border:1px solid #f0c36d;border-radius:8px;padding:6px 8px;margin-top:8px;"></div>
+            <div id="pl-list"></div>
+            <div id="pl-summary"></div>
+            <div class="pl-tools">
+                <button class="pl-ai" id="pl-ai-btn" type="button" onclick="plVerifyAll()"><i class="fas fa-robot"></i> AI전체검증</button>
+                <button class="pl-file" type="button" onclick="plSaveFile()"><i class="fas fa-folder-open"></i> 내파일저장</button>
+                <button class="pl-all" type="button" onclick="plPrintAll()"><i class="fas fa-file-download"></i> 전체저장</button>
+            </div>
+            <div class="pl-sub"><span>리스트는 이 기기에 임시 저장됩니다. 끝나면 전체저장(PDF)이나 내파일저장을 하십시오.</span><label><i class="fas fa-upload"></i> 불러오기<input type="file" accept=".json,application/json" style="display:none" onchange="plLoadFile(this)"></label></div>
         </div>
 
         <div class="footer-info no-print" style="text-align:center; margin-top:30px; font-size:0.8rem; color:var(--text-muted); padding-bottom: 60px;">
@@ -1190,7 +1206,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v37.3'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v38.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1928,6 +1944,7 @@
         }
 
         window.__callGemini = callGeminiWithRetry; // v37.1: 환기장치 명판 판독용
+        window.__ANALYSIS = { model: ANALYSIS_MODEL, thinking: ANALYSIS_THINKING }; // v38.0: 세대 종합(AI전체검증)
 
         // ★ v29.0: 분석 결과 품질 평가
         function assessAnalysisQuality(text) {
@@ -2212,12 +2229,14 @@
 
             // ★ 수정: .no-print만 숨기되, footer-action-btns는 제외
             document.querySelectorAll('.no-print').forEach(el => {
+                if (el.dataset.prevDisplay === undefined) el.dataset.prevDisplay = el.style.display; // v38.0: 다음입력 때 원래대로 복원
                 el.style.display = 'none';
             });
             
             // ★ 하단 버튼은 항상 표시 + 하단 고정 모드 전환
             footerBtns.style.display = 'flex';
             footerBtns.classList.add('sticky-bottom');
+            footerBtns.classList.add('has-result');
 
             resultArea.style.display = 'block';
             loading.style.display = 'block';
@@ -2620,6 +2639,7 @@
         };
 
         function drawChart(data) {
+            window.__lastChart = data; // v38.0: 점검 리스트 저장용
             const isSummer = (SEASON === 'summer');
             const ventLabel = isSummer ? '기밀 불량·냉기 침투 경로 (AI 추정)' : '환기/거주환경 관련 (AI 추정)';
             const insLabel  = isSummer ? '문틀 단열 부족·열교 (AI 추정)'      : '단열 성능 관련 (AI 추정)';
@@ -2835,7 +2855,7 @@
 /* ★ v37.3 검사 대상 선택(필수) + 같은 세대 다른 장소 연속 검사 — 공통 입력은 그대로, 사진·분석 결과만 비움 */
 (function(){
   var $=function(id){return document.getElementById(id);};
-  var DONE=[];
+  var DONE=window.__inspDone=window.__inspDone||[];
   function cur(){var s=$('insp-target');if(!s)return '';if(s.value&&s.value!=='__etc')return s.value;return ($('location').value||'').trim();}
   function banner(){
     var b=$('insp-banner'),s=$('insp-target');if(!b||!s)return;
@@ -2844,6 +2864,7 @@
     else{b.className='insp-banner empty';b.innerHTML='📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.'+(DONE.length?'<span class="done">검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}
     Array.prototype.forEach.call(s.options,function(o){if(!o.value||o.value==='__etc')return;o.textContent=o.value+(DONE.indexOf(o.value)>=0?' ✓':'');});
   }
+  window.inspRefresh=function(){banner();};
   window.inspTargetChanged=function(){
     var s=$('insp-target');s.classList.remove('invalid');
     if(s.value&&s.value!=='__etc')$('location').value=s.value;
@@ -2880,6 +2901,220 @@
     l.addEventListener('input',function(){var v=l.value.trim();var hit=Array.prototype.some.call(s.options,function(o){return o.value===v;});s.value=hit?v:(v?'__etc':'');s.classList.remove('invalid');banner();});
     if(l.value){l.dispatchEvent(new Event('input'));}
     banner();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<div id="print-all"></div>
+<style id="plist-style">
+.place-actions{display:none;width:100%;gap:8px;align-items:center}
+#footer-action-btns.has-result .place-actions{display:flex}
+#footer-action-btns.sticky-bottom ~ .footer-info{padding-bottom:150px!important}
+.pa-btn{border:none;border-radius:999px;padding:9px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pa-re{background:#1f8a5b;color:#fff}
+.pa-next{background:#e8701a;color:#fff;margin-left:auto}
+.pa-reset{background:#eef1f4;color:#334155}
+#plist-section{margin:14px 0 10px;background:#fff;border:1px solid var(--border-color);border-radius:16px;padding:12px}
+.pl-head{display:flex;align-items:center;gap:10px}
+.pl-num{width:30px;height:30px;border-radius:50%;background:#e6f4ec;color:#1f8a5b;font-weight:900;display:flex;align-items:center;justify-content:center}
+.pl-title{font-weight:900;font-size:1.05rem;color:var(--brand-primary)}
+.pl-title b{color:#1f8a5b}
+.pl-del{margin-left:auto;background:#fbecec;color:#c0392b;border:none;border-radius:999px;padding:7px 12px;font-weight:800;font-size:0.8rem;cursor:pointer}
+.pl-empty{font-size:0.8rem;color:var(--text-muted);padding:10px 4px}
+.pl-item{border:1px solid #e5e9ee;border-radius:12px;margin-top:8px;background:#fafcfd}
+.pl-item summary{list-style:none;cursor:pointer;padding:9px 10px;display:flex;align-items:center;gap:8px;font-size:0.85rem}
+.pl-item summary::-webkit-details-marker{display:none}
+.pl-item .pn{font-weight:900;color:var(--brand-primary)}
+.pl-item .ps{color:var(--text-secondary);font-size:0.76rem;flex:1;min-width:0}
+.pl-item .px{background:none;border:none;color:#c0392b;font-size:0.8rem;cursor:pointer;padding:2px 6px}
+.pl-body{padding:6px 10px 10px;border-top:1px solid #eef1f4;font-size:0.85rem}
+.pl-body img{max-width:100%}
+.pl-tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.pl-tools button{flex:1 1 30%;border:none;border-radius:12px;padding:12px 8px;font-weight:800;font-size:0.88rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.pl-ai{background:#eef2fb;color:#1e3a8a}
+.pl-file{background:#f3f4f6;color:#111827}
+.pl-all{background:#1f8a5b;color:#fff}
+.pl-sub{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:0.74rem;color:var(--text-muted)}
+.pl-sub label{color:#1e3a8a;cursor:pointer;font-weight:700}
+#pl-summary{margin-top:10px}
+#pl-summary .card{border:1.5px solid #c7d2fe;background:#f7f8ff;border-radius:12px;padding:10px 12px;font-size:0.88rem;line-height:1.65}
+#print-all{display:none}
+#pl-summary table,#print-all .md-sum table{border-collapse:collapse;width:100%;margin:6px 0}
+#pl-summary th,#pl-summary td,#print-all .md-sum th,#print-all .md-sum td{border:1px solid #d5dbe3;padding:4px 6px;text-align:left}
+#pl-summary th,#print-all .md-sum th{background:#eef2f8}
+@media print{
+  #plist-section{display:none!important}
+  body.print-all-mode .mobile-container,body.print-all-mode .save-toast{display:none!important}
+  body.print-all-mode #print-all{display:block!important}
+}
+#print-all{font-size:12px;color:#111;padding:12px}
+#print-all h1{font-size:20px;margin:0 0 4px}
+#print-all h2.place{font-size:16px;border-left:4px solid #06B6D4;padding-left:8px;margin:0 0 8px}
+#print-all .pg{page-break-before:always}
+#print-all table.sm{width:100%;border-collapse:collapse;margin:6px 0 12px}
+#print-all table.sm th,#print-all table.sm td{border:1px solid #ddd;padding:5px 6px;text-align:left;vertical-align:top}
+#print-all table.sm th{background:#f3f6f9;width:24%}
+#print-all .report-gallery{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#print-all .report-img-item img{width:100%;border-radius:6px}
+</style>
+<script>
+/* ★ v38.0 점검 리스트 — 장소별 결과를 모아 세대 단위로 검증·저장 (사전점검 앱 방식)
+   다음입력: 현재 장소 결과를 리스트에 넣고, 장소별 입력(사진·계측·결로 면·증상)만 비움. 공통 입력은 유지.
+   저장: 이 기기 IndexedDB(지워질 수 있음) → 끝나면 전체저장(PDF)·내파일저장(JSON) 권장 */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var S={dong:'',ho:'',addr:'',items:[],summary:null};
+  // ── IndexedDB
+  var DBN='dewpoint_plist', ST='kv';
+  function db(){return new Promise(function(res,rej){try{var r=indexedDB.open(DBN,1);r.onupgradeneeded=function(){r.result.createObjectStore(ST);};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};}catch(e){rej(e);}});}
+  async function save(){try{var d=await db();await new Promise(function(res,rej){var t=d.transaction(ST,'readwrite');t.objectStore(ST).put(JSON.parse(JSON.stringify(S)),'session');t.oncomplete=res;t.onerror=function(){rej(t.error);};});}catch(e){console.warn('plist save',e);}}
+  async function load(){try{var d=await db();return await new Promise(function(res){var t=d.transaction(ST,'readonly');var q=t.objectStore(ST).get('session');q.onsuccess=function(){res(q.result||null);};q.onerror=function(){res(null);};});}catch(e){return null;}}
+  var PLACE_FIELDS=['temp-in','humid-in','dew-result','temp-surf','vap-val','mix-val','defect-content'];
+  function val(id){var e=$(id);return e?(e.value||'').trim():'';}
+  function chkTxt(name){return Array.prototype.map.call(document.querySelectorAll('.chk-group[data-name="'+name+'"] .chk.on'),function(c){return c.textContent.trim();}).join(', ');}
+  function hasResult(){var c=$('analysis-content');var ra=$('result-area');return ra&&ra.style.display==='block'&&c&&c.innerText.trim().length>200&&!/AI 분석 중 오류/.test(c.innerText);}
+  function curPlace(){var s=$('insp-target');if(s&&s.value&&s.value!=='__etc')return s.value;return val('location')||'장소 미지정';}
+
+  function capture(){
+    var ra=$('result-area').cloneNode(true);
+    ['loading-spinner'].forEach(function(id){var e=ra.querySelector('#'+id);if(e)e.remove();});
+    var common={};
+    ['rep-house','rep-life','rep-weather','rep-erv','rep-type','rep-view','rep-date'].forEach(function(id){var td=ra.querySelector('#'+id);if(td){common[id]=td.innerText;if(/house|life|weather|erv/.test(id))td.parentElement.remove();}});
+    ra.querySelectorAll('[id]').forEach(function(e){e.removeAttribute('id');});
+    var bd=ra.querySelector('.report-badge');if(bd)bd.remove();
+    var ch=window.__lastChart||null;
+    return {
+      id:Date.now(), place:curPlace(), ts:new Date().toISOString(),
+      meas:{ti:val('temp-in'),rh:val('humid-in'),dew:val('dew-result'),ts:val('temp-surf'),to:val('temp-out'),vap:val('vap-val'),mix:val('mix-val')},
+      face:chkTxt('face'), defect:val('defect-content'),
+      ratio:ch?{v:ch.ventilation,i:ch.insulation,n:ch.normal}:null,
+      text:($('analysis-content').innerText||'').trim().slice(0,6000),
+      html:ra.innerHTML, common:common
+    };
+  }
+  function line(it){
+    var m=it.meas||{},p=[];
+    if(it.ratio)p.push('거주환경 '+it.ratio.v+'% · 단열 '+it.ratio.i+'%');
+    if(m.ts)p.push('표면 '+m.ts+'℃');
+    if(m.ti||m.rh)p.push('실내 '+(m.ti||'-')+'℃/'+(m.rh||'-')+'%');
+    return p.join(' · ')||'분석 결과 저장됨';
+  }
+  function syncDone(){var a=window.__inspDone;if(!a)return;a.length=0;S.items.forEach(function(it){if(a.indexOf(it.place)<0)a.push(it.place);});if(window.inspRefresh)window.inspRefresh();}
+  function render(){
+    var n=S.items.length;$('pl-count').textContent=n;
+    var L=$('pl-list');
+    if(!n){L.innerHTML='<div class="pl-empty">아직 담긴 장소가 없습니다. 장소를 분석한 뒤 <b>다음입력</b>을 누르면 여기에 쌓입니다.'+(S.dong||S.ho?'':'')+'</div>';}
+    else L.innerHTML=S.items.map(function(it,i){return '<details class="pl-item" data-i="'+i+'"><summary><span class="pn">'+(i+1)+'. '+esc(it.place)+'</span><span class="ps">'+esc(line(it))+'</span><button class="px" type="button" data-del="'+i+'" title="삭제"><i class="fas fa-times"></i></button></summary><div class="pl-body"></div></details>';}).join('');
+    L.querySelectorAll('details').forEach(function(d){d.addEventListener('toggle',function(){if(d.open){var b=d.querySelector('.pl-body');if(!b.innerHTML)b.innerHTML=S.items[+d.dataset.i].html;}});});
+    L.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var i=+b.dataset.del;if(!confirm('"'+S.items[i].place+'" 결과를 리스트에서 지울까요?'))return;S.items.splice(i,1);S.summary=null;save();render();});});
+    var sm=$('pl-summary');sm.innerHTML=S.summary?'<div class="card"><b>세대 종합 소견</b> <span style="font-size:0.72rem;color:#64748b">('+esc(new Date(S.summary.ts).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))+', '+S.summary.n+'곳)</span>'+S.summary.html+'</div>':'';
+    $('pl-hh').textContent=(S.dong||S.ho)?(S.dong+'동 '+S.ho+'호'):'';
+    syncDone();
+  }
+  function restoreForm(){
+    document.querySelectorAll('.no-print').forEach(function(el){if(el.dataset.prevDisplay!==undefined){el.style.display=el.dataset.prevDisplay;delete el.dataset.prevDisplay;}});
+  }
+  function clearPlace(){
+    document.querySelectorAll('#photo-container .upload-box').forEach(function(box){
+      var img=box.querySelector('.preview-img');if(img){img.removeAttribute('src');img.style.display='';}
+      box.querySelectorAll('i, span').forEach(function(el){el.style.display='';});
+      var inp=box.nextElementSibling;if(inp&&inp.type==='file')inp.value='';
+    });
+    document.querySelectorAll('#photo-container .upload-wrapper.filled').forEach(function(w){w.classList.remove('filled');});
+    PLACE_FIELDS.forEach(function(id){var e=$(id);if(e)e.value='';});
+    document.querySelectorAll('.chk-group[data-name="face"] .chk.on').forEach(function(c){c.classList.remove('on');});
+    var ra=$('result-area');if(ra)ra.style.display='none';
+    ['analysis-content','report-photo-gallery','chart_div'].forEach(function(id){var e=$(id);if(e)e.innerHTML='';});
+    var cs=$('chart-section');if(cs)cs.style.display='none';
+    window.__lastChart=null;
+    var fb=$('footer-action-btns');if(fb){fb.classList.remove('sticky-bottom','has-result');fb.style.display='';}
+    restoreForm();
+    var s=$('insp-target');if(s){s.value='';}var l=$('location');if(l)l.value='';
+    if(window.inspRefresh)window.inspRefresh();
+    var sec=s&&s.closest('.section');var ms=$('measurement-section');
+    var target=(ms&&ms.style.display!=='none')?ms:sec;if(target)setTimeout(function(){target.scrollIntoView({behavior:'smooth',block:'start'});},50);
+  }
+  window.plNext=function(){
+    if(!hasResult()){alert('이 장소의 AI 분석 결과가 없습니다. 분석을 먼저 해 주십시오.');return;}
+    var it=capture();
+    var dupe=S.items.findIndex(function(x){return x.place===it.place;});
+    if(dupe>=0){if(!confirm('"'+it.place+'"은(는) 이미 리스트에 있습니다. 새 결과로 바꿀까요?\n(취소하면 따로 하나 더 추가합니다)'))S.items.push(it);else S.items[dupe]=it;}
+    else S.items.push(it);
+    S.dong=val('dong');S.ho=val('ho');S.addr=val('addr');S.summary=null;
+    save();render();clearPlace();
+    if(window.showToast)try{showToast('✔ "'+it.place+'" 저장 — 점검 리스트 '+S.items.length+'건',3000);}catch(e){}
+  };
+  window.plReset=function(){if(!confirm('지금 장소의 사진·계측·결로 면·증상·분석 결과를 지울까요?\n(공통 입력과 점검 리스트는 그대로입니다)'))return;clearPlace();};
+  window.plReanalyze=function(){if(typeof window.startAnalysis==='function'){restoreForm();window.startAnalysis();}};
+  window.plClearAll=function(){if(!S.items.length&&!S.summary)return;if(!confirm('점검 리스트 '+S.items.length+'건과 세대 종합 소견을 모두 지울까요? 되돌릴 수 없습니다.'))return;S={dong:'',ho:'',addr:'',items:[],summary:null};save();render();};
+
+  // ── AI 전체검증 (사진 없이 글만)
+  window.plVerifyAll=async function(){
+    if(!S.items.length){alert('점검 리스트가 비어 있습니다.');return;}
+    if(typeof window.__callGemini!=='function'){alert('AI 기능을 불러오지 못했습니다.');return;}
+    var btn=$('pl-ai-btn');btn.disabled=true;var old=btn.innerHTML;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 종합 중…';
+    try{
+      var common='';try{var v=window.collectV36?window.collectV36():null;if(v&&v.text)common+=v.text+'\n';}catch(e){}
+      common+='- 창호: '+val('window-type')+' / '+val('consideration')+'\n- 외기: '+val('temp-out')+'℃\n';
+      try{if(window.ERV&&window.ERV_LAST&&window.ERV_LAST.qReq!=null)common+='[환기장치 적정성 — 앱 계산값]\n'+ERV.summaryText(window.ERV_LAST)+'\n';}catch(e){}
+      var places=S.items.map(function(it,i){var m=it.meas||{};
+        return '### 장소 '+(i+1)+': '+it.place+'\n- 실내 '+(m.ti||'-')+'℃ / 습도 '+(m.rh||'-')+'% / 이슬점 '+(m.dew||'-')+' / 표면 '+(m.ts||'-')+'℃ / VAP '+(m.vap||'-')+' / MIX '+(m.mix||'-')+'\n- 결로가 맺힌 면: '+(it.face||'-')+'\n- 증상: '+(it.defect||'-')+'\n- 원인 비율(앱 산출): '+(it.ratio?('거주환경 '+it.ratio.v+'% / 단열 '+it.ratio.i+'% / 기타 '+it.ratio.n+'%'):'-')+'\n- 장소 소견 요약 원문:\n'+it.text.slice(0,2500);}).join('\n\n');
+      var prompt='당신은 공동주택 창호 결로·외풍 진단 전문가입니다. 한 세대('+(S.dong||'-')+'동 '+(S.ho||'-')+'호)의 여러 장소를 각각 분석한 결과를 모아 **세대 단위 종합 소견**을 작성하십시오.\n\n'+
+        '[세대 공통 정보]\n'+common+'\n[장소별 결과]\n'+places+'\n\n'+
+        '[작성 규칙]\n- 위에 있는 측정값·계산값·원인 비율만 인용하고 새 숫자를 만들지 마십시오. 값이 없으면 "측정값 없음"이라고 쓰십시오.\n'+
+        '- 여러 장소에 공통으로 나타나는 양상은 세대 공통 원인(실내 습도·환기·생활 습기·환기장치)으로, 특정 장소에만 나타나는 양상은 장소별 원인(그 창호의 기밀·단열·위치·방향)으로 나누어 판단하십시오. 장소가 1곳뿐이면 비교 판단의 한계를 밝히십시오.\n'+
+        '- "시공 불량·하자·귀책" 같은 단정 표현은 쓰지 말고 "보강이 필요한 부위(AI 추정)"처럼 쓰십시오. 특정 제조사를 깎아내리지 마십시오.\n'+
+        '- 문장은 모두 존댓말(~합니다)로 쓰십시오.\n\n'+
+        '[출력 형식 — 마크다운]\n## 1. 세대 전체 결로 양상\n(장소 | 결로 위치 | 표면온도 | 주된 원인 비율 — 표)\n## 2. 세대 공통 원인\n## 3. 장소별 원인\n## 4. 우선 조치 순서\n(세대 전체 조치 → 장소별 조치)\n## 5. 추가로 확인할 사항';
+      var A=window.__ANALYSIS||{};
+      var text=await window.__callGemini(A.model||'',{contents:[{parts:[{text:prompt}]}]},{maxAttempts:3,timeoutMs:90000,temperature:0.2,model:A.model||null,maxOutputTokens:8192,thinkingLevel:A.thinking||null});
+      var html=window.markdownit?window.markdownit().render(text):'<pre>'+esc(text)+'</pre>';
+      S.summary={ts:new Date().toISOString(),n:S.items.length,html:html,text:text};
+      save();render();$('pl-summary').scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){alert('세대 종합 소견을 만들지 못했습니다: '+(e&&e.message||e));}
+    finally{btn.disabled=false;btn.innerHTML=old;}
+  };
+
+  // ── 전체저장(PDF 한 개)
+  function fname(ext){var d=new Date();var ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');return (S.dong||'000')+'동'+(S.ho||'0000')+'호_결로진단_종합_'+S.items.length+'곳_'+ymd+(ext||'');}
+  window.plPrintAll=function(){
+    if(!S.items.length){alert('점검 리스트가 비어 있습니다.');return;}
+    if(!S.summary&&!confirm('세대 종합 소견(AI 전체검증)이 아직 없습니다. 장소별 소견만으로 저장할까요?'))return;
+    var c=(S.items[S.items.length-1].common)||{};
+    var row=function(k,v){return v?'<tr><th>'+k+'</th><td style="white-space:pre-line">'+esc(v)+'</td></tr>':'';};
+    var h='<h1>결로 정밀 진단 종합 소견서</h1><div style="color:#555;margin-bottom:8px">청개구리샤시 · 결로진단 AI '+esc(document.title.replace(/[^v0-9.]/g,'').replace(/^\.+/,''))+'</div>';
+    h+='<table class="sm">'+row('진단 일자',c['rep-date']||val('date'))+row('진단 세대',(S.dong||'-')+'동 '+(S.ho||'-')+'호'+(S.addr?' ('+S.addr+')':''))+row('구조/사양',c['rep-type'])+row('분석 관점',c['rep-view'])+row('세대 위치',c['rep-house'])+row('생활환경·관찰',c['rep-life'])+row('기상',c['rep-weather'])+row('환기 적정성',c['rep-erv'])+'</table>';
+    h+='<table class="sm"><tr><th style="width:auto">검사 장소</th><th style="width:auto">결로가 맺힌 면</th><th style="width:auto">표면온도</th><th style="width:auto">실내 온·습도</th><th style="width:auto">원인 비율(AI 추정)</th></tr>'+S.items.map(function(it){var m=it.meas||{};return '<tr><td>'+esc(it.place)+'</td><td>'+esc(it.face||'-')+'</td><td>'+esc(m.ts?m.ts+'℃':'-')+'</td><td>'+esc((m.ti||'-')+'℃ / '+(m.rh||'-')+'%')+'</td><td>'+esc(it.ratio?('거주환경 '+it.ratio.v+'% · 단열 '+it.ratio.i+'% · 기타 '+it.ratio.n+'%'):'-')+'</td></tr>';}).join('')+'</table>';
+    if(S.summary)h+='<div class="pg md-sum"><h2 class="place">세대 종합 소견</h2>'+S.summary.html+'</div>';
+    S.items.forEach(function(it,i){h+='<div class="pg"><h2 class="place">장소 '+(i+1)+'. '+esc(it.place)+'</h2>'+it.html+'</div>';});
+    h+='<div style="margin-top:16px;color:#666;font-size:11px">※ AI가 측정값과 공개 자료를 바탕으로 작성한 참고용 소견입니다. 청개구리샤시 ☎ 010-2322-0949</div>';
+    var P=$('print-all');P.innerHTML=h;
+    var t0=document.title;document.title=fname('');document.body.classList.add('print-all-mode');
+    var done=function(){document.body.classList.remove('print-all-mode');document.title=t0;window.removeEventListener('afterprint',done);};
+    window.addEventListener('afterprint',done);
+    setTimeout(function(){window.print();setTimeout(done,1500);},300);
+  };
+  // ── 내파일저장 / 불러오기 (JSON)
+  window.plSaveFile=function(){
+    if(!S.items.length){alert('점검 리스트가 비어 있습니다.');return;}
+    var blob=new Blob([JSON.stringify({app:'dewpoint-plist',v:1,session:S})],{type:'application/json'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname('.json');document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
+  };
+  window.plLoadFile=function(input){
+    var f=input.files&&input.files[0];if(!f)return;var rd=new FileReader();
+    rd.onload=function(){try{var j=JSON.parse(rd.result);if(!j||j.app!=='dewpoint-plist'||!j.session)throw new Error('결로앱 점검 리스트 파일이 아닙니다');
+      if(S.items.length&&!confirm('지금 리스트 '+S.items.length+'건을 불러온 파일('+j.session.items.length+'건)로 바꿀까요?'))return;
+      S=j.session;S.items=S.items||[];save();render();
+      if(S.dong&&!val('dong'))$('dong').value=S.dong;if(S.ho&&!val('ho'))$('ho').value=S.ho;
+    }catch(e){alert('불러오지 못했습니다: '+e.message);}finally{input.value='';}};
+    rd.readAsText(f);
+  };
+  async function init(){
+    if(!$('plist-section'))return;
+    var s=await load();
+    if(s&&s.items){S=s;render();if(S.items.length){var b=$('pl-restored');b.style.display='block';b.textContent='이 기기에 저장된 점검 리스트 '+S.items.length+'건'+((S.dong||S.ho)?' ('+S.dong+'동 '+S.ho+'호)':'')+'을 불러왔습니다. 다른 세대를 시작하려면 전체삭제를 누르십시오.';}}
+    else render();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
