@@ -714,7 +714,7 @@
 
         <!-- ★ v36.0: 같은 건물 다른 세대 -->
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-city"></i> 같은 건물 다른 세대</div>
+            <div class="section-title"><i class="fas fa-city"></i> 동일 문제를 갖고 있는 같은 건물의 다른 세대</div>
             <div class="chk-group" data-name="nbr" data-mode="single">
                 <span class="chk" data-v="unk">모름</span><span class="chk" data-v="only">우리 집만</span><span class="chk" data-v="some">같은 라인 일부</span><span class="chk" data-v="many">같은 라인 다수</span><span class="chk" data-v="all">단지 전반</span></div>
             <div class="v36-note">같은 라인 다수 = 설계·시공 공통 요인 쪽 / 우리 집만 = 생활·개별 하자 쪽</div>
@@ -1186,7 +1186,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v37.1'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v37.2'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1533,7 +1533,7 @@
             add('열회수환기장치', chkText('erv'));
             add('습도 기기·수분원', chkText('moist'));
             add('난방 방식', chkText('heat'));
-            add('같은 건물 다른 세대', chkText('nbr'));
+            add('동일 문제를 갖고 있는 같은 건물의 다른 세대', chkText('nbr'));
 
             // 원인비율 보정 (시안 가중치). 입력 없으면 0 → v35.1 비율 그대로.
             let adj = 0;
@@ -2169,7 +2169,7 @@
             const houseType = [chkText('house'), chkText('ext'), _fi ? _fi.label : '', chkText('side'), chkText('dir') ? '거실 ' + chkText('dir') + '향' : ''].filter(Boolean).join(' / ') || '세대 위치 미입력';
             const ervBlock = (SEASON !== 'summer' && typeof window.ervPromptBlock === 'function') ? window.ervPromptBlock() : '';
             const v36Block = ervBlock + (V36.text
-                ? `\n\n[세대 위치·생활환경 문진 (v36 현장 입력 — 반드시 반영)]\n${V36.text}\n\n[문진 해석 지침]\n- 입력된 항목만 근거로 삼고, 미입력 항목은 추정하지 마십시오.\n- **같은 건물 다른 세대**: '같은 라인 다수/단지 전반'이면 설계·구조 공통 요인(열교·단열 설계·기밀 사양) 비중을 높이고, '우리 집만'이면 해당 세대 생활환경·개별 부위 요인을 우선 검토하십시오.\n- **층 위치·연돌효과**: 겨울철 저층은 틈으로 냉기가 유입(외풍 체감↑), 고층은 실내 습한 공기가 틈으로 유출(틈 주변 결로·외풍 체감↓)되는 경향을 외풍·결로 해석에 반영하십시오. 1층·필로티 상부·옥상 직하·측벽 세대는 외기 접촉면 증가로 표면온도 저하 요인입니다.\n- **입주 2년차 이내**면 콘크리트 초기 함수율 방출을 원인에 포함하고, 그 이후면 비중을 낮추십시오.\n- **생활 수분원**(거주 인원·실내 건조·가습기·조리·환기 횟수/시간·전열교환기 미가동·간헐난방)은 MR277 VAP/MIX 수치와 교차 검증해 거주 환경 관리 원인으로 구체적으로 연결하십시오. 히트펌프·응축식 건조기는 실내 가습 요인이 아닙니다.\n- **현장 관찰 상태**(여밈대 틈·풍지판 누락·물구멍 반대타공·모헤어 마모·창짝 처짐 등)는 외풍·기밀 저하 경로로 해석하되, 원인을 '시공/설치/제작 불량'으로 단정하지 말고 '기밀 보강 필요 부위(AI 추정)'로 표현하십시오.\n- **평소 결로 흔적**은 측정 당일 조건과 무관한 누적 결로 증거로 활용하십시오.\n- 기상자료(측정 전 7일 최저기온·풍속)가 있으면 측정 당일 수치만으로 판단하지 말고 최근 한파·강풍 영향을 함께 고려하십시오.`
+                ? `\n\n[세대 위치·생활환경 문진 (v36 현장 입력 — 반드시 반영)]\n${V36.text}\n\n[문진 해석 지침]\n- 입력된 항목만 근거로 삼고, 미입력 항목은 추정하지 마십시오.\n- **동일 문제를 갖고 있는 같은 건물의 다른 세대**: '같은 라인 다수/단지 전반'이면 설계·구조 공통 요인(열교·단열 설계·기밀 사양) 비중을 높이고, '우리 집만'이면 해당 세대 생활환경·개별 부위 요인을 우선 검토하십시오.\n- **층 위치·연돌효과**: 겨울철 저층은 틈으로 냉기가 유입(외풍 체감↑), 고층은 실내 습한 공기가 틈으로 유출(틈 주변 결로·외풍 체감↓)되는 경향을 외풍·결로 해석에 반영하십시오. 1층·필로티 상부·옥상 직하·측벽 세대는 외기 접촉면 증가로 표면온도 저하 요인입니다.\n- **입주 2년차 이내**면 콘크리트 초기 함수율 방출을 원인에 포함하고, 그 이후면 비중을 낮추십시오.\n- **생활 수분원**(거주 인원·실내 건조·가습기·조리·환기 횟수/시간·전열교환기 미가동·간헐난방)은 MR277 VAP/MIX 수치와 교차 검증해 거주 환경 관리 원인으로 구체적으로 연결하십시오. 히트펌프·응축식 건조기는 실내 가습 요인이 아닙니다.\n- **현장 관찰 상태**(여밈대 틈·풍지판 누락·물구멍 반대타공·모헤어 마모·창짝 처짐 등)는 외풍·기밀 저하 경로로 해석하되, 원인을 '시공/설치/제작 불량'으로 단정하지 말고 '기밀 보강 필요 부위(AI 추정)'로 표현하십시오.\n- **평소 결로 흔적**은 측정 당일 조건과 무관한 누적 결로 증거로 활용하십시오.\n- 기상자료(측정 전 7일 최저기온·풍속)가 있으면 측정 당일 수치만으로 판단하지 말고 최근 한파·강풍 영향을 함께 고려하십시오.`
                 : '');
 
             document.getElementById('rep-date').innerText = document.getElementById('date').value;
@@ -2641,6 +2641,9 @@
 <script>(function(){var P={normal:{ulv:3.0,uwall:1.06,udoor:4.7,ach:1.5,achopen:10,sf:10},old:{ulv:3.5,uwall:1.20,udoor:5.5,ach:2.0,achopen:12,sf:20},nw:{ulv:2.4,uwall:0.30,udoor:2.7,ach:1.0,achopen:8,sf:10}};function g(i){return document.getElementById(i);}function sv(i,v){var e=g(i);if(e){e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}));}}function n(i){var e=g(i);return e?(parseFloat(e.value)||0):0;}function autoWall(){var a=n("blc_w")*n("blc_h")-n("blc_alv")-n("blc_adoor");if(!(a>0.3))a=0.3;sv("blc_awall",Math.round(a*10)/10);}function apply(){var s=g("blc_preset");if(!s)return;var k=s.value==="old"?"old":(s.value==="new"?"nw":"normal");var p=P[k];sv("blc_ulv",p.ulv);sv("blc_uwall",p.uwall);sv("blc_udoor",p.udoor);sv("blc_ach",p.ach);sv("blc_achopen",p.achopen);sv("blc_sf",p.sf);autoWall();}function init(){var s=g("blc_preset");if(!s)return;s.addEventListener("change",apply);["blc_w","blc_h","blc_alv","blc_adoor"].forEach(function(i){var e=g(i);if(e)e.addEventListener("input",autoWall);});var d=document.querySelector(".blc-adv");var box=s.closest(".blc-box");if(d&&box){d.addEventListener("toggle",function(){box.classList.toggle("show-adv",d.open);});}apply();}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();})();</script>
 
 <style id="erv-style">
+#erv-section{background:#eef6fc;border-color:#bcd9ef}
+#erv-section .section-title{color:#0f4c75}
+#erv-section .erv-card{background:#fff}
 .erv-inline{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem}
 .erv-inline input{width:72px;padding:6px 6px;border:1px solid #d0d7de;border-radius:8px;font-size:0.9rem;text-align:center;background:#fff}
 .erv-btn{border:1px solid var(--brand-accent);background:var(--accent-tint);color:var(--brand-primary);border-radius:8px;padding:6px 10px;font-weight:700;font-size:0.8rem;cursor:pointer}
