@@ -1206,7 +1206,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v38.0'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v38.1'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2930,15 +2930,24 @@
 .pl-body{padding:6px 10px 10px;border-top:1px solid #eef1f4;font-size:0.85rem}
 .pl-body img{max-width:100%}
 .pl-tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.pl-tools button{flex:1 1 30%;border:none;border-radius:12px;padding:12px 8px;font-weight:800;font-size:0.88rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.pl-tools button{white-space:nowrap;font-size:0.84rem!important;padding:12px 4px!important;flex:1 1 30%;border:none;border-radius:12px;padding:12px 8px;font-weight:800;font-size:0.88rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .pl-ai{background:#eef2fb;color:#1e3a8a}
 .pl-file{background:#f3f4f6;color:#111827}
 .pl-all{background:#1f8a5b;color:#fff}
 .pl-sub{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:0.74rem;color:var(--text-muted)}
-.pl-sub label{color:#1e3a8a;cursor:pointer;font-weight:700}
+.pl-sub{gap:8px}.pl-sub label{color:#1e3a8a;cursor:pointer;font-weight:700;white-space:nowrap}
 #pl-summary{margin-top:10px}
 #pl-summary .card{border:1.5px solid #c7d2fe;background:#f7f8ff;border-radius:12px;padding:10px 12px;font-size:0.88rem;line-height:1.65}
 #print-all{display:none}
+#footer-action-btns{display:none!important}
+#place-card{background:#fff;border:1px solid var(--border-color);border-radius:18px;padding:12px;margin:12px 0}
+#place-card .pc-row{display:flex;align-items:center;gap:8px}
+#place-card .pa-btn{font-size:0.9rem;padding:9px 13px;white-space:nowrap;flex:0 0 auto}
+#place-card .pa-btn:disabled{opacity:.45;cursor:default}
+#place-card .pc-box{margin-top:10px;border:1.5px solid #e3e8ee;border-radius:16px;min-height:90px;background:#fbfcfd}
+#place-card .pc-empty{padding:28px 14px;text-align:center;font-size:0.82rem;color:var(--text-muted)}
+#place-card #result-area{margin:0!important;padding:10px 8px!important;border:none!important;box-shadow:none!important;background:transparent!important}
+@media print{#place-card{border:none!important;padding:0!important;margin:0!important}#place-card .pc-row,#place-card .pc-empty{display:none!important}#place-card .pc-box{border:none!important;background:#fff!important}}
 #pl-summary table,#print-all .md-sum table{border-collapse:collapse;width:100%;margin:6px 0}
 #pl-summary th,#pl-summary td,#print-all .md-sum th,#print-all .md-sum td{border:1px solid #d5dbe3;padding:4px 6px;text-align:left}
 #pl-summary th,#print-all .md-sum th{background:#eef2f8}
@@ -3045,8 +3054,28 @@
     save();render();clearPlace();
     if(window.showToast)try{showToast('✔ "'+it.place+'" 저장 — 점검 리스트 '+S.items.length+'건',3000);}catch(e){}
   };
+  // ── v38.1 장소 카드: [AI 분석/재분석] [다음입력] [초기화] + 결과 칸 (사전점검 앱 방식)
+  function buildCard(){
+    var ab=$('analyze-btn'),ra=$('result-area');if(!ab||!ra||$('place-card'))return;
+    var c=document.createElement('div');c.id='place-card';
+    c.innerHTML='<div class="pc-row"><button type="button" class="pa-btn pa-re" id="pc-ai" onclick="plAnalyze()"><i class="fas fa-robot"></i> <span id="pc-ai-t">AI 분석</span></button>'+
+      '<button type="button" class="pa-btn pa-next" id="pc-next" onclick="plNext()" disabled><i class="fas fa-arrow-right"></i> 다음입력</button>'+
+      '<button type="button" class="pa-btn pa-reset" onclick="plReset()"><i class="fas fa-sync-alt"></i> 초기화</button></div>'+
+      '<div class="pc-box"><div class="pc-empty" id="pc-empty">검사 대상·계측·사진을 넣고 <b>AI 분석</b>을 누르면 결과가 여기에 표시됩니다.</div></div>';
+    ab.parentNode.insertBefore(c,ab);ab.style.display='none';
+    c.querySelector('.pc-box').appendChild(ra);
+    var upd=function(){var shown=ra.style.display==='block';$('pc-empty').style.display=shown?'none':'';$('pc-ai-t').textContent=shown?'AI 재분석':'AI 분석';$('pc-next').disabled=!hasResult();};
+    new MutationObserver(upd).observe(ra,{attributes:true,attributeFilter:['style']});
+    var ac=$('analysis-content');if(ac)new MutationObserver(upd).observe(ac,{childList:true,subtree:true});
+    upd();
+  }
+  window.plAnalyze=function(){
+    var lg=$('legal-agree');
+    if(lg&&!lg.checked){restoreForm();alert('분석 전에 위의 안내 사항 동의에 체크해 주십시오.');lg.scrollIntoView({behavior:'smooth',block:'center'});return;}
+    restoreForm();if(typeof window.startAnalysis==='function')window.startAnalysis();
+  };
   window.plReset=function(){if(!confirm('지금 장소의 사진·계측·결로 면·증상·분석 결과를 지울까요?\n(공통 입력과 점검 리스트는 그대로입니다)'))return;clearPlace();};
-  window.plReanalyze=function(){if(typeof window.startAnalysis==='function'){restoreForm();window.startAnalysis();}};
+  window.plReanalyze=function(){window.plAnalyze();};
   window.plClearAll=function(){if(!S.items.length&&!S.summary)return;if(!confirm('점검 리스트 '+S.items.length+'건과 세대 종합 소견을 모두 지울까요? 되돌릴 수 없습니다.'))return;S={dong:'',ho:'',addr:'',items:[],summary:null};save();render();};
 
   // ── AI 전체검증 (사진 없이 글만)
@@ -3079,7 +3108,8 @@
   // ── 전체저장(PDF 한 개)
   function fname(ext){var d=new Date();var ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');return (S.dong||'000')+'동'+(S.ho||'0000')+'호_결로진단_종합_'+S.items.length+'곳_'+ymd+(ext||'');}
   window.plPrintAll=function(){
-    if(!S.items.length){alert('점검 리스트가 비어 있습니다.');return;}
+    if(hasResult()){var cp=curPlace();if(confirm('지금 화면의 "'+cp+'" 결과도 점검 리스트에 넣고 저장할까요?')){var it=capture();var k=S.items.findIndex(function(x){return x.place===it.place;});if(k>=0)S.items[k]=it;else S.items.push(it);S.dong=val('dong');S.ho=val('ho');S.addr=val('addr');save();render();}}
+    if(!S.items.length){alert('점검 리스트가 비어 있습니다. 장소를 분석한 뒤 저장하십시오.');return;}
     if(!S.summary&&!confirm('세대 종합 소견(AI 전체검증)이 아직 없습니다. 장소별 소견만으로 저장할까요?'))return;
     var c=(S.items[S.items.length-1].common)||{};
     var row=function(k,v){return v?'<tr><th>'+k+'</th><td style="white-space:pre-line">'+esc(v)+'</td></tr>':'';};
@@ -3112,6 +3142,7 @@
   };
   async function init(){
     if(!$('plist-section'))return;
+    buildCard();
     var s=await load();
     if(s&&s.items){S=s;render();if(S.items.length){var b=$('pl-restored');b.style.display='block';b.textContent='이 기기에 저장된 점검 리스트 '+S.items.length+'건'+((S.dong||S.ho)?' ('+S.dong+'동 '+S.ho+'호)':'')+'을 불러왔습니다. 다른 세대를 시작하려면 전체삭제를 누르십시오.';}}
     else render();
