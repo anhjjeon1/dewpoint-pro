@@ -1206,7 +1206,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v38.2'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v38.3'; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -3121,10 +3121,9 @@
     S.items.forEach(function(it,i){h+='<div class="pg"><h2 class="place">장소 '+(i+1)+'. '+esc(it.place)+'</h2>'+it.html+'</div>';});
     h+='<div style="margin-top:16px;color:#666;font-size:11px">※ AI가 측정값과 공개 자료를 바탕으로 작성한 참고용 소견입니다. 청개구리샤시 ☎ 010-2322-0949</div>';
     var P=$('print-all');P.innerHTML=h;
-    var t0=document.title;document.title=fname('');document.body.classList.add('print-all-mode');
-    var done=function(){document.body.classList.remove('print-all-mode');document.title=t0;window.removeEventListener('afterprint',done);};
-    window.addEventListener('afterprint',done);
-    setTimeout(function(){window.print();setTimeout(done,1500);},300);
+    // 폰은 print()가 바로 끝나고 미리보기를 나중에 그리므로 인쇄 모드를 되돌리지 않고 유지합니다(@media print에서만 적용).
+    document.title=fname('');document.body.classList.add('print-all-mode');
+    setTimeout(function(){window.print();},300);
   };
   // ── 내파일저장 / 불러오기 (JSON)
   window.plSaveFile=function(){
