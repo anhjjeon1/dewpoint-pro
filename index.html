@@ -755,7 +755,7 @@
             <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
                 <label class="input-label"><i class="fas fa-wind" style="color:var(--brand-accent);"></i> 공기질 정밀 진단 (Auto)</label>
 
-                <div id="vapmix-guide" style="font-size:0.74rem; color:var(--brand-primary); margin-bottom:5px; font-weight:600; text-align:center; background:var(--accent-tint); padding:4px 8px; border-radius:6px; border:1px solid var(--accent-soft);">※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 기준(1.2/7.3) 미적용 — 핵심은 결로면 온도 &lt; 노점</div>
+                <div id="vapmix-guide" style="font-size:0.74rem; color:var(--brand-primary); margin-bottom:5px; font-weight:600; text-align:center; background:var(--accent-tint); padding:4px 8px; border-radius:6px; border:1px solid var(--accent-soft);">※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 참고값(1.2/7.3) 미적용 — 핵심은 결로면 온도 &lt; 노점</div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>
@@ -1206,7 +1206,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v38.5'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v38.6'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1240,7 +1240,7 @@
                 surf:    '● 실내측 표면온도(Tsi)',
                 surfHint:'* 열화상 최저값 — 결로 생기는 실내측 차가운 면',
                 tempOut: '외기온도(To)',
-                vapmix:  '※ 겨울철 적정(신축): VAP 1.2kPa ↓ / MIX 7.3g/kg ↓',
+                vapmix:  '※ 겨울 참고값(청개구리 내부값·공인 기준 아님): VAP 1.2kPa / MIX 7.3g/kg — ±0.08 / ±0.5 안은 계기 오차 범위',
                 banner:  '❄️ <b>겨울용 모드</b> — 따뜻·습한 <b>실내 공기</b>가 외기 냉기로 차가워진 <b>실내측 표면</b>(유리·벽 코너·방화문 실내면)에 응결. 온·습도는 실내에서, 표면온도는 결로 생기는 실내측 면에서 측정하세요.',
                 locPlaceholder: '거실창',
                 locOptions: ['거실', '안방', '현관', '다용도실', '실외기실']
@@ -1252,7 +1252,7 @@
                 surf:    '● 결로면 온도(Ts)',
                 surfHint:'* 열화상 최저값 — 냉방으로 차가워진 결로면(방화문 계단실측 등)',
                 tempOut: '냉방측 온도(Tc)',
-                vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 기준(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
+                vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 참고값(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
                 banner:  '☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어락(잠금장치) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·온습도(MR277)·창호 검사는 생략됩니다(<b>열화상은 선택 입력</b> — 표면 저온부·열교 정성 참고용).',
                 locPlaceholder: '현관',
                 locOptions: ['현관', '다용도실', '실외기실', '거실', '안방']
@@ -1384,7 +1384,7 @@
                     [분석 관점: 건설사(시공사) 의뢰 — 거주자 설명 자료]
                     이 소견서는 건설사가 의뢰했고, 거주자(입주민)에게 결로 원인을 이해시키는 설명 자료로 쓰입니다. 의뢰인을 대리하는 전문가의 관점에서 작성하되 아래를 지키십시오.
                     - **사실 불변**: 측정값·계산값·원인 비율은 그대로 기재하십시오. 의뢰인에게 불리한 수치(TDR 0.28 초과, 표면온도 미달 등)도 빠뜨리거나 축소하지 말고, 그 수치가 뜻하는 범위를 정확히 설명하십시오.
-                    - **강조점**: ① 결로 방지 설계기준(TDR)·공인 기준 대비 현재 측정값의 위치 ② 실내 수분 발생량·환기량·가습기·실내 건조·커튼 등 거주 환경 요인이 이슬점을 얼마나 올리는지 수치로 ③ 같은 구조의 다른 세대와의 비교(문진에 있을 때만) ④ 측정 당일 기상(한파·강풍)의 영향.
+                    - **강조점**: ① 결로 방지 TDR 값과 청개구리 내부 참고값(공인 기준 아님) 대비 현재 측정값의 위치 ② 실내 수분 발생량·환기량·가습기·실내 건조·커튼 등 거주 환경 요인이 이슬점을 얼마나 올리는지 수치로 ③ 같은 구조의 다른 세대와의 비교(문진에 있을 때만) ④ 측정 당일 기상(한파·강풍)의 영향.
                     - **서술 순서**: ##3은 거주 환경 요인 → 기류·기밀 → 단열 순으로, ##4는 거주자가 오늘부터 할 수 있는 관리(환기장치 가동, 습도 목표, 커튼 틈) → 건설사가 제공할 수 있는 점검·기밀 보강 순으로 쓰십시오.
                     - **말투**: 거주자를 탓하지 말고 원리를 풀어 설명하는 존댓말. '거주자 과실', '관리 소홀' 같은 표현 금지. 대신 '생활 습기 관리로 개선 가능한 부분'으로 표현하십시오.
                     - 단열·기밀 쪽 비율이 더 크게 나온 경우, 거주 환경 탓으로 돌리지 말고 '건설사가 확인·보강할 부위(AI 추정)'로 분명히 적으십시오.`,
@@ -2312,28 +2312,32 @@
             if(vapVal && mixVal) {
                 let winterGuide = "";
                 if(isWinter) {
-                    winterGuide = "현재 진단 시점은 **겨울철**이며, **신축 아파트 기준 적정 공기질은 VAP 1.2kPa 이하, MIX 7.3g/kg 이하**입니다. 이 수치를 초과하면 환기 부족이 원인일 가능성이 높고, 이하라면 단열 미흡이 원인일 가능성이 큽니다.";
+                    winterGuide = "현재 진단 시점은 **겨울철**입니다. 청개구리 결로진단의 신축 세대 **내부 참고값은 VAP 1.2kPa, MIX 7.3g/kg**입니다(공인 기준 아님). 이 값을 계기 오차 이상으로 넘으면 생활 습기·환기 부족의 비중이 크고, 확실히 낮으면 단열·기밀 쪽 비중이 큽니다.";
                 }
                 // ★ v35.0: FLIR MR277 포화수증기량 관점 강화 — 실내온도 기준 포화수증기압 대비 현재 수증기량 비율 산출 + 거주자 생활 패턴 1순위 지목
                 const _Tin = parseFloat(tempIn) || 20;
                 const _satVap = 0.6108 * Math.exp(17.27 * _Tin / (_Tin + 237.3));        // 실내온도 포화수증기압(kPa)
                 const _satMix = 622 * (_satVap / (101.325 - _satVap));                    // 포화절대습도 근사(g/kg, 1atm)
                 const _rhEq = Math.min(100, (parseFloat(vapVal) / _satVap) * 100);        // 포화 대비 현재 수증기량 비율(≈상대습도)
-                const _mixExcess = (parseFloat(mixVal) - 7.3);                            // 기준 대비 절대습도 초과분
-                const saturationLogic = `\n\n[FLIR MR277 포화수증기량 분석 — 반드시 반영]\n- 실내온도 ${_Tin}℃ 기준 **포화수증기압 ${_satVap.toFixed(2)}kPa / 포화절대습도 약 ${_satMix.toFixed(1)}g/kg**\n- 현재 VAP ${vapVal}kPa 는 포화수증기량 대비 약 **${_rhEq.toFixed(0)}%** 수준입니다. 이 비율이 높을수록 찬 표면(창호·열교부)에서 포화에 먼저 도달해 결로가 쉽게 발생합니다.\n- **핵심 해석**: MIX(절대습도)는 외기 조건이 아니라 **거주자의 생활 활동(취사·세탁 실내건조·샤워·호흡·가습기·화분/어항 등)으로 실내에서 생성한 수분량**을 직접 반영합니다. 겨울철 외기 절대습도는 2~4g/kg로 매우 낮으므로, 실내 MIX가 기준(7.3g/kg)을 넘으면 그 초과분(현재 약 ${_mixExcess >= 0 ? '+' : ''}${_mixExcess.toFixed(1)}g/kg)은 **대부분 실내 생활에서 발생한 수분**입니다.\n- 따라서 VAP/MIX가 기준을 초과할 경우 **거주자의 생활 패턴(수분 발생원 + 환기 습관)을 결로의 1순위 원인으로 구체적으로 지목**하고, 어떤 생활 행위가 실내 수증기량을 얼마나 늘리는지 정량적으로 설명하십시오. 단, 표현은 '거주 환경 관리(AI 분석 소견)'로 하되 거주자를 비난하지 않는 중립적 톤을 유지하십시오.`;
-                airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}${saturationLogic}`;
+                const _mixExcess = (parseFloat(mixVal) - 7.3);                            // 내부 참고값(공인 기준 아님) 대비 절대습도 차이
+                const saturationLogic = `\n\n[FLIR MR277 포화수증기량 분석 — 반드시 반영]\n- 실내온도 ${_Tin}℃ 기준 **포화수증기압 ${_satVap.toFixed(2)}kPa / 포화절대습도 약 ${_satMix.toFixed(1)}g/kg**\n- 현재 VAP ${vapVal}kPa 는 포화수증기량 대비 약 **${_rhEq.toFixed(0)}%** 수준입니다. 이 비율이 높을수록 찬 표면(창호·열교부)에서 포화에 먼저 도달해 결로가 쉽게 발생합니다.\n- **핵심 해석**: MIX(절대습도)는 외기 조건이 아니라 **거주자의 생활 활동(취사·세탁 실내건조·샤워·호흡·가습기·화분/어항 등)으로 실내에서 생성한 수분량**을 직접 반영합니다. 겨울철 외기 절대습도는 2~4g/kg로 매우 낮으므로, 실내 MIX가 내부 참고값(7.3g/kg, 공인 기준 아님)을 넘으면 그 차이(현재 약 ${_mixExcess >= 0 ? '+' : ''}${_mixExcess.toFixed(1)}g/kg)은 **대부분 실내 생활에서 발생한 수분**입니다.\n- 따라서 VAP/MIX가 참고값을 계기 오차(±0.08kPa·±0.5g/kg) 이상으로 넘을 경우 **거주자의 생활 패턴(수분 발생원 + 환기 습관)을 결로의 1순위 원인으로 구체적으로 지목**하고, 어떤 생활 행위가 실내 수증기량을 얼마나 늘리는지 정량적으로 설명하십시오. 단, 표현은 '거주 환경 관리(AI 분석 소견)'로 하되 거주자를 비난하지 않는 중립적 톤을 유지하십시오.`;
+                airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}${saturationLogic}\n\n[참고값 표기 규칙 — 반드시 준수]\n- 1.2kPa·7.3g/kg은 청개구리 결로진단의 **내부 참고값**이며 법령이나 공인 표준의 기준이 아닙니다. 보고서에 '기준', '법적 기준', '적정 기준'이라고 쓰지 말고 반드시 '청개구리 내부 참고값(공인 기준 아님)'으로 표기하십시오.\n- 가정용 습도계는 ±3~5%RH 오차가 있어 혼합비가 약 ±0.5~0.9g/kg 달라질 수 있습니다. 참고값과의 작은 차이로 과습·정상을 단정하지 마십시오.`;
                 
                 // VAP/MIX 기준값 대비 상세 원인 판별 로직
                 const vapNum = parseFloat(vapVal);
                 const mixNum = parseFloat(mixVal);
-                const vapOver = vapNum > 1.2;
-                const mixOver = mixNum > 7.3;
+                // ★ v38.6: 1.2/7.3은 청개구리 내부 참고값(공인 기준 아님). 습도계 오차(±3%RH 상당) 안은 '근처'로 분리
+                const REF_VAP = 1.2, REF_MIX = 7.3, BAND_VAP = 0.08, BAND_MIX = 0.5;
+                const vapOver = vapNum > REF_VAP + BAND_VAP;
+                const mixOver = mixNum > REF_MIX + BAND_MIX;
+                const vapNear = !vapOver && vapNum >= REF_VAP - BAND_VAP;
+                const mixNear = !mixOver && mixNum >= REF_MIX - BAND_MIX;
                 
                 if(vapOver && mixOver) {
                     vapMixDiagnosis = `
                     8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
-                       - 측정값: VAP ${vapVal}kPa (기준 1.2kPa 대비 **${(vapNum - 1.2).toFixed(2)}kPa 초과**), MIX ${mixVal}g/kg (기준 7.3g/kg 대비 **${(mixNum - 7.3).toFixed(2)}g/kg 초과**)
-                       - VAP과 MIX 모두 기준 초과이므로, **실내 수증기 과다 상태**이며, 포화수증기량 대비 여유가 적어 찬 표면에서 결로가 쉽게 발생합니다.
+                       - 측정값: VAP ${vapVal}kPa (내부 참고값 1.2kPa보다 **${(vapNum - 1.2).toFixed(2)}kPa 높음**), MIX ${mixVal}g/kg (내부 참고값 7.3g/kg보다 **${(mixNum - 7.3).toFixed(2)}g/kg 높음**). 계기 오차 범위를 넘는 차이입니다(참고값은 공인 기준 아님)
+                       - VAP과 MIX 모두 참고값보다 뚜렷이 높으므로, **실내 수증기가 많은 상태**이며, 포화수증기량 대비 여유가 적어 찬 표면에서 결로가 쉽게 발생합니다.
                        - 절대습도(MIX) 초과분은 대부분 실내에서 생성된 수분이므로, **(A) 거주자 생활 패턴을 결로의 1순위 원인으로 가장 비중 있게 분석**하고, (B)·(C)는 보조 원인으로 다루십시오:
                          (A) **[1순위] 거주자 생활 패턴 원인** (반드시 상세 분석): 아래 수분 발생원을 하나씩 짚어 **각 행위가 실내 수증기량을 얼마나 늘리는지**와 **의심 정황**을 구체적으로 설명하십시오 — ① 빨래 실내건조(1회 세탁물 건조 시 약 1.5~2L 수분 방출), ② 장시간 조리·국물요리(가스레인지 연소수+증기), ③ 가습기 과다·장시간 가동, ④ 샤워/목욕 후 욕실 문 개방·환풍기 미사용, ⑤ 환기 부족(하루 환기 횟수·시간 부족, 맞통풍 미실시), ⑥ 재실 인원 대비 좁은 공간(호흡·발한), ⑦ 수족관/어항·다육 외 화분 과다. → **거주 생활 패턴이 실내 수증기 과다의 직접적 원인**임을 데이터(MIX 초과분)에 근거해 명확히 지목.
                          (B) **[보조] 단열 성능 관련 원인** (AI 분석 소견): 벽체/창호 단열성능이 설계 기준 대비 미흡할 가능성 → 표면온도 저하 → 국부적 상대습도 상승 → 결로 발생 (이 경우 TDR값과 교차 검증)
@@ -2344,11 +2348,22 @@
                          (A) 거주습관 개선: 환기 횟수/시간(예: 1일 3회, 1회 10분 이상 맞통풍), 제습기 용량 및 설정습도, 빨래건조 방법 변경, 조리 시 레인지후드 사용법, 가습기 적정 사용량 등 **구체적 수치와 방법** 제시
                          (B) 단열 보수: 열교 부위별 보수 방법(단열재 덧댐, 기밀테이프 시공, 단열간봉 교체, 창호 기밀보강 등), 예상 비용 범위, 시공 우선순위
                          (C) 기타 수리: 전열교환기 필터 청소/가동법, 배관 누수 점검 방법, 욕실/주방 국소환기 개선 등`;
+                } else if(!vapOver && !mixOver && (vapNear || mixNear)) {
+                    vapMixDiagnosis = `
+                    8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
+                       - 측정값: VAP ${vapVal}kPa, MIX ${mixVal}g/kg → 청개구리 내부 참고값(VAP 1.2kPa·MIX 7.3g/kg, 공인 기준 아님) **근처(계기 오차 범위 안)**
+                       - 참고값과의 차이가 습도계 오차(±3%RH 상당: VAP 약 ±0.08kPa, MIX 약 ±0.5g/kg) 안에 있으므로 **'과습'으로도 '정상'으로도 단정하지 마십시오.** '참고값 근처'로만 서술하십시오.
+                       - 반드시 아래를 **같은 비중으로 교차 분석**하십시오:
+                         (A) **생활 습기** (AI 분석 소견): 조금만 줄여도 효과가 나는 상태이므로 수분 발생원(실내 빨래건조·조리·샤워 후 욕실문·가습기)과 환기장치 운전(필터·풍량)을 점검
+                         (B) **표면온도·기밀** (AI 분석 소견): TDR값(${tdrMsg})과 결로 위치로 단열·기밀 부족 가능성 확인
+                       - 판단을 굳히려면 **한파 아침에 교정된 계기로 재측정**이 필요하다고 명시하십시오.
+                    9. **[핵심] 원인별 맞춤 수리/개선 방법 (반드시 포함)**:
+                       - (A) 생활 습기 소폭 감축과 환기장치 상시 운전·필터 점검, (B) 표면온도가 낮은 부위의 기밀·단열 점검을 **함께** 제시하십시오.`;
                 } else if(!vapOver && !mixOver) {
                     vapMixDiagnosis = `
                     8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
-                       - 측정값: VAP ${vapVal}kPa (기준 1.2kPa **이하**), MIX ${mixVal}g/kg (기준 7.3g/kg **이하**)
-                       - VAP과 MIX 모두 정상 범위이므로, **실내 수증기량은 적정 수준**입니다.
+                       - 측정값: VAP ${vapVal}kPa (내부 참고값 1.2kPa보다 **뚜렷이 낮음**), MIX ${mixVal}g/kg (내부 참고값 7.3g/kg보다 **뚜렷이 낮음**)
+                       - VAP과 MIX 모두 참고값보다 계기 오차 이상 낮으므로, **실내 수증기량은 많지 않은 수준**입니다.
                        - 이 경우 결로의 주원인은 **거주습관보다는 단열 성능 부족 가능성**이 AI 분석상 높게 나타납니다.
                        - 반드시 아래를 **구체적으로 분석**하십시오:
                          (A) **단열 성능 부족 가능성** (AI 분석 소견): 벽체/창호의 단열 성능이 현행 기준 대비 충분하지 않을 수 있으며, 이로 인해 표면온도가 노점 이하로 하락하여 결로가 발생하는 것으로 추정됨. TDR값(${tdrMsg})으로 참고.
@@ -2362,8 +2377,8 @@
                 } else {
                     vapMixDiagnosis = `
                     8. **[핵심] 수증기압/절대습도 상세 원인 분석 (반드시 포함)**:
-                       - 측정값: VAP ${vapVal}kPa (기준 1.2kPa ${vapOver ? '**초과**' : '이하'}), MIX ${mixVal}g/kg (기준 7.3g/kg ${mixOver ? '**초과**' : '이하'})
-                       - VAP과 MIX 중 일부만 기준 초과이므로 **복합 원인**이 의심됩니다.
+                       - 측정값: VAP ${vapVal}kPa (내부 참고값 1.2kPa ${vapOver ? '보다 **뚜렷이 높음**' : (vapNear ? ' **근처(오차 범위)**' : '보다 낮음')}), MIX ${mixVal}g/kg (내부 참고값 7.3g/kg ${mixOver ? '보다 **뚜렷이 높음**' : (mixNear ? ' **근처(오차 범위)**' : '보다 낮음')})
+                       - VAP과 MIX 중 일부만 참고값보다 뚜렷이 높으므로 **복합 원인**이 의심됩니다.
                        - 반드시 아래 3가지 원인을 **교차 분석**하십시오:
                          (A) **거주습관 + 단열 복합 원인**: 경미한 수준의 수증기 과다와 부분적 단열 부족이 동시에 작용
                          (B) **국소 환기 부족** (AI 분석 소견): 특정 공간(욕실, 주방, 드레스룸)의 환기 부족으로 국부적 습도 상승
@@ -2500,13 +2515,17 @@
                 const _tdrOver = (tdrVal > 0.28);
                 const _mixOverAmt = (vapVal && mixVal) ? Math.max(0, parseFloat(mixVal) - 7.3) : 0;
                 const _vapOverAmt = (vapVal && mixVal) ? Math.max(0, parseFloat(vapVal) - 1.2) : 0;
-                const _moistureBad = (_mixOverAmt > 0 || _vapOverAmt > 0);
+                // ★ v38.6: 내부 참고값 + 계기 오차(±0.5g/kg, ±0.08kPa)를 넘을 때만 '습기 과다', 그 안은 '근처'
+                const _moistureBad = (_mixOverAmt > 0.5 || _vapOverAmt > 0.08);
+                const _moistureNear = (vapVal && mixVal) && !_moistureBad && (parseFloat(mixVal) >= 6.8 || parseFloat(vapVal) >= 1.12);
                 if (vapVal && mixVal) {
                     if (_tdrOver && _moistureBad) {
                         // 복합: 생활습기(거주환경)를 우선 비중으로, 단열도 상당 — MIX 초과분이 클수록 거주환경 ↑
                         ventPct = Math.max(45, Math.min(60, 40 + Math.round(_mixOverAmt * 4)));
                         normalPct = 10;
                         insPct = 100 - ventPct - normalPct;
+                    } else if (_tdrOver && _moistureNear) {
+                        ventPct = 35; insPct = 55; normalPct = 10;  // 습기 참고값 근처 + 단열 의심(임의 가중치, 사장님 재조정 대상)
                     } else if (_tdrOver && !_moistureBad) {
                         ventPct = 20; insPct = 75; normalPct = 5;   // 단열 지배
                     } else if (!_tdrOver && _moistureBad) {
@@ -2563,7 +2582,7 @@
                     ## 1. 정밀 데이터 분석
                     (TDR, VAP/MIX, 노점, 표면온도 상호 관계 설명)
                     ## 2. 수증기압(VAP)/절대습도(MIX) 원인 판별 (AI 분석)
-                    (VAP/MIX 측정값의 기준 초과/미달 여부를 명시하고, 이것이 거주환경 관리 문제인지, 단열 성능 관련인지, 기타 원인인지 AI 소견으로 분석. VAP/MIX 데이터가 없으면 이 섹션 생략)
+                    (VAP/MIX 측정값이 청개구리 내부 참고값(1.2kPa·7.3g/kg, 공인 기준 아님)보다 뚜렷이 높은지·근처인지·뚜렷이 낮은지를 명시하고, 이것이 거주환경 관리 문제인지, 단열 성능 관련인지, 기타 원인인지 AI 소견으로 분석. VAP/MIX 데이터가 없으면 이 섹션 생략)
                     ## 3. 진단 결과 및 발생 메커니즘 (AI 분석)
                     (데이터에 근거한 원인 추정, ${structureHint}. **기류 방향 판정(유입형/유출형/양방향)과 결로 위치별 원인 분류**를 반드시 포함. 모든 판단은 AI 분석에 의한 추정임을 명시)
                     ## 4. 원인별 맞춤 개선/보수 방법 (AI 권고)
