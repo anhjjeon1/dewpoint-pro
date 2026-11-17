@@ -499,10 +499,10 @@
     <div class="content">
         <!-- ★ v36.3: 겨울용이 항상 기본 선택(측정 월 자동전환 폐지). 여름용은 직접 눌렀을 때만 -->
         <div class="season-toggle no-print" role="group" aria-label="계절 진단 모드">
-            <button type="button" class="season-btn winter active" id="season-winter" onclick="goSeason('winter')">
+            <button type="button" class="season-btn winter active" id="season-winter" onclick="setSeason('winter')">
                 <i class="fas fa-snowflake"></i> 겨울용 <span class="sb-sub">(난방·실내결로)</span>
             </button>
-            <button type="button" class="season-btn summer" id="season-summer" onclick="goSeason('summer')">
+            <button type="button" class="season-btn summer" id="season-summer" onclick="setSeason('summer')">
                 <i class="fas fa-sun"></i> 여름용 <span class="sb-sub">(냉방·역결로)</span>
             </button>
         </div>
@@ -1206,7 +1206,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v38.9'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v38.8'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1259,17 +1259,6 @@
             }
         };
 
-        // ★ v38.9: 겨울용·여름용을 주소로 분리. 버튼은 다른 주소로 이동만 함
-        window.__PAGE_SEASON = (new URLSearchParams(location.search).get('mode') === 'summer') ? 'summer' : 'winter';
-        window.goSeason = function(s) {
-            if (s === window.__PAGE_SEASON) return;
-            const dc = document.getElementById('defect-content');
-            const hasFile = Array.from(document.querySelectorAll('input[type=file]')).some(f => f.files && f.files.length);
-            if ((dc && dc.value.trim()) || hasFile) {
-                if (!confirm((s === 'summer' ? '여름용' : '겨울용') + ' 주소로 이동하면 지금 입력한 내용이 지워집니다. 이동할까요?')) return;
-            }
-            location.href = location.pathname + (s === 'summer' ? '?mode=summer' : '');
-        };
         window.setSeason = function(s) {
             SEASON = (s === 'summer') ? 'summer' : 'winter';
             const L = SEASON_LABELS[SEASON];
@@ -1314,12 +1303,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const badge = document.getElementById('version-badge');
             if (badge) badge.textContent = APP_VERSION;
-            // ★ v38.9: 주소로 계절 고정 — 겨울용 /dewpoint-pro/ · 여름용 /dewpoint-pro/summer/ (→ ?mode=summer)
-            const isSummerPage = window.__PAGE_SEASON === 'summer';
-            document.title = '청개구리 결로진단 AI ' + (isSummerPage ? '여름용 ' : '') + APP_VERSION;
-            const h1 = document.querySelector('.main-header h1, header h1');
-            if (h1 && isSummerPage) h1.textContent = '청개구리 결로진단 AI 여름용';
-            setSeason(window.__PAGE_SEASON);
+            document.title = '청개구리 결로진단 AI ' + APP_VERSION;
+            // ★ v36.3: 항상 겨울용으로 시작 (측정 월 자동 선택 폐지)
+            setSeason('winter');
         });
         let ADMIN_TOKEN = localStorage.getItem('dewpoint_admin_token') || '';
         let _fp = localStorage.getItem('dewpoint_fp') || '';
@@ -3177,7 +3163,7 @@
     var b=document.createElement('div');b.id='vc-bar';
     b.style.cssText='position:fixed;left:8px;right:8px;bottom:10px;z-index:99999;background:#e8701a;color:#fff;border-radius:14px;padding:12px 14px;font:700 14px/1.4 sans-serif;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.35)';
     b.innerHTML='<span style="flex:1">새 버전('+nv+')이 있습니다. 새로 고침해 주십시오.</span><button type="button" style="background:#fff;color:#e8701a;border:none;border-radius:10px;padding:8px 12px;font-weight:800">새로 고침</button>';
-    b.querySelector('button').onclick=function(){var u=location.pathname+'?v='+encodeURIComponent(nv)+'&t='+Date.now()+(window.__PAGE_SEASON==='summer'?'&mode=summer':'');location.replace(u);};
+    b.querySelector('button').onclick=function(){var u=location.pathname+'?v='+encodeURIComponent(nv)+'&t='+Date.now();location.replace(u);};
     document.body.appendChild(b);
   }
   async function check(){
