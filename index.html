@@ -766,7 +766,6 @@
 
         <div class="section no-print">
             <div class="section-title" style="flex-wrap:wrap;gap:6px;"><i class="fas fa-images"></i> 사진<span class="insp-wrap"><label for="insp-target">검사 대상<b style="color:#c0392b">*</b></label><select id="insp-target" onchange="inspTargetChanged()"><option value="">선택</option><option value="거실">거실</option><option value="안방">안방</option><option value="드레스룸">드레스룸</option><option value="침실1">침실1</option><option value="침실2">침실2</option><option value="다용도실">다용도실</option><option value="발코니">발코니</option><option value="중문">중문</option><option value="__etc">기타(장소 칸 입력)</option></select></span></div>
-            <div id="insp-banner" class="insp-banner empty">📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.</div>
             <div class="photo-stack" id="photo-container">
                 
                 <div class="upload-wrapper" id="wrap-1">
@@ -1198,7 +1197,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.4'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.5'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2912,10 +2911,10 @@
   var DONE=window.__inspDone=window.__inspDone||[];
   function cur(){var s=$('insp-target');if(!s)return '';if(s.value&&s.value!=='__etc')return s.value;return ($('location').value||'').trim();}
   function banner(){
-    var b=$('insp-banner'),s=$('insp-target');if(!b||!s)return;
+    var b=$('insp-banner'),s=$('insp-target');if(!s)return;
     var c=cur();
-    if(c){b.className='insp-banner';b.innerHTML='📍 지금 검사하는 곳: <b>'+c.replace(/[<>&]/g,'')+'</b> — 아래 사진은 모두 이 장소 사진으로 소견서에 들어갑니다.'+(DONE.length?'<span class="done">이 세대에서 검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}
-    else{b.className='insp-banner empty';b.innerHTML='📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.'+(DONE.length?'<span class="done">검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}
+    if(b){if(c){b.className='insp-banner';b.innerHTML='📍 지금 검사하는 곳: <b>'+c.replace(/[<>&]/g,'')+'</b> — 아래 사진은 모두 이 장소 사진으로 소견서에 들어갑니다.'+(DONE.length?'<span class="done">이 세대에서 검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}
+    else{b.className='insp-banner empty';b.innerHTML='📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.'+(DONE.length?'<span class="done">검사를 마친 곳: '+DONE.map(function(x){return x+' ✓';}).join(', ')+'</span>':'');}}
     Array.prototype.forEach.call(s.options,function(o){if(!o.value||o.value==='__etc')return;o.textContent=o.value+(DONE.indexOf(o.value)>=0?' ✓':'');});
   }
   window.inspRefresh=function(){banner();};
