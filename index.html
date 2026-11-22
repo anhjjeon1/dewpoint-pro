@@ -524,7 +524,7 @@
         <!-- ★ v36.0: 진단 개요 재구성 — 주소(기상 자동조회)·측정일·입주년도 -->
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
-            <div class="v36-lbl">단지 주소 <span class="v36-hint">— 동·호까지 함께 입력 (예: 송도동 ○○ 107동 1002호)</span></div>
+            <div class="v36-lbl">단지 주소</div>
             <div class="addr-row v36-row">
                 <input type="text" id="addr" placeholder="예: 인천 연수구 송도동 ○○ 107동 1002호" oninput="parseAddrDongHo()" onchange="fetchSiteWeather()">
                 <button type="button" class="v36-btn" onclick="fetchSiteWeather()" aria-label="기상 조회"><i class="fas fa-cloud-sun"></i></button>
@@ -545,7 +545,6 @@
                     <div><span id="wx-min7">-</span><small>측정 전 7일 최저</small></div>
                     <div><span id="wx-wind">-</span><small>당일 최대풍속·풍향</small></div>
                 </div>
-                <div class="v36-note">※ 여러 해 평균 대신 <b>측정 전 7일</b> 사용 — 결로·외풍에 직접 작용하는 구간</div>
             </div>
         </div>
 
@@ -601,15 +600,14 @@
                     </select>
                 </div>
             </div>
-            <div class="v36-row"><div class="v36-lbl">현장에서 관찰된 상태 <span class="v36-hint">— 불량 판정 대신 사실 체크</span></div>
+            <div class="v36-row"><div class="v36-lbl">현장에서 관찰된 상태</div>
                 <div class="chk-group" data-name="obs" data-mode="multi">
                     <span class="chk" data-v="air">여밈대 틈·어긋남</span><span class="chk" data-v="air">풍지판 누락·파손</span><span class="chk" data-v="air">물구멍 반대타공</span>
                     <span class="chk" data-v="air">모헤어 마모·탈락</span><span class="chk" data-v="air">크리센트 헐거움</span><span class="chk" data-v="frame">창짝 처짐·흔들림</span>
                     <span class="chk" data-v="frame">레일 변형</span><span class="chk" data-v="frame">창틀 주위 사춤·실리콘 들뜸</span><span class="chk" data-v="none">특이사항 없음</span>
-                </div>
-                <div class="v36-note">※ "시공·설치·제작불량"은 입력받지 않음 → 관찰 조합으로 AI가 <b>가능성(AI 추정)</b>만 서술</div></div>
+                </div></div>
             <!-- ★ v36.2: 결로가 맺힌 면·분포 — 유입/유출 방향과 이중창 내창·외창 기밀 비율 판정의 핵심 입력 -->
-            <div class="v36-row"><div class="v36-lbl">결로가 맺힌 면 · 분포 <span class="v36-hint">— 손으로 닦아 확인</span></div>
+            <div class="v36-row"><div class="v36-lbl">결로가 맺힌 면 · 분포</div>
                 <div class="chk-group" data-name="face" data-mode="multi">
                     <span class="chk" data-v="in">내창 실내면</span><span class="chk" data-v="cav">외창 안쪽 면(이중창 사이)</span><span class="chk" data-v="ext">외창 바깥면</span>
                     <span class="chk" data-v="frame">창짝·창틀 프레임 면</span><span class="chk" data-v="edge">유리 하단 가장자리만</span><span class="chk" data-v="full">유리 전면</span><span class="chk" data-v="frost">성에(얼음)</span>
@@ -629,7 +627,6 @@
                 <span class="chk" data-v="wall">벽 모서리·천장 곰팡이</span><span class="chk" data-v="wall">붙박이장·가구 뒤 곰팡이</span><span class="chk" data-v="w">커튼·블라인드 곰팡이</span>
                 <span class="chk" data-v="draft">외풍 체감(손 대면 찬바람)</span><span class="chk" data-v="draft">바람 소리·휘파람음</span>
             </div>
-            <div class="v36-note">측정 당일 조건이 좋아도 수개월 누적 결로를 증명하는 증거. 사진은 현장 채증란에.</div>
         </div>
 
         <!-- ★ v36.0: 생활환경 문진 (접이식) -->
@@ -647,7 +644,6 @@
                     <div><div class="v36-lbl">빨래 건조</div><select data-sel="dry" onchange="updateV36Derived()"><option value="">선택</option><option value="indoor" data-v="indoor">실내 건조(세탁기만)</option><option value="hp" data-v="hp">건조기(히트펌프·응축식)</option><option value="exhaust" data-v="exhaust">건조기(가스·배기식)</option><option value="balc" data-v="balc">발코니·외부 건조</option></select></div>
                     <div><div class="v36-lbl">전열교환기</div><select data-sel="erv" onchange="updateV36Derived()"><option value="">선택</option><option value="none" data-v="none">없음</option><option value="on" data-v="on">있음·상시 가동</option><option value="some" data-v="some">있음·가끔</option><option value="off" data-v="off">있음·거의 안 켬</option><option value="unk" data-v="unk">모름</option></select></div>
                 </div>
-                <div class="v36-note" style="margin:-2px 0 8px;">실내 건조=1회 약 1~2L 수분 방출 / 히트펌프·응축식 건조기=실내 가습 거의 없음 / 간헐난방·안 쓰는 방=벽체가 식어 결로 급증 요인</div>
                 <div class="v36-row"><div class="v36-lbl">겨울철 습도 기기·수분원</div>
                     <div class="chk-group" data-name="moist" data-mode="multi">
                         <span class="chk" data-v="+">가습기 사용</span><span class="chk" data-v="-">제습기 사용</span><span class="chk" data-v="+">화분 다수</span><span class="chk" data-v="+">수족관</span>
@@ -701,7 +697,6 @@
             <div class="section-title"><i class="fas fa-city"></i> 동일 문제를 갖고 있는 같은 건물의 다른 세대</div>
             <div class="chk-group" data-name="nbr" data-mode="single">
                 <span class="chk" data-v="unk">모름</span><span class="chk" data-v="only">우리 집만</span><span class="chk" data-v="some">같은 라인 일부</span><span class="chk" data-v="many">같은 라인 다수</span><span class="chk" data-v="all">단지 전반</span></div>
-            <div class="v36-note">같은 라인 다수 = 설계·시공 공통 요인 쪽 / 우리 집만 = 생활·개별 하자 쪽</div>
         </div>
 
         <div class="section no-print" id="measurement-section" style="display: none;">
@@ -908,7 +903,6 @@
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-notes-medical"></i> 상세 증상</div>
             <div class="input-group">
-                <label class="input-label" style="text-align:left;"><span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">자유 입력 · 🎤 음성 (최대 20초 자동 종료)</span></label>
                 <div class="mic-input-wrap textarea-wrap">
                     <textarea id="defect-content" placeholder="[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어락(잠금장치) 작동 불량·잠금 뻑뻑함 등"></textarea>
                     <button type="button" class="mic-btn" id="mic-defect-content" onclick="voiceInput('defect-content')" aria-label="상세증상 음성입력"><i class="fas fa-microphone"></i></button>
@@ -1190,7 +1184,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v39.6'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v39.7'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
