@@ -736,7 +736,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                 <div class="input-group">
                     <label class="input-label" id="lbl-temp-surf">● 결로면 온도(Ts)</label>
                     <input type="number" id="temp-surf" class="tdr-input" placeholder="열화상 Auto">
@@ -744,7 +744,11 @@
                 </div>
                 <div class="input-group">
                     <label class="input-label" id="lbl-temp-out">냉방측 온도(Tc)</label>
-                    <input type="text" id="temp-out" placeholder="Loading.." style="background:var(--bg-color);">
+                    <input type="text" id="temp-out" placeholder="Loading.." style="background:var(--bg-color);" oninput="this.dataset.auto=''">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" id="lbl-humid-out">외기습도(RH)</label>
+                    <input type="number" id="humid-out" placeholder="%" min="1" max="100" style="background:var(--bg-color);" oninput="this.dataset.auto=''">
                 </div>
             </div>
 
@@ -1042,7 +1046,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v41.0'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v41.1'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1393,6 +1397,17 @@
             document.getElementById('wx-min7').textContent = `${f1(SITE_WEATHER.min7)}℃`;
             document.getElementById('wx-wind').textContent = `${f1(SITE_WEATHER.wind)}m/s ${SITE_WEATHER.windDir}`;
             st.textContent = `✔ ${geo.matched} 기준 (당일=일평균, 당일 최저 ${f1(SITE_WEATHER.todayMin)}℃)`;
+            // v41.1: 측정일이 오늘이면 이 주소의 현재 바깥 기온·습도를 외기 칸에 채움(직접 입력한 값은 유지)
+            if (!v || ymd(new Date()) === v) {
+                try {
+                    const rc = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&current=temperature_2m,relative_humidity_2m&timezone=Asia%2FSeoul`);
+                    if (rc.ok) { const jc = await rc.json(); const c = jc.current || {};
+                        const _to = document.getElementById('temp-out'), _ho = document.getElementById('humid-out');
+                        if (c.temperature_2m != null && (!_to.value || _to.dataset.auto === '1')) { _to.value = (+c.temperature_2m).toFixed(1); _to.dataset.auto = '1'; }
+                        if (_ho && c.relative_humidity_2m != null && (!_ho.value || _ho.dataset.auto === '1')) { _ho.value = Math.round(c.relative_humidity_2m); _ho.dataset.auto = '1'; }
+                    }
+                } catch (e) {}
+            }
         };
 
         // ── 문진 수집: AI 프롬프트용 텍스트 + 옛 원인비율 보정값(v38.7부터 미사용; adj: +면 거주환경, −면 단열·기밀 쪽)
@@ -1835,11 +1850,13 @@
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
-                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current=temperature_2m&timezone=auto`;
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current=temperature_2m,relative_humidity_2m&timezone=auto`;
                     const res = await fetch(url);
                     if(res.ok) {
                         const data = await res.json();
-                        document.getElementById('temp-out').value = data.current.temperature_2m.toFixed(1);
+                        const _to = document.getElementById('temp-out'), _ho = document.getElementById('humid-out');
+                        if (!_to.value || _to.dataset.auto === '1') { _to.value = data.current.temperature_2m.toFixed(1); _to.dataset.auto = '1'; }
+                        if (_ho && data.current.relative_humidity_2m != null && (!_ho.value || _ho.dataset.auto === '1')) { _ho.value = Math.round(data.current.relative_humidity_2m); _ho.dataset.auto = '1'; }
                     }
                 } catch(e) {}
             });
@@ -2154,6 +2171,9 @@
                     tdrVal = tdrVal.toFixed(2);
                     if(tdrVal > 0.28) tdrMsg = `TDR ${tdrVal} (기준 0.28 초과 -> 단열 성능 미달 유력)`;
                     else tdrMsg = `TDR ${tdrVal} (기준 0.28 이하 -> 단열 양호, 환기 부족 의심)`;
+                    // v41.1: 안팎 온도차가 작으면 TDR 신뢰도 낮음
+                    const _dT = parseFloat(tempIn) - parseFloat(tempOut);
+                    if (_dT < 10) tdrMsg += ` — 단, 실내외 온도차가 ${_dT.toFixed(1)}℃로 10℃ 미만이라 **TDR 신뢰도 낮음**(EN 13187은 열화상 진단에 10K 이상 온도차를 권장). TDR만으로 단열 성능을 판정하지 말고 결로 흔적·자리·열화상 무늬로 판단하십시오.`;
                 }
             }
 
@@ -2192,6 +2212,23 @@
             const isWinter = (SEASON === 'winter');
             
             let airQualityLogic = "";
+            // ★ v41.1: 측정 시점 바깥 공기 습기 — 비·습한 날에는 참고값(7.3) 비교·환기 권고를 뒤집음
+            const humidOut = String((document.getElementById('humid-out') || {}).value || '').trim();
+            const _esF = t => 0.6108 * Math.exp(17.27 * t / (t + 237.3));
+            const outT = parseFloat(tempOut), outRH = parseFloat(humidOut);
+            const outVap = (!isNaN(outT) && !isNaN(outRH)) ? _esF(outT) * outRH / 100 : null;
+            const outMix = outVap != null ? 622 * outVap / (101.325 - outVap) : null;
+            let inMixC = parseFloat(mixVal);
+            if (isNaN(inMixC) && tempIn && humid) { const _e = _esF(parseFloat(tempIn)) * parseFloat(humid) / 100; inMixC = 622 * _e / (101.325 - _e); }
+            const outHumidDay = outMix != null && outMix >= 6;
+            let outdoorLogic = "";
+            if (outMix != null && SEASON !== "summer") {
+                const _diff = !isNaN(inMixC) ? inMixC - outMix : null;
+                outdoorLogic = `\n\n[바깥 공기 습기 — 측정 시점 (반드시 반영, 위 지시와 다르면 이 항목이 우선)]\n- 바깥 ${outT}℃·${outRH}% → 바깥 VAP 약 ${outVap.toFixed(2)}kPa, MIX 약 ${outMix.toFixed(1)}g/kg(앱 계산)`
+                    + (_diff != null ? `\n- 실내 MIX − 바깥 MIX = ${_diff >= 0 ? "+" : ""}${_diff.toFixed(1)}g/kg → 이 차이만 실내에서 생긴 수분(생활 습기·공사 습기)으로 보십시오.` : "");
+                if (outHumidDay) outdoorLogic += `\n- **측정 시점 바깥 공기가 습합니다(MIX 6g/kg 이상 — 비·습한 날).** '겨울철 외기 절대습도 2~4g/kg' 가정과 '참고값(7.3g/kg)을 넘으면 생활 습기'라는 판단은 이번 측정에 적용하지 마십시오. 생활 습기는 실내−바깥 차이로만 판단하십시오.\n- 이런 날은 창문 환기가 제습 수단이 아닙니다. 지금 환기를 권하지 말고 제습기·에어컨 제습 운전을 권하고, 환기는 비가 그치고 바깥이 건조해진 뒤로 미루도록 쓰십시오.\n- 결로·습기가 바깥 습기·빗물 유입 때문일 가능성도 함께 검토하십시오.\n- 오늘 측정값만으로 평소 습도를 단정하지 말고, 건조한 한파 아침에 다시 재도록 다음 측정에 넣으십시오.`;
+                else outdoorLogic += `\n- 측정 시점 바깥 공기는 건조합니다. 환기가 실내 습기를 줄이는 수단이 됩니다.`;
+            }
             let vapMixDiagnosis = "";
             if(vapVal && mixVal) {
                 let winterGuide = "";
@@ -2312,10 +2349,10 @@
                     L.push("- **이중창 내창·외창 기밀 비율**: 내창이 외창보다 기밀해야 합니다. 내창이 실내 습기를 막고 사이 공간은 외창 쪽으로 숨을 쉬어야 외창 유리가 마릅니다. 결로가 외창 안쪽 면에만 있고 내창에 없으면 '실내 습도·내창 단열은 정상권, 내창 틈으로 습기 유출'로 진단하고, 보수 순서는 **내창 먼저**(여밈대→상부 레일→잠금 압착→모헤어·기류차단 부품)로 제시하십시오. 외창까지 같은 수준으로 막는 것은 권하지 마십시오." + drainNote + " 기류차단 부품(방풍캡) 단독이 아니라 여밈대·상부 보강과 함께여야 효과가 난다고 서술하고, '완전 차단'·'결로가 없어진다'는 단정 대신 '크게 줄어든다'로 표현하십시오.");
                     L.push("- **외창 바깥면 결로**는 맑은 밤 복사냉각으로 생기는 이슬로, 기밀·단열과 무관하므로 보수 대상에서 제외하십시오.");
                     if (!isNaN(ti) && !isNaN(to) && !isNaN(rh) && rh > 0) {
-                        const tg = to + 5, wIn = ah(ti, rh), wOut = ah(to, 50), wG = ah(tg, 100);
+                        const _rhO = isNaN(outRH) ? 50 : outRH; const tg = to + 5, wIn = ah(ti, rh), wOut = ah(to, _rhO), wG = ah(tg, 100);
                         if (wIn > wG && wG > wOut) {
                             const r = (wG - wOut) / (wIn - wG);
-                            L.push(`- **사이 공간 혼합 계산(참고치)**: 실내 수증기량 약 ${wIn.toFixed(1)}g/㎥, 외기 약 ${wOut.toFixed(1)}g/㎥(외기 습도 50% 가정), 외창 안쪽 면 ${tg.toFixed(0)}℃ 가정(포화 ${wG.toFixed(1)}g/㎥)일 때, 외창 결로가 없으려면 **내창 누기량이 외창 누기량의 약 ${r.toFixed(1)}배 이하**여야 합니다. 가정값 기반 단순 계산임을 밝히고 인용하십시오.`);
+                            L.push(`- **사이 공간 혼합 계산(참고치)**: 실내 수증기량 약 ${wIn.toFixed(1)}g/㎥, 외기 약 ${wOut.toFixed(1)}g/㎥(외기 습도 ${isNaN(outRH) ? '50% 가정' : outRH + '% 측정·조회'}), 외창 안쪽 면 ${tg.toFixed(0)}℃ 가정(포화 ${wG.toFixed(1)}g/㎥)일 때, 외창 결로가 없으려면 **내창 누기량이 외창 누기량의 약 ${r.toFixed(1)}배 이하**여야 합니다. 가정값 기반 단순 계산임을 밝히고 인용하십시오.`);
                         } else if (wIn <= wG) {
                             L.push(`- **사이 공간 혼합 계산(참고치)**: 실내 수증기량(약 ${wIn.toFixed(1)}g/㎥)이 외창 안쪽 면 ${tg.toFixed(0)}℃ 가정 포화량(${wG.toFixed(1)}g/㎥)보다 낮아, 현재 실내 습도에서는 외창 결로 위험이 낮습니다(가정값 기반).`);
                         }
@@ -2400,7 +2437,7 @@
                     - 구조/창호: ${winType} / ${houseType}
                     - **간봉 종류**: ${consideration}
                     - 실내: ${tempIn ? tempIn + "°C" : "측정 없음"} / ${humid ? humid + "%" : "측정 없음"} (노점: ${dew || "계산 안 됨"})
-                    - 실외: ${tempOut ? tempOut + "°C" : "측정 없음"} / 표면온도: ${tempSurf ? tempSurf + "°C" : "측정 없음"}
+                    - 실외: ${tempOut ? tempOut + "°C" : "측정 없음"}${humidOut ? " · 습도 " + humidOut + "%" : ""}${outMix != null ? " (바깥 MIX 약 " + outMix.toFixed(1) + "g/kg)" : ""} / 표면온도: ${tempSurf ? tempSurf + "°C" : "측정 없음"}
                     - 공기질(선택): VAP ${vapVal || 'N/A'}, MIX ${mixVal || 'N/A'}
                     - 증상: ${defect}${balconyInfo}${v36Block}
                     - **핵심 TDR 분석값**: ${tdrMsg}
@@ -2418,7 +2455,7 @@
                        - **원인 비율(%)·책임 비율은 만들지도 쓰지도 마십시오.** 요인마다 '확인됨 / 의심 / 확인 안 됨'과 그 근거(측정값·사진·문진)만 서술하고, 개선 순서는 실행 순서로만 제시하십시오. 여러 요인이 함께 작용하는 경우 한 가지로 단정하지 마십시오.
                     8. **금지어**: '기술사', '협회', '창호 교체 권유', '시공 하자', '시공 불량', '시공사 귀책', '하자보수 청구', '법적', '소송' (교체 대신 보수/개선 제안, 단정적 판정 대신 AI 분석 소견으로 표현)
                     ※ **매우 중요**: 모든 분석 결과는 반드시 'AI 분석에 의한 추정 소견'임을 명시하십시오. '시공 하자', '시공 불량', '시공사 귀책' 등 법적 분쟁을 유발할 수 있는 표현은 절대 사용하지 마십시오. 대신 '단열 성능 개선 필요 부위(AI 추정)', '설계 기준 대비 성능 미흡 가능성(AI 분석)', '추가 정밀 진단 권고' 등의 중립적 표현을 사용하십시오.
-                    ${vapMixDiagnosis}
+                    ${vapMixDiagnosis}${outdoorLogic}
                     ${viewLogic}
 
                     [출력 포맷]
@@ -2500,20 +2537,27 @@
             const F = [];
             const ti = num(v('temp-in')), ts = num(v('temp-surf')), to = num(v('temp-out')), dew = num(v('dew-result'));
             const vap = num(v('vap-val')), mix = num(v('mix-val'));
+            // v41.1: 바깥 공기 습기
+            const hoV = num(v('humid-out'));
+            const _es2 = t => 0.6108 * Math.exp(17.27 * t / (t + 237.3));
+            const toV = num(v('temp-out'));
+            const oMix = (toV !== null && hoV !== null) ? (e => 622 * e / (101.325 - e))(_es2(toV) * hoV / 100) : null;
+            const iMix = mix !== null ? mix : ((num(v('temp-in')) !== null && num(v('humid-in')) !== null) ? (e => 622 * e / (101.325 - e))(_es2(num(v('temp-in'))) * num(v('humid-in')) / 100) : null);
             const isSummer = (SEASON === 'summer');
             // 실내 습기
             if (!isSummer) {
                 if (vap !== null && mix !== null) {
                     const over = vap > 1.28 || mix > 7.8, under = vap < 1.12 && mix < 6.8;
-                    F.push({k:'실내 습기', s: over ? '참고값보다 뚜렷이 높음' : (under ? '참고값보다 뚜렷이 낮음' : '참고값 근처(계기 오차 범위)'),
-                            b:`VAP ${vap}kPa · MIX ${mix}g/kg / 청개구리 내부 참고값 1.2kPa·7.3g/kg(공인 기준 아님)`});
+                    const _humidDay = oMix !== null && oMix >= 6;
+                    F.push({k:'실내 습기', s: _humidDay ? '바깥 공기가 습한 날 — 참고값 비교 보류' : (over ? '참고값보다 뚜렷이 높음' : (under ? '참고값보다 뚜렷이 낮음' : '참고값 근처(계기 오차 범위)')),
+                            b:`VAP ${vap}kPa · MIX ${mix}g/kg / 청개구리 내부 참고값 1.2kPa·7.3g/kg(공인 기준 아님)` + (oMix !== null ? ` / 바깥 MIX 약 ${oMix.toFixed(1)}g/kg → 실내−바깥 ${mix - oMix >= 0 ? '+' : ''}${(mix - oMix).toFixed(1)}g/kg` : '')});
                 } else F.push({k:'실내 습기', s:'측정 없음', b: v('humid-in') ? `실내 습도 ${v('humid-in')}%만 있음(VAP/MIX 없음)` : '—'});
             }
             // 표면온도
             if (ti !== null && ts !== null) {
                 let st = [], bs = [`실내 ${ti}℃ · 표면 ${ts}℃`];
                 if (dew !== null) { st.push(ts < dew ? '표면온도가 이슬점보다 낮음(결로 조건)' : '표면온도가 이슬점보다 높음'); bs.push(`이슬점 ${dew}℃`); }
-                if (!isSummer && to !== null && ti !== to) { const tdr = (ti - ts) / (ti - to); bs.push(`외기 ${to}℃ · TDR ${tdr.toFixed(2)}`); st.push(tdr > 0.28 ? 'TDR 0.28 초과(표면이 많이 차가움)' : 'TDR 0.28 이하'); }
+                if (!isSummer && to !== null && ti !== to) { const tdr = (ti - ts) / (ti - to); bs.push(`외기 ${to}℃ · TDR ${tdr.toFixed(2)}`); st.push((tdr > 0.28 ? 'TDR 0.28 초과(표면이 많이 차가움)' : 'TDR 0.28 이하') + (ti - to < 10 ? ' — 안팎 온도차 10℃ 미만, 신뢰도 낮음' : '')); }
                 F.push({k: isSummer ? '결로면 온도' : '표면온도(단열·열교)', s: st.join(' / ') || '계산 불가', b: bs.join(' / ')});
             } else if (ts !== null) {
                 // v40.7: 표면온도는 있는데 실내온도가 없으면 '측정 없음'이 아니라 '비교 불가'
@@ -2555,6 +2599,9 @@
             if (ts === null) need.push('열화상 표면온도');
             if (!isSummer && (vap === null || mix === null)) need.push('수증기압·혼합비(교정된 계기)');
             if (!face) need.push('결로 면 확인');
+            if (!isSummer && oMix !== null && oMix >= 6) need.push('건조한 한파 아침 재측정(오늘은 바깥 공기가 습함)');
+            if (!isSummer && toV === null) need.push('바깥 기온·습도');
+            else if (!isSummer && hoV === null) need.push('바깥 습도');
             if (!isSummer && (!insV || insV === 'unk')) need.push('외벽 단열 방식(도면·콘센트)');
             else if (insV === 'int' && traceWall) need.push('바닥·천장 모서리 열화상');
             if (faceWall && ts === null && !need.includes('바닥·천장 모서리 열화상')) need.push('벽체 결로 자리 열화상');
