@@ -435,7 +435,7 @@
         .v36-row:last-child { margin-bottom: 0; }
         .v36-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
         .v36-grid2 select { padding: 7px 24px 7px 6px; font-size: 0.8rem; letter-spacing: -0.4px; }
-        .addr-row { display: grid; grid-template-columns: 1fr 70px 84px 36px; gap: 4px; align-items: center; }
+        .addr-row { display: grid; grid-template-columns: 1fr 38px; gap: 5px; align-items: center; }
         .addr-row .mic-input-wrap input { padding: 7px 20px 7px 4px !important; font-size: 0.85rem; letter-spacing: -0.3px; }
         .addr-row .input-suffix { right: 5px; font-size: 0.72rem; }
         .addr-row #addr { padding: 7px 6px; font-size: 0.8rem; }
@@ -524,13 +524,13 @@
         <!-- ★ v36.0: 진단 개요 재구성 — 주소(기상 자동조회)·측정일·입주년도 -->
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
-            <div class="v36-lbl">단지 주소 · 동 · 호 <span class="v36-hint">— 주소는 기상 자동조회용(시·구·동까지만 입력해도 됨)</span></div>
+            <div class="v36-lbl">단지 주소 <span class="v36-hint">— 동·호까지 함께 입력 (예: 송도동 ○○ 107동 1002호)</span></div>
             <div class="addr-row v36-row">
-                <input type="text" id="addr" placeholder="예: 인천 연수구 송도동 ○○" onchange="fetchSiteWeather()">
-                <div class="mic-input-wrap with-suffix"><input type="text" id="dong" placeholder="101" inputmode="numeric"><span class="input-suffix">동</span></div>
-                <div class="mic-input-wrap with-suffix"><input type="text" id="ho" placeholder="1204" inputmode="numeric" oninput="hoToFloor()"><span class="input-suffix">호</span></div>
+                <input type="text" id="addr" placeholder="예: 인천 연수구 송도동 ○○ 107동 1002호" oninput="parseAddrDongHo()" onchange="fetchSiteWeather()">
                 <button type="button" class="v36-btn" onclick="fetchSiteWeather()" aria-label="기상 조회"><i class="fas fa-cloud-sun"></i></button>
             </div>
+            <input type="hidden" id="dong" value=""><input type="hidden" id="ho" value="">
+            <div class="v36-derived" id="addr-note"></div>
             <div class="v36-grid3 v36-row">
                 <div><div class="v36-lbl">장소</div><input type="text" id="location" placeholder="현관" list="location-suggestions"><datalist id="location-suggestions"><option value="현관"></option><option value="다용도실"></option><option value="실외기실"></option><option value="거실"></option><option value="안방"></option></datalist></div>
                 <div><div class="v36-lbl">입주(준공)년도</div><select id="built-year" onchange="updateV36Derived()"><option value="">선택</option><option value="2027">2027</option><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option><option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option><option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option><option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option><option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option><option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option><option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option><option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option><option value="1990">1990</option><option value="1989">1989</option><option value="1988">1988</option><option value="1987">1987</option><option value="1986">1986</option><option value="1985">1985</option><option value="1984">1984</option><option value="1983">1983</option><option value="1982">1982</option><option value="1981">1981</option><option value="1980">1980</option><option value="1979">1979</option><option value="1978">1978</option><option value="1977">1977</option><option value="1976">1976</option><option value="1975">1975</option></select></div>
@@ -636,20 +636,14 @@
         <div class="section no-print v36-fold" id="life-section">
             <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('life-section').classList.toggle('closed')"><i class="fas fa-user-friends"></i> 생활환경 문진 <span class="v36-hint" style="margin-left:6px;">— 탭만, 30초</span><span class="v36-caret"></span></div>
             <div class="v36-body">
-                <div class="v36-row"><div class="v36-lbl">거주 인원</div>
-                    <div class="v36-stepper">
-                        <button type="button" onclick="stepPeople(-1)">−</button>
-                        <input type="number" id="people" placeholder="-" min="1" max="15" readonly>
-                        <button type="button" onclick="stepPeople(1)">+</button>
-                        <span style="font-size:0.78rem;">명</span>
-                        <div class="chk-group" data-name="home" data-mode="multi" style="margin-left:6px;"><span class="chk" data-v="y">낮에도 재실</span></div>
-                    </div></div>
                 <div class="v36-grid3 v36-row">
+                    <div><div class="v36-lbl">거주 인원</div><select id="people" onchange="updateV36Derived()"><option value="">선택</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명 이상</option></select></div>
                     <div><div class="v36-lbl">창문 환기(겨울)</div><select data-sel="vent" onchange="updateV36Derived()"><option value="">선택</option><option value="0" data-v="0">거의 안 함</option><option value="1" data-v="1">하루 1회</option><option value="2" data-v="2">하루 2회+</option></select></div>
                     <div><div class="v36-lbl">1회 환기 시간</div><select data-sel="ventmin" onchange="updateV36Derived()"><option value="">선택</option><option value="0" data-v="0">5분 미만</option><option value="1" data-v="1">10분 내외</option><option value="2" data-v="2">30분 이상</option></select></div>
-                    <div><div class="v36-lbl">난방 방식</div><select data-sel="heat" onchange="updateV36Derived()"><option value="">선택</option><option value="cont" data-v="cont">상시 난방</option><option value="int" data-v="int">외출 시 끔(간헐)</option><option value="room" data-v="room">일부 방 난방 안 함</option><option value="pre" data-v="pre">입주 전·무난방</option></select></div>
                 </div>
-                <div class="v36-grid2 v36-row">
+                <div class="v36-row" style="margin-top:-2px;"><div class="chk-group" data-name="home" data-mode="multi"><span class="chk" data-v="y">낮에도 재실</span></div></div>
+                <div class="v36-grid3 v36-row">
+                    <div><div class="v36-lbl">난방 방식</div><select data-sel="heat" onchange="updateV36Derived()"><option value="">선택</option><option value="cont" data-v="cont">상시 난방</option><option value="int" data-v="int">외출 시 끔(간헐)</option><option value="room" data-v="room">일부 방 난방 안 함</option><option value="pre" data-v="pre">입주 전·무난방</option></select></div>
                     <div><div class="v36-lbl">빨래 건조</div><select data-sel="dry" onchange="updateV36Derived()"><option value="">선택</option><option value="indoor" data-v="indoor">실내 건조(세탁기만)</option><option value="hp" data-v="hp">건조기(히트펌프·응축식)</option><option value="exhaust" data-v="exhaust">건조기(가스·배기식)</option><option value="balc" data-v="balc">발코니·외부 건조</option></select></div>
                     <div><div class="v36-lbl">전열교환기</div><select data-sel="erv" onchange="updateV36Derived()"><option value="">선택</option><option value="none" data-v="none">없음</option><option value="on" data-v="on">있음·상시 가동</option><option value="some" data-v="some">있음·가끔</option><option value="off" data-v="off">있음·거의 안 켬</option><option value="unk" data-v="unk">모름</option></select></div>
                 </div>
@@ -1196,7 +1190,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v39.5'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v39.6'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1354,6 +1348,20 @@
             });
         });
         // v39.1: 세대 위치 '전용면적' ↔ 환기장치 '집 크기' 양방향 연동
+        // v39.6: 주소 한 칸에 동·호까지 입력 → 숨김 dong/ho 칸 채움. 기상 조회에는 동·호를 뺀 주소 사용
+        const _DONG_RE = /(\d{1,4})\s*동(?=[\s,]|$)/, _HO_RE = /(\d{2,5})\s*호(?=[\s,]|$)/, _DH_RE = /(\d{1,4})\s*-\s*(\d{3,5})(?=[\s,]|$)/;
+        window.addrPlace = function() {
+            return String((document.getElementById('addr') || {}).value || '').replace(_DONG_RE, ' ').replace(_HO_RE, ' ').replace(_DH_RE, ' ').replace(/\s+/g, ' ').trim();
+        };
+        window.parseAddrDongHo = function() {
+            const v = String(document.getElementById('addr').value || '');
+            let d = (v.match(_DONG_RE) || [])[1] || '', h = (v.match(_HO_RE) || [])[1] || '';
+            const dh = v.match(_DH_RE); if (dh) { d = d || dh[1]; h = h || dh[2]; }
+            document.getElementById('dong').value = d; document.getElementById('ho').value = h;
+            const n = document.getElementById('addr-note');
+            if (n) n.textContent = (d || h) ? `인식: ${d ? d + '동' : '동 없음'} ${h ? h + '호' : '호 없음'}` : '';
+            hoToFloor();
+        };
         // v39.5: 호수 앞자리로 해당 층 자동 채움(직접 입력한 층은 덮어쓰지 않음)
         window.hoToFloor = function() {
             const h = parseInt(String(document.getElementById('ho').value).replace(/[^0-9]/g, ''), 10);
@@ -1501,7 +1509,7 @@
         }
         const DIR16 = ['북', '북북동', '북동', '동북동', '동', '동남동', '남동', '남남동', '남', '남남서', '남서', '서남서', '서', '서북서', '북서', '북북서'];
         window.fetchSiteWeather = async function() {
-            const addr = (document.getElementById('addr').value || '').trim();
+            const addr = addrPlace();
             const st = document.getElementById('weather-status');
             if (!addr) { st.textContent = '주소를 입력하세요'; return; }
             st.textContent = '조회 중…';
@@ -1541,7 +1549,7 @@
             const add = (k, v) => { if (v) lines.push(`- ${k}: ${v}`); };
             const y = parseInt(document.getElementById('built-year').value, 10);
             const age = (!isNaN(y) && y > 1900) ? measurementYear() - y + 1 : null;
-            add('단지 주소(지역)', (document.getElementById('addr').value || '').trim());
+            add('단지 주소(지역)', addrPlace());
             add('입주(준공)년도', age ? `${y}년 (입주 ${age}년차${age <= 2 ? ' — 콘크리트 초기 함수율 방출 구간' : ''})` : '');
             if (SITE_WEATHER) {
                 const f1 = x => (x == null || isNaN(x)) ? '-' : (+x).toFixed(1);
@@ -2788,7 +2796,7 @@
   function run(){ if(!window.ERV)return; var r=ERV.compute(gather()); window.ERV_LAST=r; render(r); }
   var t=null; function later(){clearTimeout(t);t=setTimeout(run,150);}
   window.ervLoadClimate=async function(){
-    var s=$('erv-climate-status'); var addr=(($('addr')||{}).value||'').trim();
+    var s=$('erv-climate-status'); var addr=(window.addrPlace?window.addrPlace():(($('addr')||{}).value||'').trim());
     if(!addr){s.textContent='위 진단 개요의 단지 주소를 먼저 넣어 주십시오.';return;}
     s.textContent='조회 중…';
     try{var g=await ERV.geocode(addr); if(!g)throw new Error('주소 위치를 찾지 못함');
@@ -3088,7 +3096,7 @@
     var dupe=S.items.findIndex(function(x){return x.place===it.place;});
     if(dupe>=0){if(!confirm('"'+it.place+'"은(는) 이미 리스트에 있습니다. 새 결과로 바꿀까요?\n(취소하면 따로 하나 더 추가합니다)'))S.items.push(it);else S.items[dupe]=it;}
     else S.items.push(it);
-    S.dong=val('dong');S.ho=val('ho');S.addr=val('addr');S.summary=null;
+    S.dong=val('dong');S.ho=val('ho');S.addr=(window.addrPlace?window.addrPlace():val('addr'));S.summary=null;
     save();render();clearPlace();
     if(window.showToast)try{showToast('✔ "'+it.place+'" 저장 — 점검 리스트 '+S.items.length+'건',3000);}catch(e){}
   };
@@ -3146,7 +3154,7 @@
   // ── 전체저장(PDF 한 개)
   function fname(ext){var d=new Date();var ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');return (S.dong||'000')+'동'+(S.ho||'0000')+'호_결로진단_종합_'+S.items.length+'곳_'+ymd+(ext||'');}
   window.plPrintAll=function(){
-    if(hasResult()){var cp=curPlace();if(confirm('지금 화면의 "'+cp+'" 결과도 점검 리스트에 넣고 저장할까요?')){var it=capture();var k=S.items.findIndex(function(x){return x.place===it.place;});if(k>=0)S.items[k]=it;else S.items.push(it);S.dong=val('dong');S.ho=val('ho');S.addr=val('addr');save();render();}}
+    if(hasResult()){var cp=curPlace();if(confirm('지금 화면의 "'+cp+'" 결과도 점검 리스트에 넣고 저장할까요?')){var it=capture();var k=S.items.findIndex(function(x){return x.place===it.place;});if(k>=0)S.items[k]=it;else S.items.push(it);S.dong=val('dong');S.ho=val('ho');S.addr=(window.addrPlace?window.addrPlace():val('addr'));save();render();}}
     if(!S.items.length){alert('점검 리스트가 비어 있습니다. 장소를 분석한 뒤 저장하십시오.');return;}
     if(!S.summary&&!confirm('세대 종합 소견(AI 전체검증)이 아직 없습니다. 장소별 소견만으로 저장할까요?'))return;
     var c=(S.items[S.items.length-1].common)||{};
@@ -3173,7 +3181,7 @@
     rd.onload=function(){try{var j=JSON.parse(rd.result);if(!j||j.app!=='dewpoint-plist'||!j.session)throw new Error('결로앱 점검 리스트 파일이 아닙니다');
       if(S.items.length&&!confirm('지금 리스트 '+S.items.length+'건을 불러온 파일('+j.session.items.length+'건)로 바꿀까요?'))return;
       S=j.session;S.items=S.items||[];save();render();
-      if(S.dong&&!val('dong'))$('dong').value=S.dong;if(S.ho&&!val('ho'))$('ho').value=S.ho;
+      if(S.dong&&!val('dong'))$('dong').value=S.dong;if(S.ho&&!val('ho'))$('ho').value=S.ho;if(!val('addr')&&(S.addr||S.dong||S.ho)){$('addr').value=[S.addr||'',S.dong?S.dong+'동':'',S.ho?S.ho+'호':''].filter(Boolean).join(' ');}
     }catch(e){alert('불러오지 못했습니다: '+e.message);}finally{input.value='';}};
     rd.readAsText(f);
   };
