@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>청개구리 결로진단 AI v34.8</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
@@ -1046,7 +1047,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v41.1'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v41.2'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2924,6 +2925,39 @@
 #print-all table.sm tr>*:nth-child(1),#print-all table.sm tr>*:nth-child(3),#print-all table.sm tr>*:nth-child(4){white-space:nowrap}
 #print-all .report-gallery{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #print-all .report-img-item img{width:100%;border-radius:6px}
+#print-all{font-family:'Noto Sans KR',sans-serif;color:#1D2939}
+#print-all .rp-cover{page-break-after:always}
+#print-all .rp-brand td{font-size:16px;color:#0A6B5C;border:none;padding:0}
+#print-all .rp-en{font-size:13px;color:#667085;letter-spacing:3px}
+#print-all .rp-title{font-family:'Noto Serif KR',serif;font-size:38px;font-weight:700;color:#101828;margin-top:10px}
+#print-all .rp-bar{width:90px;border-top:5px solid #0A6B5C;margin:16px auto}
+#print-all .rp-sub{font-size:14px;color:#0A6B5C;font-weight:700}
+#print-all .rp-foot{text-align:center;font-size:12px;color:#667085;border-top:1px solid #D0D5DD;padding-top:8px}
+#print-all .rp-page{page-break-before:always}
+#print-all .rp-cover+.rp-page{page-break-before:auto}
+#print-all .rp-h2{font-size:17px;font-weight:700;color:#0A6B5C;border-bottom:2px solid #0A6B5C;padding-bottom:4px;margin:18px 0 8px;page-break-after:avoid}
+#print-all table.rp-kv{width:100%;border-collapse:collapse}
+#print-all table.rp-kv th{width:22%;background:#E9ECEF;border:1px solid #D0D5DD;padding:7px 9px;font-size:13px;color:#344054;text-align:left;vertical-align:top;font-weight:700}
+#print-all table.rp-kv td{border:1px solid #D0D5DD;padding:7px 9px;font-size:13.5px;line-height:1.6;vertical-align:top}
+#print-all table.rp-cards{width:100%;border-collapse:separate;border-spacing:6px}
+#print-all table.rp-cards td{width:25%;text-align:center;padding:12px 6px;border-radius:6px}
+#print-all table.rp-cards .l{font-size:13px;font-weight:700}#print-all table.rp-cards .n{font-size:30px;font-weight:800;line-height:1.2}#print-all table.rp-cards .s{font-size:12px}
+#print-all .rp-box{border:1px solid #D0D5DD;padding:10px 12px;font-size:14px;line-height:1.8}
+#print-all table.rp-tbl{width:100%;border-collapse:collapse}
+#print-all table.rp-tbl th{background:#E7F1EA;border:1px solid #D0D5DD;padding:6px;font-size:12.5px;white-space:nowrap}
+#print-all table.rp-tbl td{border:1px solid #D0D5DD;padding:6px 8px;font-size:13px;vertical-align:top}
+#print-all table.rp-tbl td.c{text-align:center}#print-all table.rp-tbl td.nw{white-space:nowrap}
+#print-all .rp-item{border:1.5px solid #0A6B5C;margin-bottom:14px}
+#print-all .rp-ih{display:flex;justify-content:space-between;align-items:center;background:#E7F1EA;border-top:4px solid #0A6B5C;padding:7px 10px;color:#0A6B5C;font-size:15px;page-break-after:avoid}
+#print-all .rp-ih span{font-size:12.5px;color:#475467}
+#print-all .rp-ph{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#F9FAFB;padding:8px}
+#print-all .rp-ph>div{page-break-inside:avoid;text-align:center}#print-all .rp-ph img{width:100%;height:210px;object-fit:contain;background:#fff}#print-all .rp-ph .cp{font-size:12px;color:#667085}
+#print-all .rp-item table.rp-kv{margin:8px;width:calc(100% - 16px)}
+#print-all .rp-b{color:#667085;font-size:12.5px}
+#print-all .rp-ai{margin:4px 8px 10px;border-top:1px dashed #D0D5DD;padding-top:6px}
+#print-all .rp-ai-h{font-size:14px;font-weight:700;color:#0A6B5C;margin-bottom:2px}
+#print-all .rp-txt{font-size:13px;line-height:1.8;color:#344054}
+#print-all .rp-legal{text-align:center;font-size:12.5px;color:#667085;border-top:1px solid #E8ECF1;padding-top:8px;margin-top:22px}
 </style>
 <script>
 /* ★ v38.0 점검 리스트 — 장소별 결과를 모아 세대 단위로 검증·저장 (사전점검 앱 방식)
@@ -2954,9 +2988,9 @@
     var fac=window.__lastFactors||null;
     return {
       id:Date.now(), place:curPlace(), ts:new Date().toISOString(),
-      meas:{ti:val('temp-in'),rh:val('humid-in'),dew:val('dew-result'),ts:val('temp-surf'),to:val('temp-out'),vap:val('vap-val'),mix:val('mix-val')},
+      meas:{ti:val('temp-in'),rh:val('humid-in'),dew:val('dew-result'),ts:val('temp-surf'),to:val('temp-out'),ho:val('humid-out'),vap:val('vap-val'),mix:val('mix-val')},
       face:chkTxt('face'), defect:val('defect-content'),
-      factors:fac?fac.map(function(f){return {k:f.k,s:f.s};}):null,
+      factors:fac?fac.map(function(f){return {k:f.k,s:f.s,b:f.b||''};}):null,
       text:($('analysis-content').innerText||'').trim().slice(0,6000),
       html:ra.innerHTML, common:common
     };
@@ -3071,13 +3105,60 @@
     if(!S.items.length){alert('점검 리스트가 비어 있습니다. 장소를 분석한 뒤 저장하십시오.');return;}
     if(!S.summary&&!confirm('세대 종합 소견(AI 전체검증)이 아직 없습니다. 장소별 소견만으로 저장할까요?'))return;
     var c=(S.items[S.items.length-1].common)||{};
-    var row=function(k,v){return v?'<tr><th>'+k+'</th><td style="white-space:pre-line">'+esc(v)+'</td></tr>':'';};
-    var h='<h1>결로 정밀 진단 종합 소견서</h1><div style="color:#555;margin-bottom:8px">청개구리샤시 · 결로진단 AI '+esc(document.title.replace(/[^v0-9.]/g,'').replace(/^\.+/,''))+'</div>';
-    h+='<table class="sm">'+row('진단 일자',c['rep-date']||val('date'))+row('진단 세대',([S.dong?S.dong+'동':'',S.ho?S.ho+'호':''].filter(Boolean).join(' ')||'동·호 미입력')+(S.addr?' ('+S.addr+')':''))+row('구조/사양',c['rep-type'])+row('분석 관점',c['rep-view'])+row('세대 위치',c['rep-house'])+row('생활환경·관찰',c['rep-life'])+row('기상',c['rep-weather'])+row('환기 적정성',c['rep-erv'])+'</table>';
-    h+='<table class="sm"><tr><th style="width:auto">검사 장소</th><th style="width:auto">결로가 맺힌 면</th><th style="width:auto">표면온도</th><th style="width:auto">실내 온·습도</th><th style="width:auto">확인된 요인</th></tr>'+S.items.map(function(it){var m=it.meas||{};return '<tr><td>'+esc(it.place)+'</td><td>'+esc(it.face||'-')+'</td><td>'+esc(m.ts?m.ts+'℃':'-')+'</td><td>'+esc((m.ti||'-')+'℃ / '+(m.rh||'-')+'%')+'</td><td>'+esc((it.factors?it.factors.filter(function(f){return f.k!=='다음 측정';}).map(function(f){return f.k+': '+f.s;}).join(' · '):'-'))+'</td></tr>';}).join('')+'</table>';
-    if(S.summary)h+='<div class="pg md-sum"><h2 class="place">세대 종합 소견</h2>'+S.summary.html+'</div>';
-    S.items.forEach(function(it,i){h+='<div class="pg"><h2 class="place">장소 '+(i+1)+'. '+esc(it.place)+'</h2>'+it.html+'</div>';});
-    h+='<div style="margin-top:16px;color:#666;font-size:12.5px">※ AI가 측정값과 공개 자료를 바탕으로 작성한 참고용 소견입니다. 청개구리샤시 ☎ 010-2322-0949</div>';
+    // v41.2: 사전점검 보고서와 같은 양식(표지 → 요약 → 장소별 상세 → 안내)
+    var G='#0A6B5C';
+    var kv=function(k,v,raw){return v?'<tr><th>'+k+'</th><td>'+(raw?v:esc(v).replace(/\n/g,'<br>'))+'</td></tr>':'';};
+    var h2=function(t){return '<div class="rp-h2">'+t+'</div>';};
+    var nowD=new Date(), pad=function(n){return String(n).padStart(2,'0');};
+    var repNo='DR-'+nowD.getFullYear()+pad(nowD.getMonth()+1)+pad(nowD.getDate())+'-'+pad(nowD.getHours())+pad(nowD.getMinutes());
+    var dh=[S.dong?S.dong+'동':'',S.ho?S.ho+'호':''].filter(Boolean).join(' ');
+    var site=[S.addr||'',dh].filter(Boolean).join(' ')||'현장 미입력';
+    var fs=function(it,k){var f=(it.factors||[]).filter(function(x){return x.k===k;})[0];return f?f.s:'';};
+    var nCond=0,nTdr=0,nWet=0;
+    S.items.forEach(function(it){var ts=fs(it,'표면온도(단열·열교)')||fs(it,'결로면 온도');if(/이슬점보다 낮음/.test(ts))nCond++;if(/TDR 0\.28 초과/.test(ts))nTdr++;if(/뚜렷이 높음/.test(fs(it,'실내 습기')))nWet++;});
+    var tdrOf=function(m){var ti=parseFloat(m.ti),ts=parseFloat(m.ts),to=parseFloat(m.to);if(isNaN(ti)||isNaN(ts)||isNaN(to)||ti===to)return '-';var t=(ti-ts)/(ti-to);return t.toFixed(2)+(ti-to<10?' (온도차 작음)':'');};
+    var parts=function(it){var d=document.createElement('div');d.innerHTML=it.html||'';var imgs=[].map.call(d.querySelectorAll('.report-img-item'),function(x){var im=x.querySelector('img'),cp=x.querySelector('.report-img-caption');return im?{src:im.getAttribute('src'),cap:cp?cp.textContent.trim():''}:null;}).filter(Boolean);var ac=d.querySelector('.ac');return {imgs:imgs,ac:ac?ac.innerHTML:''};};
+    // 1) 표지
+    var h='<div class="rp-cover">'+
+      '<table class="rp-brand"><tr><td style="width:70px"><img src="https://frogsash.co.kr/team/logo.jpg" style="height:64px" onerror="this.style.display=\'none\'"></td><td><b>청개구리샤시</b></td></tr></table>'+
+      '<div style="height:150px"></div>'+
+      '<div style="text-align:center"><div class="rp-en">CONDENSATION DIAGNOSIS REPORT</div>'+
+      '<div class="rp-title">결로 정밀 진단 보고서</div><div class="rp-bar"></div>'+
+      '<div class="rp-sub">열화상 · 습도 · 기밀 측정에 기반한 결로 원인 분석</div></div>'+
+      '<div style="height:110px"></div>'+
+      '<table class="rp-kv">'+kv('현장','<b>'+esc(site)+'</b>',1)+kv('진단일',c['rep-date']||val('date'))+kv('진단자','청개구리샤시 (창호 분야)')+kv('검사 장소','총 '+S.items.length+'곳 ('+S.items.map(function(it){return it.place;}).join(', ')+')')+kv('보고서 번호',repNo)+'</table>'+
+      '<div style="height:120px"></div>'+
+      '<div class="rp-foot">청개구리샤시 · 전화 010-2322-0949 · frogsash.co.kr</div></div>';
+    // 2) 요약
+    var card=function(lab,n,sub,fg,bg){return '<td style="background:'+bg+'"><div class="l" style="color:'+fg+'">'+lab+'</div><div class="n" style="color:'+fg+'">'+n+'</div><div class="s" style="color:'+fg+'">'+sub+'</div></td>';};
+    h+='<div class="rp-page">'+h2('1. 진단 결과 요약')+
+      '<table class="rp-cards"><tr>'+card('결로 조건',nCond,'표면온도 &lt; 이슬점','#B42318','#FEE4E2')+card('표면 차가움',nTdr,'TDR 0.28 초과','#B54708','#FEF0C7')+card('실내 습기 높음',nWet,'참고값보다 뚜렷이 높음','#175CD3','#E0EAFF')+card('검사 장소',S.items.length,'측정한 곳','#101828','#F2F4F7')+'</tr></table>'+
+      h2('2. 종합 소견')+(S.summary?'<div class="rp-box ac">'+S.summary.html+'</div>':'<div class="rp-box">이번 진단에서 '+S.items.length+'곳을 측정했습니다. 표면온도가 이슬점보다 낮은(결로 조건) 곳은 '+nCond+'곳, TDR 0.28을 넘은 곳은 '+nTdr+'곳, 실내 습기가 참고값보다 뚜렷이 높은 곳은 '+nWet+'곳입니다. 장소마다 원인과 보수 방법은 6. 장소별 상세에 정리했습니다.</div>')+
+      h2('3. 세대 · 환경 정보')+'<table class="rp-kv">'+kv('구조/사양',c['rep-type'])+kv('분석 관점',c['rep-view'])+kv('세대 위치',c['rep-house'])+kv('생활환경·관찰',c['rep-life'])+kv('기상',c['rep-weather'])+kv('환기 적정성',c['rep-erv'])+'</table>'+
+      h2('4. 장소별 측정값')+'<table class="rp-tbl"><tr><th>번호</th><th>장소</th><th>결로가 맺힌 면</th><th>실내</th><th>외기</th><th>표면</th><th>이슬점</th><th>TDR</th></tr>'+
+      S.items.map(function(it,i){var m=it.meas||{};return '<tr><td class="c">'+(i+1)+'</td><td>'+esc(it.place)+'</td><td>'+esc(it.face||'-')+'</td><td class="nw">'+esc((m.ti?m.ti+'℃':'-')+' / '+(m.rh?m.rh+'%':'-'))+'</td><td class="nw">'+esc((m.to?m.to+'℃':'-')+(m.ho?' / '+m.ho+'%':''))+'</td><td class="nw">'+esc(m.ts?m.ts+'℃':'-')+'</td><td class="nw">'+esc(m.dew||'-')+'</td><td class="nw">'+esc(tdrOf(m))+'</td></tr>';}).join('')+'</table>'+
+      h2('5. 판정 표시의 뜻')+'<table class="rp-kv">'+
+      kv('<span style="color:#B42318">결로 조건</span>','측정한 표면온도가 실내 공기의 이슬점보다 낮아, 그 표면에 결로가 생길 수 있는 상태입니다.',1)+
+      kv('<span style="color:#B54708">표면 차가움</span>','TDR(온도차이비율)이 0.28을 넘어 표면이 주변보다 많이 차가운 상태입니다. 안팎 온도차가 10℃ 미만이면 참고만 합니다.',1)+
+      kv('<span style="color:#175CD3">실내 습기 높음</span>','수증기압·혼합비가 청개구리 내부 참고값(1.2kPa·7.3g/kg, 공인 기준 아님)보다 계기 오차 이상 높은 상태입니다.',1)+'</table></div>';
+    // 3) 장소별 상세
+    h+='<div class="rp-page">'+h2('6. 장소별 상세');
+    S.items.forEach(function(it,i){var m=it.meas||{},pp=parts(it);
+      var ph=pp.imgs.length?'<div class="rp-ph">'+pp.imgs.map(function(x,j){return '<div><img src="'+x.src+'"><div class="cp">사진 '+(j+1)+'</div></div>';}).join('')+'</div>':'';
+      var mv=['실내 '+(m.ti||'-')+'℃ / '+(m.rh||'-')+'%','외기 '+(m.to||'-')+'℃'+(m.ho?' / '+m.ho+'%':''),'표면 '+(m.ts||'-')+'℃','이슬점 '+(m.dew||'-'),'TDR '+tdrOf(m)].join(' · ')+((m.vap||m.mix)?'<br>VAP '+esc(m.vap||'-')+'kPa · MIX '+esc(m.mix||'-')+'g/kg':'');
+      var fac=(it.factors||[]).filter(function(f){return f.k!=='다음 측정';}).map(function(f){return '<div><b>'+esc(f.k)+'</b> — '+esc(f.s)+(f.b?'<span class="rp-b"> ('+esc(f.b)+')</span>':'')+'</div>';}).join('');
+      var nx=(it.factors||[]).filter(function(f){return f.k==='다음 측정';})[0];
+      h+='<div class="rp-item"><div class="rp-ih"><b>'+(i+1)+'. '+esc(it.place)+'</b><span>'+esc(it.face||'')+'</span></div>'+ph+
+        '<table class="rp-kv">'+kv('측정값',mv,1)+kv('결로가 맺힌 면',it.face||'확인 안 됨')+kv('증상',it.defect)+(fac?kv('확인된 요인',fac,1):'')+(nx&&nx.b&&nx.b!=='—'?kv('다음 측정',nx.b):'')+'</table>'+
+        (pp.ac?'<div class="rp-ai"><div class="rp-ai-h">AI 분석 소견</div><div class="ac">'+pp.ac+'</div></div>':'')+'</div>';});
+    h+='</div>';
+    // 4) 안내
+    h+='<div class="rp-page">'+h2('7. 다음 단계 안내')+'<table class="rp-kv">'+
+      kv('우선 조치','장소별 상세의 \'확인된 요인\'과 AI 분석의 개선 방법 순서대로 진행하십시오. 생활 습기 관리는 바로 시작할 수 있습니다.')+
+      kv('재측정','결로·TDR 판단은 실내외 온도차가 10℃ 이상인 한파 아침에 가장 정확합니다. 보수 뒤 같은 조건에서 다시 측정하시기를 권합니다.')+
+      kv('문의','청개구리샤시 · 전화 010-2322-0949')+'</table>'+
+      h2('8. 진단 기준과 방법')+'<div class="rp-txt">· 실내 온·습도와 수증기압·혼합비는 FLIR MR277로, 표면온도는 열화상 카메라로 측정했습니다.<br>· TDR(온도차이비율)은 (실내 − 표면) ÷ (실내 − 외기)로 계산했고, 0.28은 국토교통부 「공동주택 결로 방지를 위한 설계기준」에서 쓰는 값입니다.<br>· VAP 1.2kPa · MIX 7.3g/kg은 청개구리 내부 참고값이며 공인 기준이 아닙니다.<br>· 측정은 진단 당일의 상태이며, 마감재를 뜯지 않았습니다.<br>· 분석 문안은 측정값과 사진을 바탕으로 AI 보조 도구로 정리했습니다.</div>'+
+      '<div class="rp-legal">※ 본 보고서는 AI가 측정값과 공개 자료를 바탕으로 작성한 참고용 자료이며 법적 효력이 없습니다. 특정 시공사 또는 개인의 책임을 판정하는 문서가 아닙니다.</div></div>';
     var P=$('print-all');P.innerHTML=h;
     // 폰은 print()가 바로 끝나고 미리보기를 나중에 그리므로 인쇄 모드를 되돌리지 않고 유지합니다(@media print에서만 적용).
     document.title=fname('');document.body.classList.add('print-all-mode');
