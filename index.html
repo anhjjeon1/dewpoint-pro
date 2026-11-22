@@ -1198,7 +1198,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.2'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.3'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1232,7 +1232,7 @@
                 surf:    '● 실내측 표면온도(Tsi)',
                 surfHint:'* 열화상 최저값 — 결로 생기는 실내측 차가운 면',
                 tempOut: '외기온도(To)',
-                vapmix:  '※ 겨울 참고값(청개구리 내부값·공인 기준 아님): VAP 1.2kPa / MIX 7.3g/kg — ±0.08 / ±0.5 안은 계기 오차 범위',
+                vapmix:  '※ 겨울 참고값(청개구리 내부값·공인 기준 아님): VAP 1.2kPa / MIX 7.3g/kg — ±0.08 / ±0.5 안은 계기 오차 범위 (출처: FLIR MR277 사용설명서 14.6 — 습도 ±2.5%·온도 ±0.6℃를 22℃에서 합성)',
                 banner:  '',
                 locPlaceholder: '장소',
                 locOptions: ['거실', '안방', '현관', '다용도실', '실외기실']
@@ -2352,7 +2352,7 @@
                 const _satMix = 622 * (_satVap / (101.325 - _satVap));                    // 포화절대습도 근사(g/kg, 1atm)
                 const _rhEq = Math.min(100, (parseFloat(vapVal) / _satVap) * 100);        // 포화 대비 현재 수증기량 비율(≈상대습도)
                 const _mixExcess = (parseFloat(mixVal) - 7.3);                            // 내부 참고값(공인 기준 아님) 대비 절대습도 차이
-                const saturationLogic = `\n\n[FLIR MR277 포화수증기량 분석 — 반드시 반영]\n- 실내온도 ${_Tin}℃ 기준 **포화수증기압 ${_satVap.toFixed(2)}kPa / 포화절대습도 약 ${_satMix.toFixed(1)}g/kg**\n- 현재 VAP ${vapVal}kPa 는 포화수증기량 대비 약 **${_rhEq.toFixed(0)}%** 수준입니다. 이 비율이 높을수록 찬 표면(창호·열교부)에서 포화에 먼저 도달해 결로가 쉽게 발생합니다.\n- **핵심 해석**: MIX(절대습도)는 외기 조건이 아니라 **거주자의 생활 활동(취사·세탁 실내건조·샤워·호흡·가습기·화분/어항 등)으로 실내에서 생성한 수분량**을 직접 반영합니다. 겨울철 외기 절대습도는 2~4g/kg로 매우 낮으므로, 실내 MIX가 내부 참고값(7.3g/kg, 공인 기준 아님)을 넘으면 그 차이(현재 약 ${_mixExcess >= 0 ? '+' : ''}${_mixExcess.toFixed(1)}g/kg)은 **대부분 실내 생활에서 발생한 수분**입니다.\n- 따라서 VAP/MIX가 참고값을 계기 오차(±0.08kPa·±0.5g/kg) 이상으로 넘을 경우 **거주자의 생활 패턴(수분 발생원 + 환기 습관)을 결로의 1순위 원인으로 구체적으로 지목**하고, 어떤 생활 행위가 실내 수증기량을 얼마나 늘리는지 정량적으로 설명하십시오. 단, 표현은 '거주 환경 관리(AI 분석 소견)'로 하되 거주자를 비난하지 않는 중립적 톤을 유지하십시오.`;
+                const saturationLogic = `\n\n[FLIR MR277 포화수증기량 분석 — 반드시 반영]\n- 실내온도 ${_Tin}℃ 기준 **포화수증기압 ${_satVap.toFixed(2)}kPa / 포화절대습도 약 ${_satMix.toFixed(1)}g/kg**\n- 현재 VAP ${vapVal}kPa 는 포화수증기량 대비 약 **${_rhEq.toFixed(0)}%** 수준입니다. 이 비율이 높을수록 찬 표면(창호·열교부)에서 포화에 먼저 도달해 결로가 쉽게 발생합니다.\n- **핵심 해석**: MIX(절대습도)는 외기 조건이 아니라 **거주자의 생활 활동(취사·세탁 실내건조·샤워·호흡·가습기·화분/어항 등)으로 실내에서 생성한 수분량**을 직접 반영합니다. 겨울철 외기 절대습도는 2~4g/kg로 매우 낮으므로, 실내 MIX가 내부 참고값(7.3g/kg, 공인 기준 아님)을 넘으면 그 차이(현재 약 ${_mixExcess >= 0 ? '+' : ''}${_mixExcess.toFixed(1)}g/kg)은 **대부분 실내 생활에서 발생한 수분**입니다.\n- 따라서 VAP/MIX가 참고값을 계기 오차(±0.08kPa·±0.5g/kg — FLIR MR277 사용설명서 14.6의 습도 ±2.5%·온도 ±0.6℃를 실내 22℃에서 합성한 값) 이상으로 넘을 경우 **거주자의 생활 패턴(수분 발생원 + 환기 습관)을 결로의 1순위 원인으로 구체적으로 지목**하고, 어떤 생활 행위가 실내 수증기량을 얼마나 늘리는지 정량적으로 설명하십시오. 단, 표현은 '거주 환경 관리(AI 분석 소견)'로 하되 거주자를 비난하지 않는 중립적 톤을 유지하십시오.`;
                 airQualityLogic = `[중요] 공기질 데이터(VAP: ${vapVal}kPa, MIX: ${mixVal}g/kg) 분석. ${winterGuide}${saturationLogic}\n\n[참고값 표기 규칙 — 반드시 준수]\n- 1.2kPa·7.3g/kg은 청개구리 결로진단의 **내부 참고값**이며 법령이나 공인 표준의 기준이 아닙니다. 보고서에 '기준', '법적 기준', '적정 기준'이라고 쓰지 말고 반드시 '청개구리 내부 참고값(공인 기준 아님)'으로 표기하십시오.\n- 가정용 습도계는 ±3~5%RH 오차가 있어 혼합비가 약 ±0.5~0.9g/kg 달라질 수 있습니다. 참고값과의 작은 차이로 과습·정상을 단정하지 마십시오.`;
                 
                 // VAP/MIX 기준값 대비 상세 원인 판별 로직
