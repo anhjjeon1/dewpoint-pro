@@ -448,6 +448,8 @@
         .sfx { position: relative; }
         .sfx::after { content: attr(data-s); position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 0.68rem; color: #8a96a3; pointer-events: none; }
         .sfx input { padding-right: 30px !important; }
+        .grp-tag { display: inline-flex; align-items: center; padding: 0 4px 0 0; font-size: 0.74rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; }
+        .grp-break { flex-basis: 100%; height: 0; }
         .face-sub { width: 100%; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin: 6px 0 0; }
         .v36-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 6px; }
         .v36-grid3 select, .v36-grid2 select[data-sel] { width: 100%; padding: 7px 22px 7px 6px; font-size: 0.8rem; letter-spacing: -0.4px; }
@@ -571,7 +573,7 @@
                 <div><select data-sel="dir" onchange="updateV36Derived()"><option value="">거실 방향</option><option value="북" data-v="북" data-t="북">거실 북향</option><option value="북동" data-v="북동" data-t="북동">거실 북동향</option><option value="동" data-v="동" data-t="동">거실 동향</option><option value="남동" data-v="남동" data-t="남동">거실 남동향</option><option value="남" data-v="남" data-t="남">거실 남향</option><option value="남서" data-v="남서" data-t="남서">거실 남서향</option><option value="서" data-v="서" data-t="서">거실 서향</option><option value="북서" data-v="북서" data-t="북서">거실 북서향</option></select></div>
             </div>
             <div class="v36-grid2 v36-row">
-                <div><div class="sfx" data-s="㎡"><input type="number" id="unit-area" list="area-list" placeholder="전용면적 ㎡" inputmode="decimal" min="5" max="500" oninput="syncUnitArea(this)"><datalist id="area-list"><option value="20"><option value="23"><option value="26"><option value="29"><option value="33"><option value="39"><option value="44"><option value="49"><option value="59"><option value="74"><option value="84"><option value="99"><option value="114"><option value="135"></datalist></div></div>
+                <div><div class="sfx" data-s="㎡"><input type="number" id="unit-area" list="area-list" placeholder="전용면적" inputmode="decimal" min="5" max="500" oninput="syncUnitArea(this)"><datalist id="area-list"><option value="20"><option value="23"><option value="26"><option value="29"><option value="33"><option value="39"><option value="44"><option value="49"><option value="59"><option value="74"><option value="84"><option value="99"><option value="114"><option value="135"></datalist></div></div>
                 <div><select data-sel="jungmun" onchange="updateV36Derived()"><option value="">현관 중문</option><option value="none" data-v="none" data-t="없음">중문 없음</option><option value="closed" data-v="closed" data-t="있음·평소 닫음">중문 닫음</option><option value="open" data-v="open" data-t="있음·평소 열어 둠">중문 열어 둠</option></select></div>
             </div>
             <div class="v36-note" style="margin:-2px 0 4px;">작은 집일수록 같은 습기에도 습도가 빨리 오름 / 중문을 닫아 두면 집이 더 기밀해져 습도↑·고층은 창 틈 유출↑ 가능</div>
@@ -604,18 +606,18 @@
                     </select>
                 </div>
             </div>
-            <div class="v36-row"><div class="v36-lbl">현장에서 관찰된 상태</div>
-                <div class="chk-group" data-name="obs" data-mode="multi">
+            <div class="v36-row">
+                <div class="chk-group" data-name="obs" data-mode="multi"><span class="grp-tag">관찰</span>
                     <span class="chk" data-v="air">여밈대 틈·어긋남</span><span class="chk" data-v="air">풍지판 누락·파손</span><span class="chk" data-v="air">물구멍 반대타공</span>
                     <span class="chk" data-v="air">모헤어 마모·탈락</span><span class="chk" data-v="air">크리센트 헐거움</span><span class="chk" data-v="frame">창짝 처짐·흔들림</span>
                     <span class="chk" data-v="frame">레일 변형</span><span class="chk" data-v="frame">창틀 주위 사춤·실리콘 들뜸</span><span class="chk" data-v="none">특이사항 없음</span>
                 </div></div>
             <!-- ★ v36.2: 결로가 맺힌 면·분포 — 유입/유출 방향과 이중창 내창·외창 기밀 비율 판정의 핵심 입력 -->
-            <div class="v36-row"><div class="v36-lbl">결로가 맺힌 면 · 분포</div>
-                <div class="chk-group" data-name="face" data-mode="multi">
+            <div class="v36-row">
+                <div class="chk-group" data-name="face" data-mode="multi"><span class="grp-tag">결로 면</span>
                     <span class="chk" data-v="in">내창 실내면</span><span class="chk" data-v="cav">외창 안쪽 면(이중창 사이)</span><span class="chk" data-v="ext">외창 바깥면</span>
                     <span class="chk" data-v="frame">창짝·창틀 프레임 면</span><span class="chk" data-v="edge">유리 하단 가장자리만</span><span class="chk" data-v="full">유리 전면</span><span class="chk" data-v="frost">성에(얼음)</span>
-                    <div class="face-sub">벽체</div>
+                    <span class="grp-break"></span><span class="grp-tag">벽체</span>
                     <span class="chk" data-v="w-floor">바닥·벽 모서리</span><span class="chk" data-v="w-ceil">천장·벽 모서리</span><span class="chk" data-v="w-corner">외벽 코너(두 외벽 만나는 곳)</span>
                     <span class="chk" data-v="w-joint">외벽·내벽 접합부</span><span class="chk" data-v="w-beam">기둥·보 자리</span><span class="chk" data-v="w-around">창 주위 벽(창틀 옆·위·아래)</span>
                     <span class="chk" data-v="w-face">외벽 면 전체</span><span class="chk" data-v="w-behind">붙박이장·가구 뒤 벽</span>
@@ -648,8 +650,8 @@
                     <div><select data-sel="dry" onchange="updateV36Derived()"><option value="">빨래 건조</option><option value="indoor" data-v="indoor">실내 건조(세탁기만)</option><option value="hp" data-v="hp">건조기(히트펌프·응축식)</option><option value="exhaust" data-v="exhaust">건조기(가스·배기식)</option><option value="balc" data-v="balc">발코니·외부 건조</option></select></div>
                     <div><select data-sel="erv" onchange="updateV36Derived()"><option value="">전열교환기</option><option value="none" data-v="none" data-t="없음">전열교환기 없음</option><option value="on" data-v="on" data-t="있음·상시 가동">전열교환기 상시</option><option value="some" data-v="some" data-t="있음·가끔">전열교환기 가끔</option><option value="off" data-v="off" data-t="있음·거의 안 켬">전열교환기 안 켬</option><option value="unk" data-v="unk" data-t="모름">전열교환기 모름</option></select></div>
                 </div>
-                <div class="v36-row"><div class="v36-lbl">겨울철 습도 기기·수분원</div>
-                    <div class="chk-group" data-name="moist" data-mode="multi">
+                <div class="v36-row">
+                    <div class="chk-group" data-name="moist" data-mode="multi"><span class="grp-tag">습기원</span>
                         <span class="chk" data-v="+">가습기 사용</span><span class="chk" data-v="-">제습기 사용</span><span class="chk" data-v="+">화분 다수</span><span class="chk" data-v="+">수족관</span>
                         <span class="chk" data-v="+">매일 조리(국·찜 등)</span><span class="chk" data-v="+">샤워 후 욕실문 개방</span><span class="chk" data-v="-">레인지후드 매번 가동</span><span class="chk" data-v="-">욕실 팬 가동</span></div></div>
             </div>
@@ -660,7 +662,7 @@
             <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치 적정성<span class="v36-caret"></span></div>
             <div class="v36-body">
                 <div class="v36-grid3 v36-row">
-                    <div><div class="sfx" data-s="㎡"><input type="number" id="erv-area" list="area-list" placeholder="집 크기 ㎡" inputmode="decimal"></div></div>
+                    <div><div class="sfx" data-s="㎡"><input type="number" id="erv-area" list="area-list" placeholder="집 크기" inputmode="decimal"></div></div>
                     <div><select id="erv-height"><option value="">천장 높이(2.3m)</option><option value="2.2" data-t="2.2 m">천장 2.2m</option><option value="2.3" data-t="2.3 m">천장 2.3m</option><option value="2.4" data-t="2.4 m">천장 2.4m</option><option value="2.5" data-t="2.5 m">천장 2.5m</option><option value="2.6" data-t="2.6 m">천장 2.6m</option><option value="2.7" data-t="2.7 m">천장 2.7m</option><option value="2.8" data-t="2.8 m">천장 2.8m</option><option value="3.0" data-t="3.0 m">천장 3.0m</option></select></div>
                     <div><select data-sel="ervhome"><option value="">평일 재실</option><option value="24" data-v="24">종일 재실</option><option value="14" data-v="14">저녁·밤만</option><option value="10" data-v="10">밤에만</option></select></div>
                 </div>
@@ -675,16 +677,16 @@
                     <div><select id="erv-target"><option value="">목표 습도(50%)</option><option value="40" data-t="40%">목표 습도 40%</option><option value="45" data-t="45%">목표 습도 45%</option><option value="50" data-t="50%">목표 습도 50%</option><option value="55" data-t="55%">목표 습도 55%</option><option value="60" data-t="60%">목표 습도 60%</option></select></div>
                 </div>
                 <div class="v36-grid3 v36-row">
-                    <div><div class="sfx" data-s="ml/h"><input type="number" id="erv-humid" placeholder="가습량 ml/h" inputmode="numeric"></div></div>
+                    <div><div class="sfx" data-s="ml/h"><input type="number" id="erv-humid" placeholder="가습량" inputmode="numeric"></div></div>
                     <div><select id="erv-humidh"><option value="">가습 시간</option><option value="1" data-t="1시간">가습 1시간</option><option value="2" data-t="2시간">가습 2시간</option><option value="4" data-t="4시간">가습 4시간</option><option value="6" data-t="6시간">가습 6시간</option><option value="8" data-t="8시간">가습 8시간</option><option value="10" data-t="10시간">가습 10시간</option><option value="12" data-t="12시간">가습 12시간</option><option value="16" data-t="16시간">가습 16시간</option><option value="24" data-t="24시간">가습 24시간</option></select></div>
                     <div></div>
                 </div>
-                <div class="v36-row"><div class="v36-lbl">생활 조건</div>
-                    <div class="chk-group" data-name="ervcond" data-mode="multi"><span class="chk" data-v="newborn">신생아·영아 있음</span><span class="chk" data-v="cantopen">창문 환기 어려움(맞벌이·미세먼지·소음)</span><span class="chk" data-v="passive">패시브하우스 수준 기밀</span></div></div>
+                <div class="v36-row">
+                    <div class="chk-group" data-name="ervcond" data-mode="multi"><span class="grp-tag">생활</span><span class="chk" data-v="newborn">신생아·영아 있음</span><span class="chk" data-v="cantopen">창문 환기 어려움(맞벌이·미세먼지·소음)</span><span class="chk" data-v="passive">패시브하우스 수준 기밀</span></div></div>
                 <div class="v36-grid3 v36-row">
                     <div><button type="button" class="erv-btn" style="width:100%;height:100%;min-height:36px;" onclick="ervLoadClimate()">지난겨울 기상</button></div>
-                    <div><div class="sfx" data-s="℃"><input type="number" id="erv-outT" placeholder="평균 기온 ℃" inputmode="decimal"></div></div>
-                    <div><div class="sfx" data-s="%"><input type="number" id="erv-outRH" placeholder="평균 습도 %" inputmode="decimal"></div></div>
+                    <div><div class="sfx" data-s="℃"><input type="number" id="erv-outT" placeholder="평균 기온" inputmode="decimal"></div></div>
+                    <div><div class="sfx" data-s="%"><input type="number" id="erv-outRH" placeholder="평균 습도" inputmode="decimal"></div></div>
                 </div>
                 <div class="v36-note" id="erv-climate-status"></div>
                 <div class="v36-row" id="erv-product-row">
@@ -697,7 +699,7 @@
                     </div>
                     <div class="v36-grid2" style="margin-top:4px;">
                         <div><select data-sel="ervtype"><option value="">교환 방식</option><option value="erv" data-v="erv">전열형(습기 교환)</option><option value="hrv" data-v="hrv">현열형(열만)</option><option value="unk" data-v="unk">모름</option></select></div>
-                        <div><div class="sfx" data-s="%"><input type="number" id="erv-latent" placeholder="습도교환효율 %" inputmode="numeric"></div></div>
+                        <div><div class="sfx" data-s="%"><input type="number" id="erv-latent" placeholder="습도교환효율" inputmode="numeric"></div></div>
                     </div>
                     <div class="chk-group" data-name="ervstate" data-mode="multi" style="margin-top:4px;"><span class="chk" data-v="due">필터 교체 표시</span><span class="chk" data-v="clog">필터 막힘·오래됨</span><span class="chk" data-v="error">조작기 에러 표시</span></div></div>
                 <div id="erv-result" class="erv-result"></div>
@@ -1093,8 +1095,8 @@
 
         <!-- ★ v36.3: 분석 관점 선택 — 같은 입력·같은 계산값을 의뢰자 관점에 맞춰 해석 (AI 정밀 분석 버튼 바로 위) -->
         <div class="section no-print" style="margin-bottom:10px;">
-            <div class="v36-lbl">분석 관점 <span class="v36-hint">— 측정값·계산값은 같고, 해석의 순서와 강조점만 달라집니다</span></div>
-            <div class="chk-group" data-name="view" data-mode="single" id="view-group">
+            
+            <div class="chk-group" data-name="view" data-mode="single" id="view-group"><span class="grp-tag">관점</span>
                 <span class="chk on" data-v="neutral">분석용</span>
                 <span class="chk" data-v="builder">건설사용</span>
                 <span class="chk" data-v="window">창호용</span>
@@ -1196,7 +1198,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.0'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.1'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
