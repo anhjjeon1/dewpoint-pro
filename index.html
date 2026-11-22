@@ -444,6 +444,10 @@
         .v36-grid4 select { padding-right: 18px; }
         .v36-grid4 .v36-lbl { white-space: nowrap; letter-spacing: -0.5px; }
         .v36-grid3 input[type=date] { padding: 7px 2px; font-size: 0.74rem; }
+        select:has(option[value=""]:checked) { color: #9aa5b1; font-weight: 500; }
+        .sfx { position: relative; }
+        .sfx::after { content: attr(data-s); position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 0.68rem; color: #8a96a3; pointer-events: none; }
+        .sfx input { padding-right: 30px !important; }
         .face-sub { width: 100%; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin: 6px 0 0; }
         .v36-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 6px; }
         .v36-grid3 select, .v36-grid2 select[data-sel] { width: 100%; padding: 7px 22px 7px 6px; font-size: 0.8rem; letter-spacing: -0.4px; }
@@ -554,21 +558,21 @@
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-building"></i> 세대 위치</div>
             <div class="v36-grid4 v36-row">
-                <div><div class="v36-lbl">주거형태</div><select data-sel="house" onchange="updateV36Derived()"><option value="">선택</option><option value="아파트" data-v="아파트">아파트</option><option value="주상복합" data-v="주상복합">주상복합</option><option value="오피스텔" data-v="오피스텔">오피스텔</option><option value="빌라·연립" data-v="빌라·연립">빌라·연립</option><option value="단독주택" data-v="단독주택">단독주택</option></select></div>
-                <div><div class="v36-lbl">발코니</div><select data-sel="ext" onchange="updateV36Derived()"><option value="">선택</option><option value="ext" data-v="ext">확장</option><option value="part" data-v="part">부분확장</option><option value="non" data-v="non">비확장</option></select></div>
-                <div><div class="v36-lbl">해당 층</div><input type="number" id="floor-no" placeholder="3" min="-5" max="150" oninput="this.dataset.auto='';updateV36Derived()"></div>
-                <div><div class="v36-lbl">최고층</div><input type="number" id="floor-top" placeholder="25" min="1" max="150" oninput="updateV36Derived()"></div>
+                <div><select data-sel="house" onchange="updateV36Derived()"><option value="">주거형태</option><option value="아파트" data-v="아파트">아파트</option><option value="주상복합" data-v="주상복합">주상복합</option><option value="오피스텔" data-v="오피스텔">오피스텔</option><option value="빌라·연립" data-v="빌라·연립">빌라·연립</option><option value="단독주택" data-v="단독주택">단독주택</option></select></div>
+                <div><select data-sel="ext" onchange="updateV36Derived()"><option value="">발코니</option><option value="ext" data-v="ext">확장</option><option value="part" data-v="part">부분확장</option><option value="non" data-v="non">비확장</option></select></div>
+                <div><div class="sfx" data-s="층"><input type="number" id="floor-no" placeholder="해당 층" min="-5" max="150" oninput="this.dataset.auto='';updateV36Derived()"></div></div>
+                <div><div class="sfx" data-s="층 중"><input type="number" id="floor-top" placeholder="최고층" min="1" max="150" oninput="updateV36Derived()"></div></div>
             </div>
             <div class="v36-row"><div class="chk-group" data-name="floorx" data-mode="multi"><span class="chk" data-v="pilotis">아래층이 필로티</span><span class="chk" data-v="roof">바로 위가 옥상</span></div>
                 <div class="v36-derived" id="floor-note"></div></div>
             <div class="v36-grid3 v36-row">
-                <div><div class="v36-lbl">세대 배치</div><select data-sel="side" onchange="updateV36Derived()"><option value="">선택</option><option value="mid" data-v="mid">중간 세대</option><option value="end" data-v="end">측벽(끝) 세대</option></select></div>
-                <div><div class="v36-lbl">외벽 단열 방식</div><select data-sel="insul" onchange="updateV36Derived()"><option value="">선택</option><option value="ext" data-v="ext">외단열</option><option value="int" data-v="int">내단열</option><option value="unk" data-v="unk">모름</option></select></div>
-                <div><div class="v36-lbl">거실 방향</div><select data-sel="dir" onchange="updateV36Derived()"><option value="">선택</option><option value="북" data-v="북">북</option><option value="북동" data-v="북동">북동</option><option value="동" data-v="동">동</option><option value="남동" data-v="남동">남동</option><option value="남" data-v="남">남</option><option value="남서" data-v="남서">남서</option><option value="서" data-v="서">서</option><option value="북서" data-v="북서">북서</option></select></div>
+                <div><select data-sel="side" onchange="updateV36Derived()"><option value="">세대 배치</option><option value="mid" data-v="mid">중간 세대</option><option value="end" data-v="end">측벽(끝) 세대</option></select></div>
+                <div><select data-sel="insul" onchange="updateV36Derived()"><option value="">단열 방식</option><option value="ext" data-v="ext">외단열</option><option value="int" data-v="int">내단열</option><option value="unk" data-v="unk">모름</option></select></div>
+                <div><select data-sel="dir" onchange="updateV36Derived()"><option value="">거실 방향</option><option value="북" data-v="북" data-t="북">거실 북향</option><option value="북동" data-v="북동" data-t="북동">거실 북동향</option><option value="동" data-v="동" data-t="동">거실 동향</option><option value="남동" data-v="남동" data-t="남동">거실 남동향</option><option value="남" data-v="남" data-t="남">거실 남향</option><option value="남서" data-v="남서" data-t="남서">거실 남서향</option><option value="서" data-v="서" data-t="서">거실 서향</option><option value="북서" data-v="북서" data-t="북서">거실 북서향</option></select></div>
             </div>
             <div class="v36-grid2 v36-row">
-                <div><div class="v36-lbl">전용면적(㎡)</div><input type="number" id="unit-area" list="area-list" placeholder="선택·입력" inputmode="decimal" min="5" max="500" oninput="syncUnitArea(this)"><datalist id="area-list"><option value="20"><option value="23"><option value="26"><option value="29"><option value="33"><option value="39"><option value="44"><option value="49"><option value="59"><option value="74"><option value="84"><option value="99"><option value="114"><option value="135"></datalist></div>
-                <div><div class="v36-lbl">현관 중문</div><select data-sel="jungmun" onchange="updateV36Derived()"><option value="">선택</option><option value="none" data-v="none">없음</option><option value="closed" data-v="closed">있음·평소 닫음</option><option value="open" data-v="open">있음·평소 열어 둠</option></select></div>
+                <div><div class="sfx" data-s="㎡"><input type="number" id="unit-area" list="area-list" placeholder="전용면적 ㎡" inputmode="decimal" min="5" max="500" oninput="syncUnitArea(this)"><datalist id="area-list"><option value="20"><option value="23"><option value="26"><option value="29"><option value="33"><option value="39"><option value="44"><option value="49"><option value="59"><option value="74"><option value="84"><option value="99"><option value="114"><option value="135"></datalist></div></div>
+                <div><select data-sel="jungmun" onchange="updateV36Derived()"><option value="">현관 중문</option><option value="none" data-v="none" data-t="없음">중문 없음</option><option value="closed" data-v="closed" data-t="있음·평소 닫음">중문 닫음</option><option value="open" data-v="open" data-t="있음·평소 열어 둠">중문 열어 둠</option></select></div>
             </div>
             <div class="v36-note" style="margin:-2px 0 4px;">작은 집일수록 같은 습기에도 습도가 빨리 오름 / 중문을 닫아 두면 집이 더 기밀해져 습도↑·고층은 창 틈 유출↑ 가능</div>
         </div>
@@ -578,7 +582,6 @@
             <div class="section-title"><i class="fas fa-border-all"></i> 창호 / 관찰된 상태</div>
             <div class="v36-grid2 v36-row">
                 <div class="input-group">
-                    <label class="input-label v36-lbl">창호 종류</label>
                     <select id="window-type">
                         <option value="PVC 이중창">PVC 이중창 (일반)</option>
                         <option value="입면분할창">입면분할창 (고급형)</option>
@@ -590,7 +593,6 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label class="input-label v36-lbl">간봉 / 문짝</label>
                     <select id="consideration">
                         <option value="알루미늄 간봉">알루미늄 간봉</option>
                         <option value="TPS 단열간봉">TPS 단열간봉</option>
@@ -636,15 +638,15 @@
             <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('life-section').classList.toggle('closed')"><i class="fas fa-user-friends"></i> 생활환경 문진 <span class="v36-hint" style="margin-left:6px;">— 탭만, 30초</span><span class="v36-caret"></span></div>
             <div class="v36-body">
                 <div class="v36-grid3 v36-row">
-                    <div><div class="v36-lbl">거주 인원</div><select id="people" onchange="updateV36Derived()"><option value="">선택</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명 이상</option></select></div>
-                    <div><div class="v36-lbl">창문 환기(겨울)</div><select data-sel="vent" onchange="updateV36Derived()"><option value="">선택</option><option value="0" data-v="0">거의 안 함</option><option value="1" data-v="1">하루 1회</option><option value="2" data-v="2">하루 2회+</option></select></div>
-                    <div><div class="v36-lbl">1회 환기 시간</div><select data-sel="ventmin" onchange="updateV36Derived()"><option value="">선택</option><option value="0" data-v="0">5분 미만</option><option value="1" data-v="1">10분 내외</option><option value="2" data-v="2">30분 이상</option></select></div>
+                    <div><select id="people" onchange="updateV36Derived()"><option value="">거주 인원</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명 이상</option></select></div>
+                    <div><select data-sel="vent" onchange="updateV36Derived()"><option value="">창문 환기</option><option value="0" data-v="0" data-t="거의 안 함">환기 거의 안 함</option><option value="1" data-v="1" data-t="하루 1회">환기 하루 1회</option><option value="2" data-v="2" data-t="하루 2회+">환기 하루 2회+</option></select></div>
+                    <div><select data-sel="ventmin" onchange="updateV36Derived()"><option value="">1회 환기 시간</option><option value="0" data-v="0" data-t="5분 미만">1회 5분 미만</option><option value="1" data-v="1" data-t="10분 내외">1회 10분 내외</option><option value="2" data-v="2" data-t="30분 이상">1회 30분 이상</option></select></div>
                 </div>
                 <div class="v36-row" style="margin-top:-2px;"><div class="chk-group" data-name="home" data-mode="multi"><span class="chk" data-v="y">낮에도 재실</span></div></div>
                 <div class="v36-grid3 v36-row">
-                    <div><div class="v36-lbl">난방 방식</div><select data-sel="heat" onchange="updateV36Derived()"><option value="">선택</option><option value="cont" data-v="cont">상시 난방</option><option value="int" data-v="int">외출 시 끔(간헐)</option><option value="room" data-v="room">일부 방 난방 안 함</option><option value="pre" data-v="pre">입주 전·무난방</option></select></div>
-                    <div><div class="v36-lbl">빨래 건조</div><select data-sel="dry" onchange="updateV36Derived()"><option value="">선택</option><option value="indoor" data-v="indoor">실내 건조(세탁기만)</option><option value="hp" data-v="hp">건조기(히트펌프·응축식)</option><option value="exhaust" data-v="exhaust">건조기(가스·배기식)</option><option value="balc" data-v="balc">발코니·외부 건조</option></select></div>
-                    <div><div class="v36-lbl">전열교환기</div><select data-sel="erv" onchange="updateV36Derived()"><option value="">선택</option><option value="none" data-v="none">없음</option><option value="on" data-v="on">있음·상시 가동</option><option value="some" data-v="some">있음·가끔</option><option value="off" data-v="off">있음·거의 안 켬</option><option value="unk" data-v="unk">모름</option></select></div>
+                    <div><select data-sel="heat" onchange="updateV36Derived()"><option value="">난방 방식</option><option value="cont" data-v="cont">상시 난방</option><option value="int" data-v="int">외출 시 끔(간헐)</option><option value="room" data-v="room">일부 방 난방 안 함</option><option value="pre" data-v="pre">입주 전·무난방</option></select></div>
+                    <div><select data-sel="dry" onchange="updateV36Derived()"><option value="">빨래 건조</option><option value="indoor" data-v="indoor">실내 건조(세탁기만)</option><option value="hp" data-v="hp">건조기(히트펌프·응축식)</option><option value="exhaust" data-v="exhaust">건조기(가스·배기식)</option><option value="balc" data-v="balc">발코니·외부 건조</option></select></div>
+                    <div><select data-sel="erv" onchange="updateV36Derived()"><option value="">전열교환기</option><option value="none" data-v="none" data-t="없음">전열교환기 없음</option><option value="on" data-v="on" data-t="있음·상시 가동">전열교환기 상시</option><option value="some" data-v="some" data-t="있음·가끔">전열교환기 가끔</option><option value="off" data-v="off" data-t="있음·거의 안 켬">전열교환기 안 켬</option><option value="unk" data-v="unk" data-t="모름">전열교환기 모름</option></select></div>
                 </div>
                 <div class="v36-row"><div class="v36-lbl">겨울철 습도 기기·수분원</div>
                     <div class="chk-group" data-name="moist" data-mode="multi">
@@ -658,45 +660,44 @@
             <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치 적정성<span class="v36-caret"></span></div>
             <div class="v36-body">
                 <div class="v36-grid3 v36-row">
-                    <div><div class="v36-lbl">집 크기(㎡)</div><input type="number" id="erv-area" list="area-list" placeholder="선택·입력" inputmode="decimal"></div>
-                    <div><div class="v36-lbl">천장 높이</div><select id="erv-height"><option value="">2.3 m</option><option value="2.2">2.2 m</option><option value="2.3">2.3 m</option><option value="2.4">2.4 m</option><option value="2.5">2.5 m</option><option value="2.6">2.6 m</option><option value="2.7">2.7 m</option><option value="2.8">2.8 m</option><option value="3.0">3.0 m</option></select></div>
-                    <div><div class="v36-lbl">평일 재실</div><select data-sel="ervhome"><option value="">선택</option><option value="24" data-v="24">종일 재실</option><option value="14" data-v="14">저녁·밤만</option><option value="10" data-v="10">밤에만</option></select></div>
+                    <div><div class="sfx" data-s="㎡"><input type="number" id="erv-area" list="area-list" placeholder="집 크기 ㎡" inputmode="decimal"></div></div>
+                    <div><select id="erv-height"><option value="">천장 높이(2.3m)</option><option value="2.2" data-t="2.2 m">천장 2.2m</option><option value="2.3" data-t="2.3 m">천장 2.3m</option><option value="2.4" data-t="2.4 m">천장 2.4m</option><option value="2.5" data-t="2.5 m">천장 2.5m</option><option value="2.6" data-t="2.6 m">천장 2.6m</option><option value="2.7" data-t="2.7 m">천장 2.7m</option><option value="2.8" data-t="2.8 m">천장 2.8m</option><option value="3.0" data-t="3.0 m">천장 3.0m</option></select></div>
+                    <div><select data-sel="ervhome"><option value="">평일 재실</option><option value="24" data-v="24">종일 재실</option><option value="14" data-v="14">저녁·밤만</option><option value="10" data-v="10">밤에만</option></select></div>
                 </div>
                 <div class="v36-grid3 v36-row">
-                    <div><div class="v36-lbl">조리</div><select data-sel="ervcook"><option value="">선택</option><option value="gas" data-v="gas">가스레인지</option><option value="elec" data-v="elec">인덕션·전기</option><option value="none" data-v="none">거의 안 함</option></select></div>
-                    <div><div class="v36-lbl">조리 횟수</div><select data-sel="ervcookdays"><option value="">선택</option><option value="7" data-v="7">매일</option><option value="5" data-v="5">주 5일</option><option value="3" data-v="3">주 3일</option><option value="1" data-v="1">주 1일</option></select></div>
-                    <div><div class="v36-lbl">샤워(하루)</div><select id="erv-shower"><option value="">인원수</option><option value="0">0회</option><option value="1">1회</option><option value="2">2회</option><option value="3">3회</option><option value="4">4회</option><option value="5">5회</option><option value="6">6회</option><option value="7">7회</option><option value="8">8회</option></select></div>
+                    <div><select data-sel="ervcook"><option value="">조리</option><option value="gas" data-v="gas">가스레인지</option><option value="elec" data-v="elec">인덕션·전기</option><option value="none" data-v="none">거의 안 함</option></select></div>
+                    <div><select data-sel="ervcookdays"><option value="">조리 횟수</option><option value="7" data-v="7" data-t="매일">조리 매일</option><option value="5" data-v="5" data-t="주 5일">조리 주 5일</option><option value="3" data-v="3" data-t="주 3일">조리 주 3일</option><option value="1" data-v="1" data-t="주 1일">조리 주 1일</option></select></div>
+                    <div><select id="erv-shower"><option value="">샤워(인원수)</option><option value="0" data-t="0회">샤워 0회</option><option value="1" data-t="1회">샤워 1회</option><option value="2" data-t="2회">샤워 2회</option><option value="3" data-t="3회">샤워 3회</option><option value="4" data-t="4회">샤워 4회</option><option value="5" data-t="5회">샤워 5회</option><option value="6" data-t="6회">샤워 6회</option><option value="7" data-t="7회">샤워 7회</option><option value="8" data-t="8회">샤워 8회</option></select></div>
                 </div>
                 <div class="v36-grid3 v36-row">
-                    <div><div class="v36-lbl">세탁</div><select id="erv-laundry"><option value="">선택</option><option value="0">주 0일</option><option value="1">주 1일</option><option value="2">주 2일</option><option value="3">주 3일</option><option value="4">주 4일</option><option value="5">주 5일</option><option value="6">주 6일</option><option value="7">주 7일</option></select></div>
-                    <div><div class="v36-lbl">화분</div><select id="erv-plants"><option value="">선택</option><option value="0">없음</option><option value="2">1~2개</option><option value="4">3~5개</option><option value="8">6~10개</option><option value="15">11개 이상</option></select></div>
-                    <div><div class="v36-lbl">목표 습도 상한</div><select id="erv-target"><option value="">50%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option><option value="55">55%</option><option value="60">60%</option></select></div>
+                    <div><select id="erv-laundry"><option value="">세탁 횟수</option><option value="0" data-t="주 0일">세탁 주 0일</option><option value="1" data-t="주 1일">세탁 주 1일</option><option value="2" data-t="주 2일">세탁 주 2일</option><option value="3" data-t="주 3일">세탁 주 3일</option><option value="4" data-t="주 4일">세탁 주 4일</option><option value="5" data-t="주 5일">세탁 주 5일</option><option value="6" data-t="주 6일">세탁 주 6일</option><option value="7" data-t="주 7일">세탁 주 7일</option></select></div>
+                    <div><select id="erv-plants"><option value="">화분</option><option value="0" data-t="없음">화분 없음</option><option value="2" data-t="1~2개">화분 1~2개</option><option value="4" data-t="3~5개">화분 3~5개</option><option value="8" data-t="6~10개">화분 6~10개</option><option value="15" data-t="11개 이상">화분 11개+</option></select></div>
+                    <div><select id="erv-target"><option value="">목표 습도(50%)</option><option value="40" data-t="40%">목표 습도 40%</option><option value="45" data-t="45%">목표 습도 45%</option><option value="50" data-t="50%">목표 습도 50%</option><option value="55" data-t="55%">목표 습도 55%</option><option value="60" data-t="60%">목표 습도 60%</option></select></div>
                 </div>
                 <div class="v36-grid3 v36-row">
-                    <div><div class="v36-lbl">가습기(ml/h)</div><input type="number" id="erv-humid" placeholder="ml/h" inputmode="numeric"></div>
-                    <div><div class="v36-lbl">가습 시간(하루)</div><select id="erv-humidh"><option value="">선택</option><option value="1">1시간</option><option value="2">2시간</option><option value="4">4시간</option><option value="6">6시간</option><option value="8">8시간</option><option value="10">10시간</option><option value="12">12시간</option><option value="16">16시간</option><option value="24">24시간</option></select></div>
+                    <div><div class="sfx" data-s="ml/h"><input type="number" id="erv-humid" placeholder="가습량 ml/h" inputmode="numeric"></div></div>
+                    <div><select id="erv-humidh"><option value="">가습 시간</option><option value="1" data-t="1시간">가습 1시간</option><option value="2" data-t="2시간">가습 2시간</option><option value="4" data-t="4시간">가습 4시간</option><option value="6" data-t="6시간">가습 6시간</option><option value="8" data-t="8시간">가습 8시간</option><option value="10" data-t="10시간">가습 10시간</option><option value="12" data-t="12시간">가습 12시간</option><option value="16" data-t="16시간">가습 16시간</option><option value="24" data-t="24시간">가습 24시간</option></select></div>
                     <div></div>
                 </div>
                 <div class="v36-row"><div class="v36-lbl">생활 조건</div>
                     <div class="chk-group" data-name="ervcond" data-mode="multi"><span class="chk" data-v="newborn">신생아·영아 있음</span><span class="chk" data-v="cantopen">창문 환기 어려움(맞벌이·미세먼지·소음)</span><span class="chk" data-v="passive">패시브하우스 수준 기밀</span></div></div>
-                <div class="v36-lbl">겨울 바깥 공기(지난겨울 12~2월)</div>
                 <div class="v36-grid3 v36-row">
-                    <div><button type="button" class="erv-btn" style="width:100%;height:100%;min-height:36px;" onclick="ervLoadClimate()">기상 불러오기</button></div>
-                    <div><div class="v36-lbl">평균 기온(℃)</div><input type="number" id="erv-outT" placeholder="℃" inputmode="decimal"></div>
-                    <div><div class="v36-lbl">평균 습도(%)</div><input type="number" id="erv-outRH" placeholder="%" inputmode="decimal"></div>
+                    <div><button type="button" class="erv-btn" style="width:100%;height:100%;min-height:36px;" onclick="ervLoadClimate()">지난겨울 기상</button></div>
+                    <div><div class="sfx" data-s="℃"><input type="number" id="erv-outT" placeholder="평균 기온 ℃" inputmode="decimal"></div></div>
+                    <div><div class="sfx" data-s="%"><input type="number" id="erv-outRH" placeholder="평균 습도 %" inputmode="decimal"></div></div>
                 </div>
                 <div class="v36-note" id="erv-climate-status"></div>
-                <div class="v36-row" id="erv-product-row"><div class="v36-lbl">설치된 제품</div>
-                    <div class="erv-inline"><input type="text" id="erv-model" placeholder="모델명 (예: AP-B0150PM)" style="flex:1 1 160px;width:auto;text-align:left;"><label class="erv-btn" style="display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-camera"></i> 명판 사진<input type="file" id="erv-plate" accept="image/*" style="display:none" onchange="ervReadPlate(this)"></label></div>
+                <div class="v36-row" id="erv-product-row">
+                    <div class="erv-inline"><input type="text" id="erv-model" placeholder="설치 제품 모델명 (예: AP-B0150PM)" style="flex:1 1 160px;width:auto;text-align:left;"><label class="erv-btn" style="display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-camera"></i> 명판 사진<input type="file" id="erv-plate" accept="image/*" style="display:none" onchange="ervReadPlate(this)"></label></div>
                     <div class="v36-note" id="erv-model-status"></div>
                     <div class="v36-grid3" style="margin-top:4px;">
-                        <div><div class="v36-lbl">풍량 약(CMH)</div><input type="number" id="erv-low" placeholder="CMH" inputmode="numeric"></div>
-                        <div><div class="v36-lbl">풍량 중(CMH)</div><input type="number" id="erv-mid" placeholder="CMH" inputmode="numeric"></div>
-                        <div><div class="v36-lbl">풍량 강(CMH)</div><input type="number" id="erv-high" placeholder="CMH" inputmode="numeric"></div>
+                        <div><div class="sfx" data-s="CMH"><input type="number" id="erv-low" placeholder="풍량 약" inputmode="numeric"></div></div>
+                        <div><div class="sfx" data-s="CMH"><input type="number" id="erv-mid" placeholder="풍량 중" inputmode="numeric"></div></div>
+                        <div><div class="sfx" data-s="CMH"><input type="number" id="erv-high" placeholder="풍량 강" inputmode="numeric"></div></div>
                     </div>
                     <div class="v36-grid2" style="margin-top:4px;">
-                        <div><div class="v36-lbl">교환 방식</div><select data-sel="ervtype"><option value="">선택</option><option value="erv" data-v="erv">전열형(습기 교환)</option><option value="hrv" data-v="hrv">현열형(열만)</option><option value="unk" data-v="unk">모름</option></select></div>
-                        <div><div class="v36-lbl">습도교환효율(%)</div><input type="number" id="erv-latent" placeholder="전열형만" inputmode="numeric"></div>
+                        <div><select data-sel="ervtype"><option value="">교환 방식</option><option value="erv" data-v="erv">전열형(습기 교환)</option><option value="hrv" data-v="hrv">현열형(열만)</option><option value="unk" data-v="unk">모름</option></select></div>
+                        <div><div class="sfx" data-s="%"><input type="number" id="erv-latent" placeholder="습도교환효율 %" inputmode="numeric"></div></div>
                     </div>
                     <div class="chk-group" data-name="ervstate" data-mode="multi" style="margin-top:4px;"><span class="chk" data-v="due">필터 교체 표시</span><span class="chk" data-v="clog">필터 막힘·오래됨</span><span class="chk" data-v="error">조작기 에러 표시</span></div></div>
                 <div id="erv-result" class="erv-result"></div>
@@ -1195,7 +1196,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v39.9'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.0'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1386,7 +1387,7 @@
         // v39.2: 세대 위치 일부는 드롭다운(select[data-sel]) — 체크칸과 같은 방식으로 읽음
         const chkOn = name => {
             const sel = document.querySelector(`select[data-sel="${name}"]`);
-            if (sel) { const o = sel.selectedOptions[0]; return (sel.value && o) ? [{ textContent: o.textContent, dataset: { v: o.dataset.v || o.value } }] : []; }
+            if (sel) { const o = sel.selectedOptions[0]; return (sel.value && o) ? [{ textContent: o.dataset.t || o.textContent, dataset: { v: o.dataset.v || o.value } }] : []; }
             return [...document.querySelectorAll(`.chk-group[data-name="${name}"] .chk.on`)];
         };
         const chkVal = name => { const c = chkOn(name)[0]; return c ? (c.dataset.v || c.textContent.trim()) : null; };
@@ -2743,7 +2744,7 @@
 /* ★ v37.0 환기장치 적정성 UI — 계산은 erv-engine.js(ERV.compute)만 사용 */
 (function(){
   var $=function(id){return document.getElementById(id);};
-  var on=function(name){var sl=document.querySelector('select[data-sel="'+name+'"]');if(sl){var o=sl.selectedOptions[0];return (sl.value&&o)?[{textContent:o.textContent,dataset:{v:o.dataset.v||o.value}}]:[];}return Array.prototype.slice.call(document.querySelectorAll('.chk-group[data-name="'+name+'"] .chk.on'));};
+  var on=function(name){var sl=document.querySelector('select[data-sel="'+name+'"]');if(sl){var o=sl.selectedOptions[0];return (sl.value&&o)?[{textContent:o.dataset.t||o.textContent,dataset:{v:o.dataset.v||o.value}}]:[];}return Array.prototype.slice.call(document.querySelectorAll('.chk-group[data-name="'+name+'"] .chk.on'));};
   var val=function(name){var c=on(name)[0];return c?c.dataset.v:null;};
   var hasTxt=function(name,t){return on(name).some(function(c){return c.textContent.indexOf(t)>=0;});};
   var CLIMATE=null; window.ERV_LAST=null;
