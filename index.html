@@ -451,6 +451,9 @@
         input[type="date"] { width: 100%; padding: 6px 8px; border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; font-weight: 600; box-sizing: border-box; background: #fff; color: var(--text-primary); font-family: inherit; }
         .v36-note { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; line-height: 1.45; }
         .v36-derived { font-size: 0.72rem; color: var(--accent-strong); margin: 2px 0 6px; font-weight: 600; }
+        .v36-derived:empty { display: none; }
+        .ov-row { margin-bottom: 6px; }
+        .ov-row + .v36-derived { margin: -2px 0 6px; }
         .v36-btn { flex: 0 0 40px; border: 1.5px solid var(--brand-accent); background: var(--accent-tint); color: var(--accent-strong); border-radius: 8px; cursor: pointer; font-size: 0.95rem; }
         .v36-auto { background: var(--accent-tint); border: 1px dashed var(--brand-accent); border-radius: 10px; padding: 8px 10px; font-size: 0.78rem; }
         .v36-auto b { color: var(--accent-strong); }
@@ -524,17 +527,16 @@
         <!-- ★ v36.0: 진단 개요 재구성 — 주소(기상 자동조회)·측정일·입주년도 -->
         <div class="section no-print">
             <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
-            <div class="v36-lbl">단지 주소</div>
-            <div class="addr-row v36-row">
-                <input type="text" id="addr" placeholder="예: 인천 연수구 송도동 ○○ 107동 1002호" oninput="parseAddrDongHo()" onchange="fetchSiteWeather()">
+            <div class="addr-row v36-row ov-row">
+                <input type="text" id="addr" placeholder="단지 주소 (예: 송도동 ○○ 107동 1002호)" oninput="parseAddrDongHo()" onchange="fetchSiteWeather()">
                 <button type="button" class="v36-btn" onclick="fetchSiteWeather()" aria-label="기상 조회"><i class="fas fa-cloud-sun"></i></button>
             </div>
             <input type="hidden" id="dong" value=""><input type="hidden" id="ho" value="">
             <div class="v36-derived" id="addr-note"></div>
-            <div class="v36-grid3 v36-row">
-                <div><div class="v36-lbl">장소</div><input type="text" id="location" placeholder="현관" list="location-suggestions"><datalist id="location-suggestions"><option value="현관"></option><option value="다용도실"></option><option value="실외기실"></option><option value="거실"></option><option value="안방"></option></datalist></div>
-                <div><div class="v36-lbl">입주(준공)년도</div><select id="built-year" onchange="updateV36Derived()"><option value="">선택</option><option value="2027">2027</option><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option><option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option><option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option><option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option><option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option><option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option><option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option><option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option><option value="1990">1990</option><option value="1989">1989</option><option value="1988">1988</option><option value="1987">1987</option><option value="1986">1986</option><option value="1985">1985</option><option value="1984">1984</option><option value="1983">1983</option><option value="1982">1982</option><option value="1981">1981</option><option value="1980">1980</option><option value="1979">1979</option><option value="1978">1978</option><option value="1977">1977</option><option value="1976">1976</option><option value="1975">1975</option></select></div>
-                <div><div class="v36-lbl">측정일자</div><input type="date" id="date-picker" onchange="onDatePicked()"></div>
+            <div class="v36-grid3 v36-row ov-row">
+                <div><input type="text" id="location" placeholder="장소" list="location-suggestions"><datalist id="location-suggestions"><option value="현관"></option><option value="다용도실"></option><option value="실외기실"></option><option value="거실"></option><option value="안방"></option></datalist></div>
+                <div><select id="built-year" onchange="updateV36Derived()"><option value="">입주년도</option><option value="2027">2027</option><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option><option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option><option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option><option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option><option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option><option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option><option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option><option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option><option value="1990">1990</option><option value="1989">1989</option><option value="1988">1988</option><option value="1987">1987</option><option value="1986">1986</option><option value="1985">1985</option><option value="1984">1984</option><option value="1983">1983</option><option value="1982">1982</option><option value="1981">1981</option><option value="1980">1980</option><option value="1979">1979</option><option value="1978">1978</option><option value="1977">1977</option><option value="1976">1976</option><option value="1975">1975</option></select></div>
+                <div><input type="date" id="date-picker" onchange="onDatePicked()"></div>
             </div>
             <input type="hidden" id="date" value="">
             <div class="v36-derived" id="year-note"></div>
@@ -1193,7 +1195,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v39.8'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v39.9'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1229,7 +1231,7 @@
                 tempOut: '외기온도(To)',
                 vapmix:  '※ 겨울 참고값(청개구리 내부값·공인 기준 아님): VAP 1.2kPa / MIX 7.3g/kg — ±0.08 / ±0.5 안은 계기 오차 범위',
                 banner:  '',
-                locPlaceholder: '거실창',
+                locPlaceholder: '장소',
                 locOptions: ['거실', '안방', '현관', '다용도실', '실외기실']
             },
             summer: {
@@ -1241,7 +1243,7 @@
                 tempOut: '냉방측 온도(Tc)',
                 vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 참고값(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
                 banner:  '☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어락(잠금장치) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·온습도(MR277)·창호 검사는 생략됩니다(<b>열화상은 선택 입력</b> — 표면 저온부·열교 정성 참고용).',
-                locPlaceholder: '현관',
+                locPlaceholder: '장소',
                 locOptions: ['현관', '다용도실', '실외기실', '거실', '안방']
             }
         };
