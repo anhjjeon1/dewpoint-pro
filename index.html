@@ -1040,7 +1040,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.8'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.9'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2070,7 +2070,7 @@
                 : '');
 
             document.getElementById('rep-date').innerText = document.getElementById('date').value;
-            document.getElementById('rep-loc').innerText = `${document.getElementById('dong').value}동 ${document.getElementById('ho').value}호 (${document.getElementById('location').value})`;
+            { const _d = document.getElementById('dong').value, _h = document.getElementById('ho').value, _l = document.getElementById('location').value; const _dh = [_d ? _d + '동' : '', _h ? _h + '호' : ''].filter(Boolean).join(' '); document.getElementById('rep-loc').innerText = _dh ? `${_dh} (${_l})` : (_l || '동·호 미입력'); } // v40.9: 동·호 없으면 '동 호' 빈칸 표시 안 함
             document.getElementById('rep-type').innerText = (SEASON === 'summer')
                 ? '세대 현관 방화문 (여름 점검 · MR12 표면수분 + 초음파 누설)'
                 : `${winType} / ${consideration}`;
@@ -2163,13 +2163,21 @@
                 spacerLogic = "대상은 **금속재 방화문**으로 유리 간봉이 없습니다. **간봉 열교는 원인에서 제외**하고, 금속 문짝·문틀 자체의 높은 열전도로 인한 열교(Cold Bridge)를 지적하십시오. ('간봉'이라는 단어는 사용하지 마십시오.)";
             } else if (consideration.includes("TPS") || consideration.includes("TGI")) {
                 spacerLogic = "현재 '단열 간봉(TPS/TGI)'이 적용되어 있으므로, 간봉으로 인한 열교(Cold Bridge)는 결로의 주된 원인에서 **제외**하십시오.";
-            } else {
+            } else if (consideration.includes("알루미늄")) {
                 spacerLogic = "알루미늄 간봉이 적용되었으므로, 유리 테두리의 열교 현상을 지적하십시오.";
+            } else if (/터닝도어|목문|방화문/.test(consideration)) {
+                spacerLogic = "선택한 항목은 문짝(" + consideration + ")이라 유리 간봉 판정 대상이 아닙니다. 간봉 열교는 언급하지 마십시오.";
+            } else {
+                spacerLogic = "간봉 종류는 확인되지 않았습니다(입력: " + (consideration || "모름") + "). 간봉 열교를 원인으로 단정하지 말고, 유리 가장자리에 띠 모양 결로가 있을 때만 간봉 확인이 필요하다고 쓰십시오.";
             }
 
             let slidingLogic = "";
             if (isFireDoor) {
                 slidingLogic = "대상은 **여닫이(스윙) 방식의 자동닫힘 방화문**입니다. **'미서기', '레일', '창호'라는 표현은 절대 사용하지 마십시오.** 문틈 침기는 **문짝 하부 언더컷 · 문틀 하부 문턱(sill) · 경첩/잠금부 가스켓(기밀 패킹) 틈새**로 설명하고, 보수는 **문 하부 스위퍼(도어 실링 바) 설치, 문틀 가스켓 보강, 도어클로저·경첩 조정으로 문짝 밀착도 개선** 등을 제안하십시오. ('문/방화문 교체'라는 단어는 사용하지 마십시오.)";
+            } else if (/시스템창호/.test(winType)) {
+                slidingLogic = "대상은 **PVC 시스템창호(TT 여닫이 또는 LS 리프트슬라이딩)**입니다. 미서기 레일 틈새를 전제로 쓰지 마십시오. 여닫이형이면 가스켓 압착·하드웨어(잠금 포인트) 조정, 리프트슬라이딩형이면 레일·브러시 기밀을 점검 대상으로 제시하십시오. 형식이 사진으로 확인되지 않으면 단정하지 마십시오. **'창호 교체'라는 단어는 절대 사용하지 마십시오.**";
+            } else if (/커튼월/.test(winType)) {
+                slidingLogic = "대상은 **커튼월**로 미서기 구조가 아닙니다. 고정 유리·프레임(멀리언) 접합부와 개폐창 가스켓 기밀을 검토하십시오. **'창호 교체'라는 단어는 절대 사용하지 마십시오.**";
             } else {
                 slidingLogic = "미서기(Sliding) 창호의 특성상 레일 틈새로 외풍(Infiltration)이 유입되어 결로를 심화시킬 수 있음을 언급하십시오. 단, **'창호 교체'라는 단어는 절대 사용하지 말고**, 모헤어 교체나 풍지판 설치 등 보수 방법을 제안하십시오.";
             }
@@ -2989,7 +2997,7 @@
       try{if(window.ERV&&window.ERV_LAST&&window.ERV_LAST.qReq!=null)common+='[환기장치 적정성 — 앱 계산값]\n'+ERV.summaryText(window.ERV_LAST)+'\n';}catch(e){}
       var places=S.items.map(function(it,i){var m=it.meas||{};
         return '### 장소 '+(i+1)+': '+it.place+'\n- 실내 '+(m.ti||'-')+'℃ / 습도 '+(m.rh||'-')+'% / 이슬점 '+(m.dew||'-')+' / 표면 '+(m.ts||'-')+'℃ / VAP '+(m.vap||'-')+' / MIX '+(m.mix||'-')+'\n- 결로가 맺힌 면: '+(it.face||'-')+'\n- 증상: '+(it.defect||'-')+'\n- 확인된 요인(앱 입력값): '+(it.factors?it.factors.filter(function(f){return f.k!=='다음 측정';}).map(function(f){return f.k+': '+f.s;}).join(' · '):'-')+'\n- 장소 소견 요약 원문:\n'+it.text.slice(0,2500);}).join('\n\n');
-      var prompt='당신은 공동주택 창호 결로·외풍 진단 전문가입니다. 한 세대('+(S.dong||'-')+'동 '+(S.ho||'-')+'호)의 여러 장소를 각각 분석한 결과를 모아 **세대 단위 종합 소견**을 작성하십시오.\n\n'+
+      var prompt='당신은 공동주택 창호 결로·외풍 진단 전문가입니다. 한 세대('+([S.dong?S.dong+'동':'',S.ho?S.ho+'호':''].filter(Boolean).join(' ')||'동·호 미입력')+')의 여러 장소를 각각 분석한 결과를 모아 **세대 단위 종합 소견**을 작성하십시오.\n\n'+
         '[세대 공통 정보]\n'+common+'\n[장소별 결과]\n'+places+'\n\n'+
         '[작성 규칙]\n- 위에 있는 측정값·계산값·확인된 요인만 인용하고 새 숫자를 만들지 마십시오. 원인 비율(%)·책임 비율은 쓰지 마십시오. 값이 없으면 "측정값 없음"이라고 쓰십시오.\n'+
         '- 여러 장소에 공통으로 나타나는 양상은 세대 공통 원인(실내 습도·환기·생활 습기·환기장치)으로, 특정 장소에만 나타나는 양상은 장소별 원인(그 창호의 기밀·단열·위치·방향)으로 나누어 판단하십시오. 장소가 1곳뿐이면 비교 판단의 한계를 밝히십시오.\n'+
@@ -3014,7 +3022,7 @@
     var c=(S.items[S.items.length-1].common)||{};
     var row=function(k,v){return v?'<tr><th>'+k+'</th><td style="white-space:pre-line">'+esc(v)+'</td></tr>':'';};
     var h='<h1>결로 정밀 진단 종합 소견서</h1><div style="color:#555;margin-bottom:8px">청개구리샤시 · 결로진단 AI '+esc(document.title.replace(/[^v0-9.]/g,'').replace(/^\.+/,''))+'</div>';
-    h+='<table class="sm">'+row('진단 일자',c['rep-date']||val('date'))+row('진단 세대',(S.dong||'-')+'동 '+(S.ho||'-')+'호'+(S.addr?' ('+S.addr+')':''))+row('구조/사양',c['rep-type'])+row('분석 관점',c['rep-view'])+row('세대 위치',c['rep-house'])+row('생활환경·관찰',c['rep-life'])+row('기상',c['rep-weather'])+row('환기 적정성',c['rep-erv'])+'</table>';
+    h+='<table class="sm">'+row('진단 일자',c['rep-date']||val('date'))+row('진단 세대',([S.dong?S.dong+'동':'',S.ho?S.ho+'호':''].filter(Boolean).join(' ')||'동·호 미입력')+(S.addr?' ('+S.addr+')':''))+row('구조/사양',c['rep-type'])+row('분석 관점',c['rep-view'])+row('세대 위치',c['rep-house'])+row('생활환경·관찰',c['rep-life'])+row('기상',c['rep-weather'])+row('환기 적정성',c['rep-erv'])+'</table>';
     h+='<table class="sm"><tr><th style="width:auto">검사 장소</th><th style="width:auto">결로가 맺힌 면</th><th style="width:auto">표면온도</th><th style="width:auto">실내 온·습도</th><th style="width:auto">확인된 요인</th></tr>'+S.items.map(function(it){var m=it.meas||{};return '<tr><td>'+esc(it.place)+'</td><td>'+esc(it.face||'-')+'</td><td>'+esc(m.ts?m.ts+'℃':'-')+'</td><td>'+esc((m.ti||'-')+'℃ / '+(m.rh||'-')+'%')+'</td><td>'+esc((it.factors?it.factors.filter(function(f){return f.k!=='다음 측정';}).map(function(f){return f.k+': '+f.s;}).join(' · '):'-'))+'</td></tr>';}).join('')+'</table>';
     if(S.summary)h+='<div class="pg md-sum"><h2 class="place">세대 종합 소견</h2>'+S.summary.html+'</div>';
     S.items.forEach(function(it,i){h+='<div class="pg"><h2 class="place">장소 '+(i+1)+'. '+esc(it.place)+'</h2>'+it.html+'</div>';});
