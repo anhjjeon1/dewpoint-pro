@@ -585,6 +585,12 @@
                 <div class="v36-note">확인 방법: 준공도면 외벽 단면 / 외벽 쪽 콘센트 커버를 열어 석고보드 뒤 단열재가 보이면 내단열 / 실내 열화상에서 바닥·천장 모서리에 찬 띠가 이어지면 내단열 가능성</div></div>
             <div class="v36-row"><div class="v36-lbl">거실 방향</div>
                 <div class="chk-group" data-name="dir" data-mode="single"><span class="chk">북</span><span class="chk">북동</span><span class="chk">동</span><span class="chk">남동</span><span class="chk">남</span><span class="chk">남서</span><span class="chk">서</span><span class="chk">북서</span></div></div>
+            <div class="v36-row"><div class="v36-lbl">전용면적 <span class="v36-hint">— 환기장치 '집 크기'와 같은 값</span></div>
+                <div class="erv-inline"><input type="number" id="unit-area" placeholder="예: 84" inputmode="decimal" min="5" max="500" oninput="syncUnitArea(this)"><span>㎡</span></div>
+                <div class="v36-note">같은 습기라도 집이 작으면 습도가 빨리 오릅니다(오피스텔·소형 세대).</div></div>
+            <div class="v36-row"><div class="v36-lbl">현관 중문</div>
+                <div class="chk-group" data-name="jungmun" data-mode="single"><span class="chk" data-v="none">없음</span><span class="chk" data-v="closed">있음·평소 닫음</span><span class="chk" data-v="open">있음·평소 열어 둠</span></div>
+                <div class="v36-note">중문을 닫아 두면 집이 더 기밀해짐 → 실내 습도↑·고층은 창 틈 유출↑ 가능 / 현관 공간은 더 차가워짐</div></div>
         </div>
 
         <!-- ★ v36.0: 창호 / 관찰된 상태 (여름·방화문 모드에서는 숨김) -->
@@ -1209,7 +1215,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v39.0'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v39.1'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1366,6 +1372,14 @@
                 updateV36Derived();
             });
         });
+        // v39.1: 세대 위치 '전용면적' ↔ 환기장치 '집 크기' 양방향 연동
+        window.syncUnitArea = function(src) {
+            const a = document.getElementById('unit-area'), b = document.getElementById('erv-area');
+            if (!a || !b) return;
+            const dst = (src === a) ? b : a;
+            if (dst.value !== src.value) { dst.value = src.value; if (dst === b) b.dispatchEvent(new Event('input', { bubbles: true })); }
+        };
+        document.addEventListener('DOMContentLoaded', () => { const b = document.getElementById('erv-area'); if (b) b.addEventListener('input', () => syncUnitArea(b)); });
         const chkOn = name => [...document.querySelectorAll(`.chk-group[data-name="${name}"] .chk.on`)];
         const chkVal = name => { const c = chkOn(name)[0]; return c ? (c.dataset.v || c.textContent.trim()) : null; };
         const chkVals = name => chkOn(name).map(c => c.dataset.v || c.textContent.trim());
@@ -1545,6 +1559,9 @@
             add('세대 배치', chkText('side'));
             add('외벽 단열 방식', chkText('insul'));
             add('거실 방향', chkText('dir'));
+            const _area = parseFloat((document.getElementById('unit-area') || {}).value);
+            add('전용면적', (!isNaN(_area) && _area > 0) ? `${_area}㎡ (약 ${Math.round(_area / 3.3058)}평)` : '');
+            add('현관 중문', chkText('jungmun'));
             const obs = chkVals('obs').filter(v => v !== 'none');
             add('현장 관찰 상태(사실 체크)', chkText('obs'));
             add('결로가 맺힌 면·분포', chkText('face'));
@@ -2193,10 +2210,10 @@
             // ★ v36.0: 세대위치·생활문진 수집 (기존 house-type 단일선택 대체)
             const V36 = collectV36();
             const _fi = V36.floor;
-            const houseType = [chkText('house'), chkText('ext'), _fi ? _fi.label : '', chkText('side'), chkText('insul') ? chkText('insul') + (chkVal('insul') === 'unk' ? '(단열 방식)' : '') : '', chkText('dir') ? '거실 ' + chkText('dir') + '향' : ''].filter(Boolean).join(' / ') || '세대 위치 미입력';
+            const houseType = [chkText('house'), chkText('ext'), _fi ? _fi.label : '', chkText('side'), chkText('insul') ? chkText('insul') + (chkVal('insul') === 'unk' ? '(단열 방식)' : '') : '', chkText('dir') ? '거실 ' + chkText('dir') + '향' : '', (parseFloat((document.getElementById('unit-area') || {}).value) > 0) ? '전용 ' + document.getElementById('unit-area').value + '㎡' : '', chkText('jungmun') ? '현관 중문 ' + chkText('jungmun') : ''].filter(Boolean).join(' / ') || '세대 위치 미입력';
             const ervBlock = (SEASON !== 'summer' && typeof window.ervPromptBlock === 'function') ? window.ervPromptBlock() : '';
             const v36Block = ervBlock + (V36.text
-                ? `\n\n[세대 위치·생활환경 문진 (v36 현장 입력 — 반드시 반영)]\n${V36.text}\n\n[문진 해석 지침]\n- 입력된 항목만 근거로 삼고, 미입력 항목은 추정하지 마십시오.\n- **동일 문제를 갖고 있는 같은 건물의 다른 세대**: '같은 라인 다수/단지 전반'이면 설계·구조 공통 요인(열교·단열 설계·기밀 사양) 비중을 높이고, '우리 집만'이면 해당 세대 생활환경·개별 부위 요인을 우선 검토하십시오.\n- **층 위치·연돌효과**: 겨울철 저층은 틈으로 냉기가 유입(외풍 체감↑), 고층은 실내 습한 공기가 틈으로 유출(틈 주변 결로·외풍 체감↓)되는 경향을 외풍·결로 해석에 반영하십시오. 1층·필로티 상부·옥상 직하·측벽 세대는 외기 접촉면 증가로 표면온도 저하 요인입니다.\n- **입주 2년차 이내**면 콘크리트 초기 함수율 방출을 원인에 포함하고, 그 이후면 비중을 낮추십시오.\n- **생활 수분원**(거주 인원·실내 건조·가습기·조리·환기 횟수/시간·전열교환기 미가동·간헐난방)은 MR277 VAP/MIX 수치와 교차 검증해 거주 환경 관리 원인으로 구체적으로 연결하십시오. 히트펌프·응축식 건조기는 실내 가습 요인이 아닙니다.\n- **현장 관찰 상태**(여밈대 틈·풍지판 누락·물구멍 반대타공·모헤어 마모·창짝 처짐 등)는 외풍·기밀 저하 경로로 해석하되, 원인을 '시공/설치/제작 불량'으로 단정하지 말고 '기밀 보강 필요 부위(AI 추정)'로 표현하십시오.\n- **평소 결로 흔적**은 측정 당일 조건과 무관한 누적 결로 증거로 활용하십시오.\n- **외벽 단열 방식**: '내단열'이면 슬래브·내벽이 외벽과 만나는 자리(바닥·천장 모서리, 외벽·내벽 접합부, 기둥·보)에서 단열이 끊겨 열교가 생기기 쉽습니다. 벽 모서리·천장 곰팡이, 벽체 결로가 있으면 이 열교 자리와 창틀 주위 단열 이음부(단열재·우레탄폼 끊김)를 먼저 검토하고, 벽지 뒤 단열재 안쪽 면 결로 가능성도 언급하십시오. '외단열'이면 벽체 열교 가능성은 상대적으로 낮으므로 창호(유리 가장자리·창틀·기밀), 창 설치 위치와 단열선이 이어지는 자리, 발코니·돌출부, 실내 습기·환기를 우선 검토하십시오. 벽 모서리 결로가 넓게 나타나면 외부 단열 손상·끊김 가능성을 '단열 보강 필요 부위(AI 추정)'로 언급하십시오. '모름' 또는 미입력이면 단열 방식을 단정하지 말고, 도면 외벽 단면·콘센트 자리 확인을 다음 측정 항목에 넣으십시오.\n- 기상자료(측정 전 7일 최저기온·풍속)가 있으면 측정 당일 수치만으로 판단하지 말고 최근 한파·강풍 영향을 함께 고려하십시오.`
+                ? `\n\n[세대 위치·생활환경 문진 (v36 현장 입력 — 반드시 반영)]\n${V36.text}\n\n[문진 해석 지침]\n- 입력된 항목만 근거로 삼고, 미입력 항목은 추정하지 마십시오.\n- **동일 문제를 갖고 있는 같은 건물의 다른 세대**: '같은 라인 다수/단지 전반'이면 설계·구조 공통 요인(열교·단열 설계·기밀 사양) 비중을 높이고, '우리 집만'이면 해당 세대 생활환경·개별 부위 요인을 우선 검토하십시오.\n- **층 위치·연돌효과**: 겨울철 저층은 틈으로 냉기가 유입(외풍 체감↑), 고층은 실내 습한 공기가 틈으로 유출(틈 주변 결로·외풍 체감↓)되는 경향을 외풍·결로 해석에 반영하십시오. 1층·필로티 상부·옥상 직하·측벽 세대는 외기 접촉면 증가로 표면온도 저하 요인입니다.\n- **입주 2년차 이내**면 콘크리트 초기 함수율 방출을 원인에 포함하고, 그 이후면 비중을 낮추십시오.\n- **생활 수분원**(거주 인원·실내 건조·가습기·조리·환기 횟수/시간·전열교환기 미가동·간헐난방)은 MR277 VAP/MIX 수치와 교차 검증해 거주 환경 관리 원인으로 구체적으로 연결하십시오. 히트펌프·응축식 건조기는 실내 가습 요인이 아닙니다.\n- **현장 관찰 상태**(여밈대 틈·풍지판 누락·물구멍 반대타공·모헤어 마모·창짝 처짐 등)는 외풍·기밀 저하 경로로 해석하되, 원인을 '시공/설치/제작 불량'으로 단정하지 말고 '기밀 보강 필요 부위(AI 추정)'로 표현하십시오.\n- **평소 결로 흔적**은 측정 당일 조건과 무관한 누적 결로 증거로 활용하십시오.\n- **외벽 단열 방식**: '내단열'이면 슬래브·내벽이 외벽과 만나는 자리(바닥·천장 모서리, 외벽·내벽 접합부, 기둥·보)에서 단열이 끊겨 열교가 생기기 쉽습니다. 벽 모서리·천장 곰팡이, 벽체 결로가 있으면 이 열교 자리와 창틀 주위 단열 이음부(단열재·우레탄폼 끊김)를 먼저 검토하고, 벽지 뒤 단열재 안쪽 면 결로 가능성도 언급하십시오. '외단열'이면 벽체 열교 가능성은 상대적으로 낮으므로 창호(유리 가장자리·창틀·기밀), 창 설치 위치와 단열선이 이어지는 자리, 발코니·돌출부, 실내 습기·환기를 우선 검토하십시오. 벽 모서리 결로가 넓게 나타나면 외부 단열 손상·끊김 가능성을 '단열 보강 필요 부위(AI 추정)'로 언급하십시오. '모름' 또는 미입력이면 단열 방식을 단정하지 말고, 도면 외벽 단면·콘센트 자리 확인을 다음 측정 항목에 넣으십시오.\n- **전용면적**: 같은 수분 발생량이라도 면적(공기량)이 작을수록 실내 습도가 빨리 오릅니다. 소형 세대·오피스텔은 거주 인원·생활 수분원 대비 공기량이 작다는 점을 습도 해석에 반영하되, 실측 습도를 우선하고 면적만으로 습도를 추정하지 마십시오.\n- **현관 중문**: '있음·평소 닫음'이면 현관문 쪽 공기 통로가 한 번 더 막혀 세대가 더 기밀해집니다. 자연 환기가 줄어 실내 습도가 오를 수 있고, 고층에서는 현관 쪽으로 빠지던 공기 몫이 창 틈으로 옮겨 가 외창 안쪽 면 결로(유출형)가 늘 수 있습니다. 현관 공간은 더 차가워져 중문 상부 틈으로 들어간 습한 공기가 현관문 안쪽 면·중문 유리·신발장에 결로를 만들 수 있습니다. '없음'이면 저층은 현관으로 찬 공기가 들어와 외풍 체감이 커지는 대신 실내 습도는 낮아지는 경향입니다. '열어 둠'은 없음과 비슷하게 보십시오. 이 내용은 원리상 경향이므로 '가능성'으로만 서술하고 단정하지 마십시오.\n- 기상자료(측정 전 7일 최저기온·풍속)가 있으면 측정 당일 수치만으로 판단하지 말고 최근 한파·강풍 영향을 함께 고려하십시오.`
                 : '');
 
             document.getElementById('rep-date').innerText = document.getElementById('date').value;
@@ -2211,7 +2228,7 @@
             // ★ v36.0: 소견서 진단개요 표에 세대위치·생활환경·기상 행 추가 (미입력 시 행 숨김)
             const _setRow = (id, val) => { const td = document.getElementById(id); if (!td) return; td.innerText = val || ''; td.parentElement.style.display = val ? '' : 'none'; };
             _setRow('rep-house', houseType === '세대 위치 미입력' ? '' : houseType);
-            _setRow('rep-life', V36.text ? V36.text.split('\n').filter(l => !/단지 주소|기상\(|주거형태|발코니|층 위치|세대 배치|외벽 단열 방식|거실 방향/.test(l)).map(l => l.replace(/^- /, '')).join('\n') : '');
+            _setRow('rep-life', V36.text ? V36.text.split('\n').filter(l => !/단지 주소|기상\(|주거형태|발코니|층 위치|세대 배치|외벽 단열 방식|거실 방향|전용면적|현관 중문/.test(l)).map(l => l.replace(/^- /, '')).join('\n') : '');
             _setRow('rep-erv', (typeof window.ervReportText === 'function') ? window.ervReportText() : '');
             _setRow('rep-weather', SITE_WEATHER ? `${SITE_WEATHER.place} · 당일 평균 ${(+SITE_WEATHER.todayMean).toFixed(1)}℃ · 7일 최저 ${SITE_WEATHER.min7 == null ? '-' : (+SITE_WEATHER.min7).toFixed(1)}℃ · 풍속 ${(+SITE_WEATHER.wind).toFixed(1)}m/s ${SITE_WEATHER.windDir}` : '');
             document.getElementById('rep-defect').innerText = (defect && defect.trim()) ? defect.trim() : '-';
@@ -2648,8 +2665,14 @@
                 const ervT = chkText('erv'), ventT = chkText('vent'), moistT = chkText('moist'), dryT = chkText('dry');
                 F.push({k:'환기', s: ervT || ventT ? (ervT.includes('상시') ? '환기장치 상시 가동' : (ervT ? ervT : '창문 환기만')) : '확인 안 됨',
                         b: [ventT ? '창문 환기 ' + ventT : '', ervT ? '환기장치 ' + ervT : ''].filter(Boolean).join(' / ') || '문진 미입력'});
-                F.push({k:'생활 습기원', s: (moistT || dryT) ? '응답 있음' : '확인 안 됨', b: [dryT ? '빨래 ' + dryT : '', moistT].filter(Boolean).join(' / ') || '문진 미입력'});
+                const areaV = parseFloat(v('unit-area'));
+                F.push({k:'생활 습기원', s: (moistT || dryT) ? '응답 있음' : '확인 안 됨', b: [dryT ? '빨래 ' + dryT : '', moistT, areaV > 0 ? '전용 ' + areaV + '㎡' + (areaV < 40 ? '(소형 — 습도가 빨리 오름)' : '') : ''].filter(Boolean).join(' / ') || '문진 미입력'});
             }
+            // v39.1: 현관 중문
+            const jm = chkVal('jungmun');
+            if (jm) F.push({k:'현관 중문', s: jm === 'closed' ? '있음·평소 닫음' : (jm === 'open' ? '있음·평소 열어 둠' : '없음'),
+                    b: jm === 'closed' ? '세대 기밀↑ → 실내 습도↑ 가능 / 고층은 창 틈 유출↑ 가능 / 현관 공간 차가워짐'
+                     : (jm === 'none' ? '저층은 현관 냉기 유입(외풍 체감) / 실내 습도는 낮아지는 편' : '중문 없음과 비슷하게 봄')});
             // v39.0: 외벽 단열 방식
             const insV = chkVal('insul');
             const traceWall = /벽 모서리|천장 곰팡이|가구 뒤/.test(trace);
