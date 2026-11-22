@@ -1052,7 +1052,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v41.3'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v41.4'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -3170,6 +3170,32 @@
     var nCond=0,nTdr=0,nWet=0;
     S.items.forEach(function(it){var ts=fs(it,'표면온도(단열·열교)')||fs(it,'결로면 온도');if(/이슬점보다 낮음/.test(ts))nCond++;if(/TDR (0\.28|기준) 초과/.test(ts))nTdr++;if(/뚜렷이 높음/.test(fs(it,'실내 습기')))nWet++;});
     var tdrOf=function(m){var ti=parseFloat(m.ti),ts=parseFloat(m.ts),to=parseFloat(m.to);if(isNaN(ti)||isNaN(ts)||isNaN(to)||ti===to)return '-';var t=(ti-ts)/(ti-to);var L=window.tdrLimit?window.tdrLimit(m.tp||'',m.tz||'1'):{lim:0.28};return t.toFixed(2)+' (기준 '+L.lim.toFixed(2)+')'+(ti-to<10?' 온도차 작음':'');};
+    // v41.4: TDR 풀이 — 계산·뜻·기준 비교·결로 연결·한파 예상·주의를 쉬운 문장으로(앱 계산, AI 아님)
+    var tdrExplain=function(m,wx){
+      var ti=parseFloat(m.ti),ts=parseFloat(m.ts),to=parseFloat(m.to);
+      if(isNaN(ti)||isNaN(ts)||isNaN(to)||ti<=to)return '';
+      var f1=function(x){return (Math.round(x*10)/10).toFixed(1);};
+      var es=function(T){return 0.6108*Math.exp(17.27*T/(T+237.3));};
+      var dT=ti-to,t=(ti-ts)/dT,L=window.tdrLimit?window.tdrLimit(m.tp||'',m.tz||'1'):{lim:0.28,label:'기준 0.28'};
+      var lim=L.lim,allow=ti-lim*dT,pct=Math.round(t*100),dew=parseFloat(m.dew),rh=parseFloat(m.rh);
+      var o=[];
+      o.push('<b>계산</b> (실내 '+f1(ti)+'℃ − 표면 '+f1(ts)+'℃) ÷ (실내 '+f1(ti)+'℃ − 외기 '+f1(to)+'℃) = '+f1(ti-ts)+' ÷ '+f1(dT)+' = <b>'+t.toFixed(2)+'</b>');
+      o.push('<b>뜻</b> TDR은 안팎 온도차 가운데 표면이 바깥 쪽으로 얼마나 식었는지를 나타냅니다. 0이면 표면이 실내와 같고, 1이면 바깥과 같습니다. 이번 값은 안팎 온도차 '+f1(dT)+'℃의 '+pct+'%만큼 표면이 식었다는 뜻입니다.');
+      if(t>lim)o.push('<b>기준 비교</b> TDR 기준('+esc(L.label)+')에 맞으려면 같은 조건에서 표면이 <b>'+f1(allow)+'℃ 이상</b>이어야 합니다. 측정한 표면 '+f1(ts)+'℃는 이보다 <b>'+f1(allow-ts)+'℃ 낮습니다</b>. 기준보다 많이 차가운 자리입니다.');
+      else o.push('<b>기준 비교</b> TDR 기준('+esc(L.label)+')에 맞으려면 같은 조건에서 표면이 '+f1(allow)+'℃ 이상이어야 합니다. 측정한 표면 '+f1(ts)+'℃는 기준 안에 있습니다.');
+      if(!isNaN(dew)){
+        var line='<b>결로와 연결</b> 실내 이슬점은 '+f1(dew)+'℃입니다. ';
+        if(t>lim)line+=(allow>dew?'표면이 기준 온도('+f1(allow)+'℃)만 됐어도 이슬점보다 '+f1(allow-dew)+'℃ 높아 지금 습도에서도 결로가 생기지 않습니다. ':'표면이 기준 온도('+f1(allow)+'℃)여도 이슬점보다 낮아 지금 습도에서는 결로가 생길 수 있습니다. 실내 습기 관리가 함께 필요합니다. ');
+        var safe=es(ts)/es(ti)*100;
+        line+='지금 표면 '+f1(ts)+'℃에서 결로를 막으려면 실내 습도가 <b>약 '+Math.floor(safe)+'% 이하</b>여야 합니다'+(!isNaN(rh)?'(측정 '+f1(rh)+'%)':'')+'.';
+        o.push(line);
+      }
+      var mm=String(wx||'').match(/7일 최저 (-?\d+(?:\.\d+)?)℃/),mn=mm?parseFloat(mm[1]):NaN;
+      if(!isNaN(mn)&&mn<to){var tsC=ti-t*(ti-mn),safeC=es(tsC)/es(ti)*100;
+        o.push('<b>한파 때 예상</b> 외기가 최근 7일 최저 '+f1(mn)+'℃까지 내려가면 같은 TDR에서 표면은 약 '+f1(tsC)+'℃가 됩니다. 이때 결로를 막으려면 실내 습도가 약 '+Math.floor(safeC)+'% 이하여야 합니다.');}
+      o.push('<b>주의</b> 이 값은 진단 당일 한 번 측정한 값입니다. 외기온도는 기상자료라 측정 순간과 다를 수 있고, 추운 밤 다음 아침에는 크게 나올 수 있습니다.'+(dT<10?' 안팎 온도차가 10℃ 미만이라 참고만 합니다.':'')+' 기준값은 설계 단계의 계산 기준이므로, 실측 TDR만으로 창호 하자를 판정하지 않습니다. 창호 결로의 하자 여부는 기밀(모헤어·풍지판), 창틀 주위 충전, 시험성적서로 따로 판단합니다.');
+      return o.join('<br>');
+    };
     var parts=function(it){var d=document.createElement('div');d.innerHTML=it.html||'';var imgs=[].map.call(d.querySelectorAll('.report-img-item'),function(x){var im=x.querySelector('img'),cp=x.querySelector('.report-img-caption');return im?{src:im.getAttribute('src'),cap:cp?cp.textContent.trim():''}:null;}).filter(Boolean);var ac=d.querySelector('.ac');return {imgs:imgs,ac:ac?ac.innerHTML:''};};
     // 1) 표지
     var h='<div class="rp-cover">'+
@@ -3202,7 +3228,7 @@
       var fac=(it.factors||[]).filter(function(f){return f.k!=='다음 측정';}).map(function(f){return '<div><b>'+esc(f.k)+'</b> — '+esc(f.s)+(f.b?'<span class="rp-b"> ('+esc(f.b)+')</span>':'')+'</div>';}).join('');
       var nx=(it.factors||[]).filter(function(f){return f.k==='다음 측정';})[0];
       h+='<div class="rp-item"><div class="rp-ih"><b>'+(i+1)+'. '+esc(it.place)+'</b><span>'+esc(it.face||'')+'</span></div>'+ph+
-        '<table class="rp-kv">'+kv('측정값',mv,1)+kv('결로가 맺힌 면',it.face||'확인 안 됨')+kv('증상',it.defect)+(fac?kv('확인된 요인',fac,1):'')+(nx&&nx.b&&nx.b!=='—'?kv('다음 측정',nx.b):'')+'</table>'+
+        '<table class="rp-kv">'+kv('측정값',mv,1)+kv('TDR 풀이',tdrExplain(m,(it.common||{})['rep-weather']||c['rep-weather']),1)+kv('결로가 맺힌 면',it.face||'확인 안 됨')+kv('증상',it.defect)+(fac?kv('확인된 요인',fac,1):'')+(nx&&nx.b&&nx.b!=='—'?kv('다음 측정',nx.b):'')+'</table>'+
         (pp.ac?'<div class="rp-ai"><div class="rp-ai-h">AI 분석 소견</div><div class="ac">'+pp.ac+'</div></div>':'')+'</div>';});
     h+='</div>';
     // 4) 안내
