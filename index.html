@@ -532,7 +532,7 @@
 
         <!-- ★ v36.0: 진단 개요 재구성 — 주소(기상 자동조회)·측정일·입주년도 -->
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-home"></i> 진단 개요 (Overview)</div>
+            <div class="section-title"><i class="fas fa-home"></i> 개요</div>
             <div class="addr-row v36-row ov-row">
                 <input type="text" id="addr" placeholder="단지 주소 (예: 송도동 ○○ 107동 1002호)" oninput="parseAddrDongHo()" onchange="fetchSiteWeather()">
                 <button type="button" class="v36-btn" onclick="fetchSiteWeather()" aria-label="기상 조회"><i class="fas fa-cloud-sun"></i></button>
@@ -558,12 +558,12 @@
 
         <!-- ★ v36.0: 세대 위치 — 기존 house-type 단일선택을 4개 축으로 분리 -->
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-building"></i> 세대 위치</div>
+            <div class="section-title"><i class="fas fa-building"></i> 세대</div>
             <div class="v36-grid4 v36-row">
                 <div><select data-sel="house" onchange="updateV36Derived()"><option value="">주거형태</option><option value="아파트" data-v="아파트">아파트</option><option value="주상복합" data-v="주상복합">주상복합</option><option value="오피스텔" data-v="오피스텔">오피스텔</option><option value="빌라·연립" data-v="빌라·연립">빌라·연립</option><option value="단독주택" data-v="단독주택">단독주택</option></select></div>
                 <div><select data-sel="ext" onchange="updateV36Derived()"><option value="">발코니</option><option value="ext" data-v="ext">확장</option><option value="part" data-v="part">부분확장</option><option value="non" data-v="non">비확장</option></select></div>
-                <div><div class="sfx" data-s="층"><input type="number" id="floor-no" placeholder="해당 층" min="-5" max="150" oninput="this.dataset.auto='';updateV36Derived()"></div></div>
-                <div><div class="sfx" data-s="층 중"><input type="number" id="floor-top" placeholder="최고층" min="1" max="150" oninput="updateV36Derived()"></div></div>
+                <div><div class="sfx" data-s="층"><input type="number" id="floor-no" placeholder="해당" min="-5" max="150" oninput="this.dataset.auto='';updateV36Derived()"></div></div>
+                <div><div class="sfx" data-s="층 중"><input type="number" id="floor-top" placeholder="최고" min="1" max="150" oninput="updateV36Derived()"></div></div>
             </div>
             <div class="v36-row"><div class="chk-group" data-name="floorx" data-mode="multi"><span class="chk" data-v="pilotis">아래층이 필로티</span><span class="chk" data-v="roof">바로 위가 옥상</span></div>
                 <div class="v36-derived" id="floor-note"></div></div>
@@ -581,7 +581,7 @@
 
         <!-- ★ v36.0: 창호 / 관찰된 상태 (여름·방화문 모드에서는 숨김) -->
         <div class="section no-print" id="overview-window-row">
-            <div class="section-title"><i class="fas fa-border-all"></i> 창호 / 관찰된 상태</div>
+            <div class="section-title"><i class="fas fa-border-all"></i> 창호</div>
             <div class="v36-grid2 v36-row">
                 <div class="input-group">
                     <select id="window-type">
@@ -627,7 +627,7 @@
 
         <!-- ★ v36.0: 평소 결로 흔적 -->
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-tint"></i> 평소 결로 흔적</div>
+            <div class="section-title"><i class="fas fa-tint"></i> 결로 흔적</div>
             <div class="chk-group" data-name="trace" data-mode="multi">
                 <span class="chk" data-v="w">창틀 바닥 물고임</span><span class="chk" data-v="w">유리 실리콘 곰팡이</span><span class="chk" data-v="w">아침마다 유리 김서림·물흐름</span>
                 <span class="chk" data-v="wall">벽 모서리·천장 곰팡이</span><span class="chk" data-v="wall">붙박이장·가구 뒤 곰팡이</span><span class="chk" data-v="w">커튼·블라인드 곰팡이</span>
@@ -637,7 +637,7 @@
 
         <!-- ★ v36.0: 생활환경 문진 (접이식) -->
         <div class="section no-print v36-fold" id="life-section">
-            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('life-section').classList.toggle('closed')"><i class="fas fa-user-friends"></i> 생활환경 문진 <span class="v36-hint" style="margin-left:6px;">— 탭만, 30초</span><span class="v36-caret"></span></div>
+            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('life-section').classList.toggle('closed')"><i class="fas fa-user-friends"></i> 생활 문진<span class="v36-caret"></span></div>
             <div class="v36-body">
                 <div class="v36-grid3 v36-row">
                     <div><select id="people" onchange="updateV36Derived()"><option value="">거주 인원</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명</option><option value="7">7명</option><option value="8">8명</option><option value="9">9명 이상</option></select></div>
@@ -659,7 +659,7 @@
 
         <!-- ★ v37.0: 환기장치(전열교환기) 적정성 — erv-engine.js 공식 계산(AI는 설명만) -->
         <div class="section no-print v36-fold closed" id="erv-section">
-            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치 적정성<span class="v36-caret"></span></div>
+            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치<span class="v36-caret"></span></div>
             <div class="v36-body">
                 <div class="v36-grid3 v36-row">
                     <div><div class="sfx" data-s="㎡"><input type="number" id="erv-area" list="area-list" placeholder="집 크기" inputmode="decimal"></div></div>
@@ -708,13 +708,13 @@
 
         <!-- ★ v36.0: 같은 건물 다른 세대 -->
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-city"></i> 동일 문제를 갖고 있는 같은 건물의 다른 세대</div>
+            <div class="section-title"><i class="fas fa-city"></i> 같은 문제 다른 세대</div>
             <div class="chk-group" data-name="nbr" data-mode="single">
                 <span class="chk" data-v="unk">모름</span><span class="chk" data-v="only">우리 집만</span><span class="chk" data-v="some">같은 라인 일부</span><span class="chk" data-v="many">같은 라인 다수</span><span class="chk" data-v="all">단지 전반</span></div>
         </div>
 
         <div class="section no-print" id="measurement-section" style="display: none;">
-            <div class="section-title"><i class="fas fa-temperature-high"></i> 정밀 계측 데이터 (Measurement)</div>
+            <div class="section-title"><i class="fas fa-temperature-high"></i> 계측</div>
             
             <div style="background:var(--accent-tint); padding:8px; border-radius:10px; margin-bottom:8px; border:1px solid var(--accent-soft);">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px;">
@@ -765,7 +765,7 @@
         </div>
 
         <div class="section no-print">
-            <div class="section-title" style="flex-wrap:wrap;gap:6px;"><i class="fas fa-images"></i> 현장 채증 (Evidence)<span class="insp-wrap"><label for="insp-target">검사 대상<b style="color:#c0392b">*</b></label><select id="insp-target" onchange="inspTargetChanged()"><option value="">선택</option><option value="거실">거실</option><option value="안방">안방</option><option value="드레스룸">드레스룸</option><option value="침실1">침실1</option><option value="침실2">침실2</option><option value="다용도실">다용도실</option><option value="발코니">발코니</option><option value="중문">중문</option><option value="__etc">기타(장소 칸 입력)</option></select></span></div>
+            <div class="section-title" style="flex-wrap:wrap;gap:6px;"><i class="fas fa-images"></i> 사진<span class="insp-wrap"><label for="insp-target">검사 대상<b style="color:#c0392b">*</b></label><select id="insp-target" onchange="inspTargetChanged()"><option value="">선택</option><option value="거실">거실</option><option value="안방">안방</option><option value="드레스룸">드레스룸</option><option value="침실1">침실1</option><option value="침실2">침실2</option><option value="다용도실">다용도실</option><option value="발코니">발코니</option><option value="중문">중문</option><option value="__etc">기타(장소 칸 입력)</option></select></span></div>
             <div id="insp-banner" class="insp-banner empty">📍 검사할 곳을 오른쪽 위 <b>검사 대상</b>에서 고르십시오.</div>
             <div class="photo-stack" id="photo-container">
                 
@@ -915,7 +915,7 @@
 
         <!-- ★ v36.0: 상세 증상 (기존과 동일, 위치만 사진 아래로) -->
         <div class="section no-print">
-            <div class="section-title"><i class="fas fa-notes-medical"></i> 상세 증상</div>
+            <div class="section-title"><i class="fas fa-notes-medical"></i> 증상</div>
             <div class="input-group">
                 <div class="mic-input-wrap textarea-wrap">
                     <textarea id="defect-content" placeholder="[방화문 증상] 예: 겨울철 결로수로 문틀 하부 녹·부식, 도어락(잠금장치) 작동 불량·잠금 뻑뻑함 등"></textarea>
@@ -1198,7 +1198,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.1'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.2'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2805,7 +2805,7 @@
   var t=null; function later(){clearTimeout(t);t=setTimeout(run,150);}
   window.ervLoadClimate=async function(){
     var s=$('erv-climate-status'); var addr=(window.addrPlace?window.addrPlace():(($('addr')||{}).value||'').trim());
-    if(!addr){s.textContent='위 진단 개요의 단지 주소를 먼저 넣어 주십시오.';return;}
+    if(!addr){s.textContent='위 개요의 단지 주소를 먼저 넣어 주십시오.';return;}
     s.textContent='조회 중…';
     try{var g=await ERV.geocode(addr); if(!g)throw new Error('주소 위치를 찾지 못함');
       CLIMATE=await ERV.fetchWinterClimate(g.lat,g.lon);
