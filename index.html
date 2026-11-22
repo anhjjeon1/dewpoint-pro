@@ -663,7 +663,7 @@
 
         <!-- ★ v37.0: 환기장치(전열교환기) 적정성 — erv-engine.js 공식 계산(AI는 설명만) -->
         <div class="section no-print v36-fold closed" id="erv-section">
-            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치<span class="v36-caret"></span></div>
+            <div class="section-title" style="cursor:pointer;" onclick="document.getElementById('erv-section').classList.toggle('closed')"><i class="fas fa-fan"></i> 환기장치<label class="erv-has" onclick="event.stopPropagation()"><input type="checkbox" id="erv-has" onchange="ervHasToggle(this)"> 전열교환기 있음</label><span class="v36-caret"></span></div>
             <div class="v36-body">
                 <div class="v36-grid3 v36-row">
                     <div><div class="sfx" data-s="㎡"><input type="number" id="erv-area" list="area-list" placeholder="집 크기" inputmode="decimal"></div></div>
@@ -693,7 +693,7 @@
                     <div><div class="sfx" data-s="%"><input type="number" id="erv-outRH" placeholder="평균 습도" inputmode="decimal"></div></div>
                 </div>
                 <div class="v36-note" id="erv-climate-status"></div>
-                <div class="v36-row" id="erv-product-row">
+                <div class="v36-row" id="erv-product-row" style="display:none">
                     <div class="erv-inline"><input type="text" id="erv-model" placeholder="설치 제품 모델명 (예: AP-B0150PM)" style="flex:1 1 160px;width:auto;text-align:left;"><label class="erv-btn" style="display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-camera"></i> 명판 사진<input type="file" id="erv-plate" accept="image/*" style="display:none" onchange="ervReadPlate(this)"></label></div>
                     <div class="v36-note" id="erv-model-status"></div>
                     <div class="v36-grid3" style="margin-top:4px;">
@@ -1052,7 +1052,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v41.4'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v41.5'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2670,6 +2670,8 @@
 <style id="erv-style">
 #erv-section{background:#eef6fc;border-color:#bcd9ef}
 #erv-section .section-title{color:#0f4c75}
+#erv-section .erv-has{display:inline-flex;align-items:center;gap:5px;margin-left:12px;font-size:0.8rem;font-weight:700;color:#0f4c75;background:#fff;border:1.5px solid #bcd9ef;border-radius:999px;padding:3px 10px;cursor:pointer}
+#erv-section .erv-has input{width:16px;height:16px;margin:0;accent-color:#0f4c75}
 #erv-section .erv-card{background:#fff}
 .erv-inline{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:0.8rem}
 .erv-inline input{width:72px;padding:6px 6px;border:1px solid #d0d7de;border-radius:8px;font-size:0.9rem;text-align:center;background:#fff}
@@ -2724,7 +2726,7 @@
       window:winClass(),
       Ti:($('temp-in')||{}).value||null, targetRH:$('erv-target').value, Ts:($('temp-surf')||{}).value||null, rhNow:($('humid-in')||{}).value||null,
       outT:$('erv-outT').value, outRH:$('erv-outRH').value,
-      product:(ervHas==='none')?{}:{low:$('erv-low').value,mid:$('erv-mid').value,high:$('erv-high').value,
+      product:(ervHas==='none'||!($('erv-has')||{}).checked)?{}:{low:$('erv-low').value,mid:$('erv-mid').value,high:$('erv-high').value,
         type:(val('ervtype')==='unk'?'':val('ervtype')),latentEff:$('erv-latent').value,
         filter:st.indexOf('clog')>=0?'clog':(st.indexOf('due')>=0?'due':''),error:st.indexOf('error')>=0}
     };
@@ -2831,8 +2833,28 @@
     }catch(e){s.textContent='⚠ 명판을 읽지 못했습니다('+(e&&e.message||'오류')+'). 풍량을 직접 넣어 주십시오.';}
     finally{input.value='';}
   };
+  // v41.5: 「전열교환기 있음」 체크 ↔ 제품 입력 줄 ↔ 생활 문진 전열교환기 선택 동기화
+  function ervShow(on){var r=$('erv-product-row');if(r)r.style.display=on?'':'none';}
+  window.ervHasToggle=function(cb){
+    var on=!!cb.checked;ervShow(on);
+    var sel=document.querySelector('select[data-sel="erv"]');
+    if(sel){
+      if(!on&&/^(on|some|off)$/.test(sel.value)){sel.value='none';sel.dispatchEvent(new Event('change',{bubbles:true}));}
+      else if(on&&sel.value==='none'){sel.value='';sel.dispatchEvent(new Event('change',{bubbles:true}));}
+    }
+    if(on){var sec=$('erv-section');if(sec)sec.classList.remove('closed');}
+    later();
+  };
+  function ervSyncFromSel(){
+    var sel=document.querySelector('select[data-sel="erv"]'),cb=$('erv-has');if(!sel||!cb)return;
+    if(/^(on|some|off)$/.test(sel.value))cb.checked=true;else if(sel.value==='none')cb.checked=false;
+    ervShow(cb.checked);
+  }
   function init(){
     var sec=$('erv-section'); if(!sec)return;
+    var _es=document.querySelector('select[data-sel="erv"]'); if(_es)_es.addEventListener('change',ervSyncFromSel);
+    var _cb=$('erv-has'); if(_cb&&!_cb.checked&&(($('erv-model')||{}).value||($('erv-low')||{}).value||($('erv-mid')||{}).value))_cb.checked=true;
+    ervSyncFromSel();
     var mi=$('erv-model'); if(mi){mi.addEventListener('change',onModelInput);mi.addEventListener('input',function(){clearTimeout(mi._t);mi._t=setTimeout(onModelInput,400);});}
     sec.addEventListener('input',later); sec.addEventListener('click',later); sec.addEventListener('change',later);
     var life=$('life-section'); if(life){life.addEventListener('click',later);life.addEventListener('input',later);life.addEventListener('change',later);}
