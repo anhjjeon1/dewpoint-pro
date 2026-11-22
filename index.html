@@ -667,22 +667,20 @@
                         <span style="font-size:0.78rem;">명</span>
                         <div class="chk-group" data-name="home" data-mode="multi" style="margin-left:6px;"><span class="chk" data-v="y">낮에도 재실</span></div>
                     </div></div>
-                <div class="v36-row"><div class="v36-lbl">겨울철 창문 환기 (횟수)</div>
-                    <div class="chk-group" data-name="vent" data-mode="single"><span class="chk" data-v="0">거의 안 함</span><span class="chk" data-v="1">하루 1회</span><span class="chk" data-v="2">하루 2회+</span></div></div>
-                <div class="v36-row"><div class="v36-lbl">1회 환기 시간</div>
-                    <div class="chk-group" data-name="ventmin" data-mode="single"><span class="chk" data-v="0">5분 미만</span><span class="chk" data-v="1">10분 내외</span><span class="chk" data-v="2">30분 이상</span></div></div>
-                <div class="v36-row"><div class="v36-lbl">빨래 건조</div>
-                    <div class="chk-group" data-name="dry" data-mode="single"><span class="chk" data-v="indoor">세탁기만 → 실내 건조</span><span class="chk" data-v="hp">건조기 (히트펌프·응축식)</span><span class="chk" data-v="exhaust">건조기 (가스·배기식)</span><span class="chk" data-v="balc">발코니·외부 건조</span></div>
-                    <div class="v36-note">히트펌프·응축식=수분이 배수로 빠져 실내 가습 거의 없음 / 실내건조=1회 약 1~2L 수분 방출</div></div>
-                <div class="v36-row"><div class="v36-lbl">열회수환기장치(전열교환기)</div>
-                    <div class="chk-group" data-name="erv" data-mode="single"><span class="chk" data-v="none">없음</span><span class="chk" data-v="on">있음·상시 가동</span><span class="chk" data-v="some">있음·가끔</span><span class="chk" data-v="off">있음·거의 안 켬</span><span class="chk" data-v="unk">모름</span></div></div>
+                <div class="v36-grid3 v36-row">
+                    <div><div class="v36-lbl">창문 환기(겨울)</div><select data-sel="vent" onchange="updateV36Derived()"><option value="">선택</option><option value="0" data-v="0">거의 안 함</option><option value="1" data-v="1">하루 1회</option><option value="2" data-v="2">하루 2회+</option></select></div>
+                    <div><div class="v36-lbl">1회 환기 시간</div><select data-sel="ventmin" onchange="updateV36Derived()"><option value="">선택</option><option value="0" data-v="0">5분 미만</option><option value="1" data-v="1">10분 내외</option><option value="2" data-v="2">30분 이상</option></select></div>
+                    <div><div class="v36-lbl">난방 방식</div><select data-sel="heat" onchange="updateV36Derived()"><option value="">선택</option><option value="cont" data-v="cont">상시 난방</option><option value="int" data-v="int">외출 시 끔(간헐)</option><option value="room" data-v="room">일부 방 난방 안 함</option><option value="pre" data-v="pre">입주 전·무난방</option></select></div>
+                </div>
+                <div class="v36-grid2 v36-row">
+                    <div><div class="v36-lbl">빨래 건조</div><select data-sel="dry" onchange="updateV36Derived()"><option value="">선택</option><option value="indoor" data-v="indoor">실내 건조(세탁기만)</option><option value="hp" data-v="hp">건조기(히트펌프·응축식)</option><option value="exhaust" data-v="exhaust">건조기(가스·배기식)</option><option value="balc" data-v="balc">발코니·외부 건조</option></select></div>
+                    <div><div class="v36-lbl">전열교환기</div><select data-sel="erv" onchange="updateV36Derived()"><option value="">선택</option><option value="none" data-v="none">없음</option><option value="on" data-v="on">있음·상시 가동</option><option value="some" data-v="some">있음·가끔</option><option value="off" data-v="off">있음·거의 안 켬</option><option value="unk" data-v="unk">모름</option></select></div>
+                </div>
+                <div class="v36-note" style="margin:-2px 0 8px;">실내 건조=1회 약 1~2L 수분 방출 / 히트펌프·응축식 건조기=실내 가습 거의 없음 / 간헐난방·안 쓰는 방=벽체가 식어 결로 급증 요인</div>
                 <div class="v36-row"><div class="v36-lbl">겨울철 습도 기기·수분원</div>
                     <div class="chk-group" data-name="moist" data-mode="multi">
                         <span class="chk" data-v="+">가습기 사용</span><span class="chk" data-v="-">제습기 사용</span><span class="chk" data-v="+">화분 다수</span><span class="chk" data-v="+">수족관</span>
                         <span class="chk" data-v="+">매일 조리(국·찜 등)</span><span class="chk" data-v="+">샤워 후 욕실문 개방</span><span class="chk" data-v="-">레인지후드 매번 가동</span><span class="chk" data-v="-">욕실 팬 가동</span></div></div>
-                <div class="v36-row"><div class="v36-lbl">난방 방식</div>
-                    <div class="chk-group" data-name="heat" data-mode="single"><span class="chk" data-v="cont">상시 난방</span><span class="chk" data-v="int">외출 시 끔(간헐)</span><span class="chk" data-v="room">일부 방 난방 안 함</span><span class="chk" data-v="pre">입주 전·무난방</span></div>
-                    <div class="v36-note">안 쓰는 방·간헐난방 = 벽체가 식어 결로 급증 요인</div></div>
             </div>
         </div>
 
@@ -1221,7 +1219,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v39.3'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v39.4'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1256,7 +1254,7 @@
                 surfHint:'* 열화상 최저값 — 결로 생기는 실내측 차가운 면',
                 tempOut: '외기온도(To)',
                 vapmix:  '※ 겨울 참고값(청개구리 내부값·공인 기준 아님): VAP 1.2kPa / MIX 7.3g/kg — ±0.08 / ±0.5 안은 계기 오차 범위',
-                banner:  '❄️ <b>겨울용 모드</b> — 따뜻·습한 <b>실내 공기</b>가 외기 냉기로 차가워진 <b>실내측 표면</b>(유리·벽 코너·방화문 실내면)에 응결. 온·습도는 실내에서, 표면온도는 결로 생기는 실내측 면에서 측정하세요.',
+                banner:  '',
                 locPlaceholder: '거실창',
                 locOptions: ['거실', '안방', '현관', '다용도실', '실외기실']
             },
@@ -1290,7 +1288,7 @@
             const dl = document.getElementById('location-suggestions');
             if (dl) dl.innerHTML = (L.locOptions || []).map(v => '<option value="' + v + '"></option>').join('');
             const banner = document.getElementById('season-banner');
-            if (banner) { banner.innerHTML = L.banner; banner.className = 'season-banner no-print ' + SEASON; }
+            if (banner) { banner.innerHTML = L.banner; banner.className = 'season-banner no-print ' + SEASON; banner.style.display = L.banner ? '' : 'none'; }
             const bw = document.getElementById('season-winter');
             const bs = document.getElementById('season-summer');
             if (bw) bw.classList.toggle('active', SEASON === 'winter');
@@ -2746,7 +2744,7 @@
 /* ★ v37.0 환기장치 적정성 UI — 계산은 erv-engine.js(ERV.compute)만 사용 */
 (function(){
   var $=function(id){return document.getElementById(id);};
-  var on=function(name){return Array.prototype.slice.call(document.querySelectorAll('.chk-group[data-name="'+name+'"] .chk.on'));};
+  var on=function(name){var sl=document.querySelector('select[data-sel="'+name+'"]');if(sl){var o=sl.selectedOptions[0];return (sl.value&&o)?[{textContent:o.textContent,dataset:{v:o.dataset.v||o.value}}]:[];}return Array.prototype.slice.call(document.querySelectorAll('.chk-group[data-name="'+name+'"] .chk.on'));};
   var val=function(name){var c=on(name)[0];return c?c.dataset.v:null;};
   var hasTxt=function(name,t){return on(name).some(function(c){return c.textContent.indexOf(t)>=0;});};
   var CLIMATE=null; window.ERV_LAST=null;
@@ -2885,7 +2883,7 @@
     var sec=$('erv-section'); if(!sec)return;
     var mi=$('erv-model'); if(mi){mi.addEventListener('change',onModelInput);mi.addEventListener('input',function(){clearTimeout(mi._t);mi._t=setTimeout(onModelInput,400);});}
     sec.addEventListener('input',later); sec.addEventListener('click',later);
-    var life=$('life-section'); if(life){life.addEventListener('click',later);life.addEventListener('input',later);}
+    var life=$('life-section'); if(life){life.addEventListener('click',later);life.addEventListener('input',later);life.addEventListener('change',later);}
     ['temp-in','temp-surf','window-type','people'].forEach(function(id){var e=$(id);if(e){e.addEventListener('input',later);e.addEventListener('change',later);}});
     document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('.v36-stepper'))later();});
     run();
