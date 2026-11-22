@@ -246,7 +246,9 @@
             border-radius: 16px; border: 1px solid var(--border-color);
             display: none; box-shadow: var(--shadow-elevated); overflow: visible;
         }
-        #analysis-content { overflow: visible; word-break: break-word; color: var(--text-primary); }
+        #analysis-content { overflow: visible; word-break: break-word; color: var(--text-primary); font-size: 0.95rem; line-height: 1.7; }
+        .ac h1 { font-size: 1.25rem; } .ac h2 { font-size: 1.15rem; } .ac h3 { font-size: 1.02rem; } .ac h4 { font-size: 0.98rem; }
+        .ac li { margin-bottom: 3px; } .ac table { font-size: 0.9rem; } #print-all .ac { font-size: 14.5px !important; line-height: 1.7 !important; } #print-all .ac h2 { font-size: 17px; margin-top: 16px; } #print-all .ac h3 { font-size: 15.5px; }
         #analysis-content h1, #analysis-content h2, #analysis-content h3 {
             color: var(--brand-primary); margin-top: 22px;
             border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;
@@ -256,7 +258,7 @@
         .report-badge {
             background-color: var(--accent-tint); color: var(--brand-primary);
             padding: 12px 14px; border-radius: 10px;
-            font-size: 0.78rem; font-weight: 600; margin-bottom: 22px;
+            font-size: 0.86rem; font-weight: 600; margin-bottom: 22px;
             border-left: 3px solid var(--brand-accent); line-height: 1.5;
         }
 
@@ -276,12 +278,12 @@
             display: block;
         }
         .report-img-caption {
-            font-size: 0.7rem; padding: 5px; text-align: center;
+            font-size: 0.82rem; padding: 5px; text-align: center;
             background: var(--bg-color); color: var(--text-secondary); font-weight: 600; width: 100%;
             margin-top: auto;
         }
 
-        .report-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.88rem; }
+        .report-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.92rem; }
         .report-summary-table th, .report-summary-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-subtle); text-align: left; }
         .report-summary-table th { color: var(--text-secondary); width: 40%; font-weight: 600; }
         .report-summary-table td { font-weight: 700; color: var(--brand-primary); }
@@ -958,7 +960,7 @@
                 본 결과는 <strong>건축 물리 표준 데이터 및 결로 사례 빅데이터</strong>를 근거로 AI가 TDR(온도차이비율) 및 VAP/MIX(공기질) 분석을 수행한 <strong>참고용 기술 소견</strong>입니다.
             </div>
 
-            <div class="input-label" style="margin-bottom:5px;">[진단 개요]</div>
+            <div class="input-label" style="margin-bottom:5px;font-size:0.88rem;">[진단 개요]</div>
             <table class="report-summary-table">
                 <tbody><tr><th>진단 일자</th><td id="rep-date"></td></tr>
                 <tr><th>진단 대상</th><td id="rep-loc"></td></tr>
@@ -971,7 +973,7 @@
                 <tr><th>상세 증상</th><td id="rep-defect" style="white-space:pre-line;"></td></tr>
             </tbody></table>
 
-            <div class="input-label" style="margin-bottom:5px;">[현장 채증 데이터]</div>
+            <div class="input-label" style="margin-bottom:5px;font-size:0.88rem;">[현장 채증 데이터]</div>
             <div id="report-photo-gallery" class="report-gallery"></div>
 
             <div id="loading-spinner" style="text-align:center; padding:50px 20px; display:none; background:var(--accent-tint); border-radius:12px; margin:20px 0; border:1px solid var(--accent-soft);">
@@ -985,13 +987,13 @@
                 </p>
             </div>
 
-            <div id="analysis-content" style="font-size:0.95rem; line-height:1.7;"></div>
+            <div id="analysis-content" class="ac" style="font-size:0.95rem; line-height:1.7;"></div>
 
             <div id="chart-section" style="display:none; margin-top:30px; border-top:1px solid var(--border-subtle); padding-top:20px;">
                 <div class="section-title"><i class="fas fa-list-check"></i> 확인된 요인 (입력값 기준 · 비율 아님)</div>
                 <div id="chart_div"></div>
 
-                <div style="margin-top:30px; font-size:0.72rem; color:var(--text-secondary); text-align:center; background:var(--bg-color); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
+                <div style="margin-top:30px; font-size:0.8rem; color:var(--text-secondary); text-align:center; background:var(--bg-color); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
                     ※ 본 문서는 AI가 공개 데이터를 종합·분석하여 작성한 <strong style="color:var(--brand-primary);">참고용 자료</strong>입니다. 법적 효력이 없으며, 특정 시공사 또는 개인의 책임을 판정하는 문서가 아닙니다. 정확한 원인 규명을 위해서는 별도의 현장 정밀 조사가 필요합니다.
                 </div>
             </div>
@@ -1040,7 +1042,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.9'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v41.0'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -2564,8 +2566,8 @@
             window.__lastFactors = F; // v38.7: 점검 리스트 저장용(옛 __lastChart 대체)
             window.__lastChart = null;
             const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-            const rows = F.map(f => `<tr><th style="text-align:left;vertical-align:top;padding:7px 8px;border:1px solid #d0d7de;background:#f3f6f9;width:30%;word-break:keep-all">${esc(f.k)}</th><td style="padding:7px 8px;border:1px solid #d0d7de;word-break:keep-all;overflow-wrap:anywhere"><div style="font-weight:800">${esc(f.s)}</div><div style="font-size:0.78rem;color:#475569;margin-top:3px">${esc(f.b)}</div></td></tr>`).join('');
-            document.getElementById('chart_div').innerHTML = `<table style="width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;font-size:0.85rem"><tr><th style="padding:6px 8px;border:1px solid #d0d7de;background:#e6edf5;width:30%">요인</th><th style="padding:6px 8px;border:1px solid #d0d7de;background:#e6edf5">상태 · 근거</th></tr>${rows}</table><div style="font-size:0.72rem;color:#64748b;margin-top:6px;word-break:keep-all">※ 입력한 측정값·사진·문진으로만 만든 표입니다. 원인의 비율이나 책임을 나타내지 않습니다.</div>`;
+            const rows = F.map(f => `<tr><th style="text-align:left;vertical-align:top;padding:7px 8px;border:1px solid #d0d7de;background:#f3f6f9;width:30%;word-break:keep-all">${esc(f.k)}</th><td style="padding:7px 8px;border:1px solid #d0d7de;word-break:keep-all;overflow-wrap:anywhere"><div style="font-weight:800">${esc(f.s)}</div><div style="font-size:0.85rem;color:#475569;margin-top:3px">${esc(f.b)}</div></td></tr>`).join('');
+            document.getElementById('chart_div').innerHTML = `<table style="width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;font-size:0.92rem"><tr><th style="padding:6px 8px;border:1px solid #d0d7de;background:#e6edf5;width:30%">요인</th><th style="padding:6px 8px;border:1px solid #d0d7de;background:#e6edf5">상태 · 근거</th></tr>${rows}</table><div style="font-size:0.8rem;color:#64748b;margin-top:6px;word-break:keep-all">※ 입력한 측정값·사진·문진으로만 만든 표입니다. 원인의 비율이나 책임을 나타내지 않습니다.</div>`;
         }
         window.buildFactors = buildFactors; window.drawFactors = drawFactors;
     </script>
@@ -2857,20 +2859,22 @@
 #place-card #result-area{margin:0!important;padding:10px 8px!important;border:none!important;box-shadow:none!important;background:transparent!important}
 @media print{#place-card{border:none!important;padding:0!important;margin:0!important}#place-card .pc-row,#place-card .pc-empty{display:none!important}#place-card .pc-box{border:none!important;background:#fff!important}}
 #pl-summary table,#print-all .md-sum table{border-collapse:collapse;width:100%;margin:6px 0}
-#pl-summary th,#pl-summary td,#print-all .md-sum th,#print-all .md-sum td{border:1px solid #d5dbe3;padding:4px 6px;text-align:left}
+#pl-summary th,#pl-summary td,#print-all .md-sum th,#print-all .md-sum td{border:1px solid #d5dbe3;padding:5px 7px;text-align:left}
+#print-all .md-sum{font-size:14.5px;line-height:1.7}#print-all .md-sum h2:not(.place){font-size:17px}#print-all .md-sum h3{font-size:15.5px}
 #pl-summary th,#print-all .md-sum th{background:#eef2f8}
 @media print{
   #plist-section{display:none!important}
   body.print-all-mode .mobile-container,body.print-all-mode .save-toast{display:none!important}
   body.print-all-mode #print-all{display:block!important}
 }
-#print-all{font-size:12px;color:#111;padding:12px}
-#print-all h1{font-size:20px;margin:0 0 4px}
-#print-all h2.place{font-size:16px;border-left:4px solid #06B6D4;padding-left:8px;margin:0 0 8px}
+#print-all{font-size:14px;color:#111;padding:12px;line-height:1.6}
+#print-all h1{font-size:24px;margin:0 0 4px}
+#print-all h2.place{font-size:19px;border-left:4px solid #06B6D4;padding-left:8px;margin:0 0 8px}
 #print-all .pg{page-break-before:always}
 #print-all table.sm{width:100%;border-collapse:collapse;margin:6px 0 12px}
 #print-all table.sm th,#print-all table.sm td{border:1px solid #ddd;padding:5px 6px;text-align:left;vertical-align:top}
 #print-all table.sm th{background:#f3f6f9;width:24%}
+#print-all table.sm tr>*:nth-child(1),#print-all table.sm tr>*:nth-child(3),#print-all table.sm tr>*:nth-child(4){white-space:nowrap}
 #print-all .report-gallery{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #print-all .report-img-item img{width:100%;border-radius:6px}
 </style>
@@ -3026,7 +3030,7 @@
     h+='<table class="sm"><tr><th style="width:auto">검사 장소</th><th style="width:auto">결로가 맺힌 면</th><th style="width:auto">표면온도</th><th style="width:auto">실내 온·습도</th><th style="width:auto">확인된 요인</th></tr>'+S.items.map(function(it){var m=it.meas||{};return '<tr><td>'+esc(it.place)+'</td><td>'+esc(it.face||'-')+'</td><td>'+esc(m.ts?m.ts+'℃':'-')+'</td><td>'+esc((m.ti||'-')+'℃ / '+(m.rh||'-')+'%')+'</td><td>'+esc((it.factors?it.factors.filter(function(f){return f.k!=='다음 측정';}).map(function(f){return f.k+': '+f.s;}).join(' · '):'-'))+'</td></tr>';}).join('')+'</table>';
     if(S.summary)h+='<div class="pg md-sum"><h2 class="place">세대 종합 소견</h2>'+S.summary.html+'</div>';
     S.items.forEach(function(it,i){h+='<div class="pg"><h2 class="place">장소 '+(i+1)+'. '+esc(it.place)+'</h2>'+it.html+'</div>';});
-    h+='<div style="margin-top:16px;color:#666;font-size:11px">※ AI가 측정값과 공개 자료를 바탕으로 작성한 참고용 소견입니다. 청개구리샤시 ☎ 010-2322-0949</div>';
+    h+='<div style="margin-top:16px;color:#666;font-size:12.5px">※ AI가 측정값과 공개 자료를 바탕으로 작성한 참고용 소견입니다. 청개구리샤시 ☎ 010-2322-0949</div>';
     var P=$('print-all');P.innerHTML=h;
     // 폰은 print()가 바로 끝나고 미리보기를 나중에 그리므로 인쇄 모드를 되돌리지 않고 유지합니다(@media print에서만 적용).
     document.title=fname('');document.body.classList.add('print-all-mode');
