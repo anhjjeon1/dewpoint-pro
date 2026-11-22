@@ -458,6 +458,7 @@
         .v36-note { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; line-height: 1.45; }
         .v36-derived { font-size: 0.72rem; color: var(--accent-strong); margin: 2px 0 6px; font-weight: 600; }
         .v36-derived:empty { display: none; }
+        #hint-temp-surf:empty { display: none; }
         .ov-row { margin-bottom: 6px; }
         .ov-row + .v36-derived { margin: -2px 0 6px; }
         .v36-btn { flex: 0 0 40px; border: 1.5px solid var(--brand-accent); background: var(--accent-tint); color: var(--accent-strong); border-radius: 8px; cursor: pointer; font-size: 0.95rem; }
@@ -737,7 +738,7 @@
                 <div class="input-group">
                     <label class="input-label" id="lbl-temp-surf">● 결로면 온도(Ts)</label>
                     <input type="number" id="temp-surf" class="tdr-input" placeholder="열화상 Auto">
-                    <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:4px; text-align:center;" id="hint-temp-surf">* 열화상 최저값 — 냉방으로 차가워진 결로면(방화문 계단실측 등)</div>
+                    <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:4px; text-align:center;" id="hint-temp-surf"></div>
                 </div>
                 <div class="input-group">
                     <label class="input-label" id="lbl-temp-out">냉방측 온도(Tc)</label>
@@ -760,7 +761,6 @@
                         <input type="number" id="mix-val" class="vap-input" placeholder="g/kg" step="0.01">
                     </div>
                 </div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:6px; text-align:right;">* MR277 사진 등록 시 자동 입력됨</div>
             </div>
         </div>
 
@@ -1198,7 +1198,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw_lfK0SJ0TYK9AH4Mp558gz8Bx2EQaK2RgEfipv2lhiBlHsCmzSz0bGjAULXlSRXlOiQ/exec";
 
         // ★ v31.2: 헤더 버전 배지 + 탭 title 동적 바인딩 (다음부터 APP_VERSION만 올리면 자동 갱신)
-        const APP_VERSION = 'v40.3'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
+        const APP_VERSION = 'v40.4'; window.__APP_VERSION = APP_VERSION; /* 코드 수정 시마다 0.1씩 자동 증가 (배포 버전) */
         // ★ v33.1: 본분석 전용 상위 모델 (OCR은 GAS 기본 gemini-3.1-flash-lite 유지로 비용 절감).
         //   GAS backend ALLOWED_MODELS 화이트리스트에 포함돼야 적용됨. 불일치 시 서버가 lite로 자동 폴백.
         // ★ v34.9: 3.5-flash는 thinking 모델이라 maxOutputTokens를 추론에 소진 → 본분석 텍스트가 잘리거나 빔.
@@ -1230,7 +1230,7 @@
                 humidIn: '실내습도(RH)',
                 dew:     '● 노점온도(Tdp)',
                 surf:    '● 실내측 표면온도(Tsi)',
-                surfHint:'* 열화상 최저값 — 결로 생기는 실내측 차가운 면',
+                surfHint:'',
                 tempOut: '외기온도(To)',
                 vapmix:  '※ 겨울 참고값(청개구리 내부값·공인 기준 아님): VAP 1.2kPa / MIX 7.3g/kg — ±0.08 / ±0.5 안은 계기 오차 범위 (출처: FLIR MR277 사용설명서 14.6 — 습도 ±2.5%·온도 ±0.6℃를 22℃에서 합성)',
                 banner:  '',
@@ -1242,7 +1242,7 @@
                 humidIn: '다습부 습도(RH)',
                 dew:     '● 노점온도(Tdp)',
                 surf:    '● 결로면 온도(Ts)',
-                surfHint:'* 열화상 최저값 — 냉방으로 차가워진 결로면(방화문 계단실측 등)',
+                surfHint:'',
                 tempOut: '냉방측 온도(Tc)',
                 vapmix:  '※ 여름철은 절대습도(MIX)가 자연히 높음(15~20g/kg). 겨울 참고값(1.2/7.3) 미적용 — 핵심은 결로면 온도 < 노점',
                 banner:  '☀️ <b>여름·방화문 전용 모드</b> — 겨울철 결로수로 생긴 <b>문틀 녹·도어락(잠금장치) 고장</b>을 여름에 점검합니다. 핵심은 ① <b>초음파</b>로 겨울철 냉기 침투 경로(틈)를 찾고 ② <b>MR12</b>로 수분·부식 잔존부를 확인하는 것. UV·온습도(MR277)·창호 검사는 생략됩니다(<b>열화상은 선택 입력</b> — 표면 저온부·열교 정성 참고용).',
